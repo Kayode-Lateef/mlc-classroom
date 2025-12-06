@@ -115,7 +115,7 @@
 }
 
 .badge-primary {
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff
 }
 
@@ -165,14 +165,14 @@
 .custom-tab .nav-tabs>li.active>a:focus,
 .custom-tab .nav-tabs>li.active>a:hover {
     border-color: transparent;
-    color: #03a9f5;
+    color: #3386F7;
     position: relative
 }
 
 .custom-tab .nav-tabs>li.active>a:after,
 .custom-tab .nav-tabs>li.active>a:focus:after,
 .custom-tab .nav-tabs>li.active>a:hover:after {
-    background: #03a9f5;
+    background: #3386F7;
     bottom: -1px;
     content: "";
     height: 2px;
@@ -203,7 +203,7 @@
 .vertical-tab-left .nav-tabs>li.active>a,
 .vertical-tab-left .nav-tabs>li.active>a:focus,
 .vertical-tab-left .nav-tabs>li.active>a:hover {
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff;
     border-color: transparent
 }
@@ -232,7 +232,7 @@
 .vertical-tab-right .nav-tabs>li.active>a,
 .vertical-tab-right .nav-tabs>li.active>a:focus,
 .vertical-tab-right .nav-tabs>li.active>a:hover {
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff;
     border-color: transparent
 }
@@ -357,7 +357,7 @@
 }
 
 .timeline-badge.primary {
-    background-color: #03a9f5!important
+    background-color: #3386F7!important
 }
 
 .timeline-badge.success {
@@ -411,16 +411,16 @@
 .dt-buttons .dt-button.active,
 .dt-buttons .dt-button:focus,
 .dt-buttons .dt-button:hover:not(.disabled) {
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff
 }
 
 a.dt-button:hover:not(.disabled),
 button.dt-button:hover:not(.disabled),
 div.dt-button:hover:not(.disabled) {
-    background-color: #03a9f5;
+    background-color: #3386F7;
     background-image: none;
-    border: 1px solid #03a9f5;
+    border: 1px solid #3386F7;
     box-shadow: none;
     color: #fff
 }
@@ -428,9 +428,9 @@ div.dt-button:hover:not(.disabled) {
 a.dt-button:focus:not(.disabled),
 button.dt-button:focus:not(.disabled),
 div.dt-button:focus:not(.disabled) {
-    background-color: #03a9f5;
+    background-color: #3386F7;
     background-image: none;
-    border: 1px solid #03a9f5;
+    border: 1px solid #3386F7;
     box-shadow: none;
     color: #fff
 }
@@ -441,9 +441,9 @@ button.dt-button.active:hover:not(.disabled):not(.disabled),
 button.dt-button:active:hover:not(.disabled):not(.disabled),
 div.dt-button.active:hover:not(.disabled):not(.disabled),
 div.dt-button:active:hover:not(.disabled):not(.disabled) {
-    background-color: #03a9f5;
+    background-color: #3386F7;
     background-image: none;
-    border: 1px solid #03a9f5;
+    border: 1px solid #3386F7;
     box-shadow: none;
     color: #fff
 }
@@ -454,9 +454,9 @@ button.dt-button.active:not(.disabled),
 button.dt-button:active:not(.disabled),
 div.dt-button.active:not(.disabled),
 div.dt-button:active:not(.disabled) {
-    background-color: #03a9f5;
+    background-color: #3386F7;
     background-image: none;
-    border: 1px solid #03a9f5;
+    border: 1px solid #3386F7;
     box-shadow: none;
     color: #fff
 }
@@ -488,12 +488,12 @@ div.dt-button:active:not(.disabled) {
 }
 
 .panel-primary {
-    border-color: #03a9f5
+    border-color: #3386F7
 }
 
 .panel-primary .panel-heading {
-    background: #03a9f5;
-    border-color: #03a9f5;
+    background: #3386F7;
+    border-color: #3386F7;
     color: #fff
 }
 
@@ -583,8 +583,8 @@ div.dt-button:active:not(.disabled) {
 }
 
 .btn-primary {
-    background: #03a9f5;
-    border-color: #03a9f5;
+    background: #3386F7;
+    border-color: #3386F7;
     color: #fff
 }
 
@@ -592,7 +592,7 @@ div.dt-button:active:not(.disabled) {
 .btn-primary:focus,
 .btn-primary:hover {
     background: #0286c3;
-    border-color: #03a9f5;
+    border-color: #3386F7;
     color: #fff;
     box-shadow: none
 }
@@ -838,7 +838,7 @@ div.dt-button:active:not(.disabled) {
     position: relative;
     top: 5px;
     opacity: 1!important;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .dropdown-content-body li {
@@ -911,7 +911,7 @@ div.dt-button:active:not(.disabled) {
 
 .more-link {
     font-size: 12px;
-    color: #03a9f5;
+    color: #3386F7;
     display: inline-block
 }
 
@@ -922,7 +922,7 @@ div.dt-button:active:not(.disabled) {
 .dropdown-profile .trial-day {
     font-size: 11px;
     padding-top: 2px;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .dropdown-profile li {
@@ -1266,7 +1266,7 @@ div.dt-button:active:not(.disabled) {
 }
 
 .weather-one {
-    background: #03a9f5
+    background: #3386F7
 }
 
 .weather-one i {
@@ -1307,7 +1307,7 @@ div.dt-button:active:not(.disabled) {
 .control-bar {
     position: relative;
     z-index: 100;
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff;
     padding: 15px;
     margin-bottom: 30px
@@ -1430,7 +1430,7 @@ div.dt-button:active:not(.disabled) {
 .invoicelist-body .control {
     display: inline-block;
     color: #fff;
-    background: #03a9f5;
+    background: #3386F7;
     padding: 3px 7px;
     font-size: .9rem;
     text-transform: uppercase;
@@ -1477,7 +1477,7 @@ div.dt-button:active:not(.disabled) {
 
 .invoicelist-footer table #total_price {
     font-size: 2rem;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .note {
@@ -2148,7 +2148,7 @@ footer p {
 
 .input-focus,
 .input-focus:focus {
-    border-color: #03a9f5
+    border-color: #3386F7
 }
 
 .input-group-btn .btn {
@@ -2418,7 +2418,7 @@ a.mail-dropdown {
 }
 
 .btn-compose {
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff;
     padding: 12px 0;
     text-align: center;
@@ -2428,7 +2428,7 @@ a.mail-dropdown {
 .btn-compose.active,
 .btn-compose:focus,
 .btn-compose:hover {
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff
 }
 
@@ -2815,7 +2815,7 @@ ul {
 
 .progress-bar,
 .progress-bar-primary {
-    background-color: #03a9f5
+    background-color: #3386F7
 }
 
 .progress-bar-success {
@@ -3111,7 +3111,7 @@ tbody tr td:last-child {
 }
 
 .login-form label a {
-    color: #03a9f5
+    color: #3386F7
 }
 
 .social-login-content {
@@ -3131,7 +3131,7 @@ tbody tr td:last-child {
 }
 
 .register-link a {
-    color: #03a9f5
+    color: #3386F7
 }
 
 .cpu-load {
@@ -3220,7 +3220,7 @@ tbody tr td:last-child {
     font-size: 14px;
     padding-bottom: 5px;
     padding-left: 15px;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .ratings h4 {
@@ -3359,7 +3359,7 @@ tbody tr td:last-child {
 }
 
 .profile-widget-one .profile-one-user-content .sold-amount {
-    color: #03a9f5;
+    color: #3386F7;
     font-size: 24px;
     font-weight: 400;
     margin-top: 10px
@@ -3375,13 +3375,13 @@ tbody tr td:last-child {
     text-transform: uppercase;
     padding: 8px 15px;
     font-weight: 400;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .alert-primary {
     background-color: #57c9fd;
     border-color: #57c9fd;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .alert-success {
@@ -3418,7 +3418,7 @@ tbody tr td:last-child {
 }
 
 .label-primary {
-    background-color: #03a9f5
+    background-color: #3386F7
 }
 
 .label-success {
@@ -3751,7 +3751,7 @@ tbody tr td:last-child {
 }
 
 .order-list-item thead {
-    background: #03a9f5;
+    background: #3386F7;
     text-align: left
 }
 
@@ -3784,7 +3784,7 @@ tbody tr td:last-child {
 
 .media-body span {
     font-size: 10px;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .media-body p {
@@ -3849,7 +3849,7 @@ tbody tr td:last-child {
     -moz-border-radius: 0!important;
     background: #fff;
     border: none!important;
-    color: #03a9f5
+    color: #3386F7
 }
 
 .dark-browse-input-box .dark-input-button i {
@@ -3859,7 +3859,7 @@ tbody tr td:last-child {
 
 .dark-browse-input-box .dark-input-button:hover {
     background: #fff;
-    color: #03a9f5;
+    color: #3386F7;
     -webkit-transition: all .3s;
     -moz-transition: all .3s;
     transition: all .3s;
@@ -4052,7 +4052,7 @@ tbody tr td:last-child {
 .ct-series-b .ct-line,
 .ct-series-b .ct-point,
 .ct-series-b .ct-slice-donut {
-    stroke: #03A9F5
+    stroke: #3386F7
 }
 
 .ct-series-c .ct-bar,
@@ -4078,7 +4078,7 @@ tbody tr td:last-child {
 .ct-series-b .ct-area,
 .ct-series-b .ct-slice-donut-solid,
 .ct-series-b .ct-slice-pie {
-    fill: #03A9F5
+    fill: #3386F7
 }
 
 .ct-series-c .ct-area,
@@ -4188,7 +4188,7 @@ p {
 
 .color-primary,
 .text-primary {
-    color: #03a9f5
+    color: #3386F7
 }
 
 .color-success,
@@ -4230,9 +4230,9 @@ p {
 }
 
 .bg-primary {
-    background: #03a9f5;
+    background: #3386F7;
     color: #fff;
-    fill: #03a9f5
+    fill: #3386F7
 }
 
 .bg-success {
@@ -4291,7 +4291,7 @@ p {
 }
 
 .border-primary {
-    border-color: #03a9f5
+    border-color: #3386F7
 }
 
 .border-success {
@@ -4779,11 +4779,11 @@ p {
 }
 
 .blockquote-box .blockquote-primary {
-    border-color: #03a9f5
+    border-color: #3386F7
 }
 
 .blockquote-box .blockquote-primary .square {
-    background-color: #03a9f5;
+    background-color: #3386F7;
     color: #fff
 }
 

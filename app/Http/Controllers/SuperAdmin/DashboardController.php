@@ -91,7 +91,16 @@ class DashboardController extends Controller
 
         // Critical system events (failed logins, permission changes, etc.)
         $criticalActivity = ActivityLog::with('user')
-            ->whereIn('activity_type', ['permission_changed', 'role_assigned', 'user_deleted', 'system_settings_changed'])
+            ->whereIn('action', [
+                'deleted_user',
+                'assigned_role',
+                'assigned_permissions',
+                'updated_role',
+                'deleted_role',
+                'updated_permission',
+                'deleted_permission',
+                'user_status_changed'
+            ])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();

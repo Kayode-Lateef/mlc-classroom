@@ -1,36 +1,83 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'MLC Classroom') }} - @yield('title', 'Dashboard')</title>
+    <title>{{ config('app.name', 'MLC Classroom') }} - @yield('title', 'Dashboard')</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <!-- ================= Favicon ================== -->
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/images/apple-touch-icon.png') }}">
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
+    <!-- Styles -->
+    <link href="{{ asset('assets/css/lib/calendar2/semantic.ui.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/calendar2/pignose.calendar.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/chartist/chartist.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/font-awesome.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/themify-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/owl.carousel.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/css/lib/owl.theme.default.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/css/lib/weather-icons.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/css/lib/menubar/sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/unix.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+    
+    <!-- Page-specific styles -->
+    @stack('styles')
+</head>
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+<body>
+    <!-- Sidebar -->
+    @include('layouts.sidebar')
+    
+    <!-- Navbar -->
+    @include('layouts.navbar')
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-        </div>
-    </body>
+    <!-- Page Content -->
+    <div class="content-wrap">
+        @yield('content')
+    </div>
+
+    <!-- Search Modal -->
+    <div id="search">
+        <button type="button" class="close">×</button>
+        <form>
+            <input type="search" value="" placeholder="type keyword(s) here" />
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <!-- Base Scripts -->
+    <script src="{{ asset('assets/js/lib/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/jquery.nanoscroller.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/menubar/sidebar.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/preloader/pace.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/bootstrap.min.js') }}"></script>
+    
+    <!-- Calendar Scripts -->
+    <script src="{{ asset('assets/js/lib/calendar-2/moment.latest.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/calendar-2/semantic.ui.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/calendar-2/prism.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/calendar-2/pignose.calendar.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/calendar-2/pignose.init.js') }}"></script>
+    
+    <!-- Widget Scripts -->
+    <script src="{{ asset('assets/js/lib/weather/jquery.simpleWeather.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/weather/weather-init.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/circle-progress/circle-progress.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/circle-progress/circle-progress-init.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/chartist/chartist.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/chartist/chartist-init.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/sparklinechart/jquery.sparkline.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/sparklinechart/sparkline.init.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/owl-carousel/owl.carousel.min.js') }}"></script>
+    <script src="{{ asset('assets/js/lib/owl-carousel/owl.carousel-init.js') }}"></script>
+    <script src="{{ asset('assets/js/scripts.js') }}"></script>
+    
+    <!-- Page-specific scripts -->
+    @stack('scripts')
+</body>
 </html>

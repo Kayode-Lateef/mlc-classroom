@@ -6,8 +6,14 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\HomeworkController;
+use App\Http\Controllers\Admin\ProgressSheetController;
+use App\Http\Controllers\Admin\LearningResourceController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -22,45 +28,59 @@ use App\Http\Controllers\Admin\SettingsController;
 Route::middleware(['auth', 'role:admin'])->group(function () {
     
     // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-
-    // User Management
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // ========== USER MANAGEMENT ==========
+    
+    // Users (Cannot manage superadmins)
     Route::resource('users', UserController::class);
     
-    // Student Management
+    // ========== ACADEMIC MANAGEMENT ==========
+    
+    // Students
     Route::resource('students', StudentController::class);
     
-    // Class Management
+    // Classes
     Route::resource('classes', ClassController::class);
-    Route::post('classes/{class}/enroll', [ClassController::class, 'enrollStudent'])
-        ->name('classes.enroll');
-    Route::delete('classes/{class}/students/{student}', [ClassController::class, 'unenrollStudent'])
-        ->name('classes.unenroll');
+    Route::post('classes/{class}/enroll', [ClassController::class, 'enrollStudent'])->name('classes.enroll');
+    Route::delete('classes/{class}/unenroll/{student}', [ClassController::class, 'unenrollStudent'])->name('classes.unenroll');
     
-    // Schedule Management
-    // Route::resource('schedules', ScheduleController::class);
+    // Schedules
+    Route::resource('schedules', ScheduleController::class);
     
-    // // Reports
-    // Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    // Route::post('reports/attendance', [ReportController::class, 'attendanceReport'])
-    //     ->name('reports.attendance');
-    // Route::post('reports/homework', [ReportController::class, 'homeworkReport'])
-    //     ->name('reports.homework');
-    // Route::post('reports/sms', [ReportController::class, 'smsReport'])
-    //     ->name('reports.sms');
+    // Attendance
+    Route::resource('attendance', AttendanceController::class);
     
-    // // Settings
-    // Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
-    // Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
-    // Route::get('settings/sms', [SettingsController::class, 'sms'])->name('settings.sms');
-    // Route::put('settings/sms', [SettingsController::class, 'updateSms'])->name('settings.sms.update');
+    // Homework
+    Route::resource('homework', HomeworkController::class);
     
-    // // Activity Logs
-    // Route::get('activity-logs', [DashboardController::class, 'activityLogs'])
-    //     ->name('activity-logs');
+    // Progress Sheets
+    Route::resource('progress-sheets', ProgressSheetController::class);
     
-    // // SMS Logs
-    // Route::get('sms-logs', [DashboardController::class, 'smsLogs'])
-    //     ->name('sms-logs');
+    // ========== RESOURCES ==========
+    
+    // Learning Resources
+    Route::resource('resources', LearningResourceController::class);
+    
+    // ========== COMMUNICATION ==========
+    
+    // Notifications
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
+    
+    // ========== REPORTS ==========
+    
+    // Reports
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/attendance', [ReportController::class, 'attendance'])->name('reports.attendance');
+    Route::get('reports/students', [ReportController::class, 'students'])->name('reports.students');
+    Route::get('reports/classes', [ReportController::class, 'classes'])->name('reports.classes');
+    Route::get('reports/homework', [ReportController::class, 'homework'])->name('reports.homework');
+    Route::post('reports/export', [ReportController::class, 'export'])->name('reports.export');
+    
+    // ========== SETTINGS ==========
+    
+    // Settings (Admin-level settings, not system settings)
+    Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
 });

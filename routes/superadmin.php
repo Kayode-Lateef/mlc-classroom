@@ -3,11 +3,23 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\SuperAdmin\UserManagementController;
+use App\Http\Controllers\SuperAdmin\RoleController;
+use App\Http\Controllers\SuperAdmin\PermissionController;
+use App\Http\Controllers\SuperAdmin\ActivityLogController;
+use App\Http\Controllers\SuperAdmin\SystemSettingsController;
 use App\Http\Controllers\SuperAdmin\StudentController;
 use App\Http\Controllers\SuperAdmin\ClassController;
 use App\Http\Controllers\SuperAdmin\ScheduleController;
+use App\Http\Controllers\SuperAdmin\AttendanceController;
+use App\Http\Controllers\SuperAdmin\HomeworkController;
+use App\Http\Controllers\SuperAdmin\ProgressSheetController;
+use App\Http\Controllers\SuperAdmin\LearningResourceController;
+use App\Http\Controllers\SuperAdmin\SmsConfigurationController;
+use App\Http\Controllers\SuperAdmin\SmsLogController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SuperAdmin\ReportController;
-use App\Http\Controllers\SuperAdmin\SettingsController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -19,48 +31,85 @@ use App\Http\Controllers\SuperAdmin\SettingsController;
 |
 */
 
-Route::middleware(['auth', 'role:superadmin'])->group(function () {
+
+    Route::middleware(['auth', 'role:superadmin'])->group(function () {
+
     
     // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // ========== SYSTEM MANAGEMENT ==========
+    
     // User Management
     Route::resource('users', UserManagementController::class);
+    Route::post('users/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('users.assign-role');
+    Route::post('users/{user}/assign-permissions', [UserManagementController::class, 'assignPermissions'])->name('users.assign-permissions');
+    Route::post('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
     
-    // Student Management
+    // Roles
+    Route::resource('roles', RoleController::class);
+    
+    // Permissions
+    Route::resource('permissions', PermissionController::class);
+    Route::post('permissions/bulk-assign', [PermissionController::class, 'bulkAssign'])->name('permissions.bulk-assign');
+    
+    // Activity Logs
+    Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
+    
+    // System Settings
+    Route::get('settings', [SystemSettingsController::class, 'index'])->name('settings.index');
+    Route::post('settings', [SystemSettingsController::class, 'update'])->name('settings.update');
+    
+    // ========== ACADEMIC MANAGEMENT ==========
+    
+    // Students
     Route::resource('students', StudentController::class);
     
-    // Class Management
+    // Classes
     Route::resource('classes', ClassController::class);
-    Route::post('classes/{class}/enroll', [ClassController::class, 'enrollStudent'])
-        ->name('classes.enroll');
-    Route::delete('classes/{class}/students/{student}', [ClassController::class, 'unenrollStudent'])
-        ->name('classes.unenroll');
+    Route::post('classes/{class}/enroll', [ClassController::class, 'enrollStudent'])->name('classes.enroll');
+    Route::delete('classes/{class}/unenroll/{student}', [ClassController::class, 'unenrollStudent'])->name('classes.unenroll');
     
-    // Schedule Management
-    // Route::resource('schedules', ScheduleController::class);
+    // Schedules
+    Route::resource('schedules', ScheduleController::class);
+    
+    // Attendance
+    Route::resource('attendance', AttendanceController::class);
+    
+    // Homework
+    Route::resource('homework', HomeworkController::class);
+    
+    // Progress Sheets
+    Route::resource('progress-sheets', ProgressSheetController::class);
+    
+    // ========== RESOURCES ==========
+    
+    // Learning Resources
+    Route::resource('resources', LearningResourceController::class);
+    
+    // ========== COMMUNICATION ==========
+    
+    // SMS Configuration
+    Route::get('sms-config', [SmsConfigurationController::class, 'index'])->name('sms-config.index');
+    Route::post('sms-config', [SmsConfigurationController::class, 'update'])->name('sms-config.update');
+    Route::post('sms-config/test', [SmsConfigurationController::class, 'test'])->name('sms-config.test');
+    
+    // SMS Logs
+    Route::get('sms-logs', [SmsLogController::class, 'index'])->name('sms-logs.index');
+    Route::get('sms-logs/{smsLog}', [SmsLogController::class, 'show'])->name('sms-logs.show');
+    
+    // Notifications
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
+    
+    // ========== REPORTS ==========
     
     // Reports
-    // Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    // Route::post('reports/attendance', [ReportController::class, 'attendanceReport'])
-    //     ->name('reports.attendance');
-    // Route::post('reports/homework', [ReportController::class, 'homeworkReport'])
-    //     ->name('reports.homework');
-    // Route::post('reports/sms', [ReportController::class, 'smsReport'])
-    //     ->name('reports.sms');
-    
-    // // Settings
-    // Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
-    // Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
-    // Route::get('settings/sms', [SettingsController::class, 'sms'])->name('settings.sms');
-    // Route::put('settings/sms', [SettingsController::class, 'updateSms'])->name('settings.sms.update');
-    
-    // // Activity Logs
-    // Route::get('activity-logs', [DashboardController::class, 'activityLogs'])
-    //     ->name('activity-logs');
-    
-    // // SMS Logs
-    // Route::get('sms-logs', [DashboardController::class, 'smsLogs'])
-    //     ->name('sms-logs');
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/attendance', [ReportController::class, 'attendance'])->name('reports.attendance');
+    Route::get('reports/students', [ReportController::class, 'students'])->name('reports.students');
+    Route::get('reports/classes', [ReportController::class, 'classes'])->name('reports.classes');
+    Route::get('reports/homework', [ReportController::class, 'homework'])->name('reports.homework');
+    Route::post('reports/export', [ReportController::class, 'export'])->name('reports.export');
 });

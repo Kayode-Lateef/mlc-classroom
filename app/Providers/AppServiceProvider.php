@@ -20,7 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-               // Add custom Blade directives for role checking
+        // Add custom Blade directives for role checking
+        Blade::if('superadmin', function () {
+            return auth()->check() && auth()->user()->role === 'superadmin';
+        });
+
         Blade::if('admin', function () {
             return auth()->check() && auth()->user()->role === 'admin';
         });

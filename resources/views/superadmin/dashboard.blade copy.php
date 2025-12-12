@@ -13,7 +13,7 @@
                     <div class="col-lg-8 p-r-0 title-margin-right">
                         <div class="page-header">
                             <div class="page-title">
-                                <h1>Hello, <span>Welcome Here Teacher</span></h1>
+                                <h1>Hello, <span>Welcome Here Super Admin</span></h1>
                             </div>
                         </div>
                     </div>
@@ -33,60 +33,60 @@
                 <!-- /# row -->
                 <div id="main-content">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-lg-3">
                             <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-bag f-s-22 color-primary border-primary round-widget"></i></span>
+                                <div class="stat-widget-five">
+                                    <div class="stat-icon">
+                                        <i class="ti-home bg-primary"></i>
                                     </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>128</h4>
-                                        <h6>Total Students</h6>
+                                    <div class="stat-content">
+                                        <div class="stat-heading color-primary">New User</div>
+                                        <div class="stat-text">2700</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-3">
                             <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-bar-chart f-s-22 color-warning border-warning round-widget"></i></span>
+                                <div class="stat-widget-five">
+                                    <div class="stat-icon">
+                                        <i class="ti-file bg-success"></i>
                                     </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>10</h4>
-                                        <h6>Total Teachers</h6>
+                                    <div class="stat-content">
+                                        <div class="stat-heading color-success">Profit</div>
+                                        <div class="stat-text">3600000</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-3">
                             <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-comment f-s-22 color-success border-success round-widget"></i></span>
+                                <div class="stat-widget-five">
+                                    <div class="stat-icon">
+                                        <i class="ti-info bg-danger"></i>
                                     </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>48</h4>
-                                        <h6>Total Classes</h6>
+                                    <div class="stat-content">
+                                        <div class="stat-heading color-primary">Growth</div>
+                                        <div class="stat-text">200%</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-3">
                             <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-location-pin f-s-22 border-danger color-danger round-widget"></i></span>
+                                <div class="stat-widget-five">
+                                    <div class="stat-icon bg-warning">
+                                        <i class="ti-world"></i>
                                     </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>50 present / 100 total</h4>
-                                        <h6>Attendance Rate</h6>
+                                    <div class="stat-content">
+                                        <div class="stat-heading color-primary">Revenue</div>
+                                        <div class="stat-text">226000</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {{-- <div class="row">
+                    <div class="row">
                         <div class="col-lg-8">
                             <div class="card alert">
                                 <div class="card-header">
@@ -135,88 +135,9 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-4">
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="card bg-primary">
-                                        <div class="weather-widget">
-                                            <div id="weather-one" class="weather-one p-22"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                        <div class="testimonial-widget-one p-17">
-                                            <div class="testimonial-widget-one owl-carousel owl-theme">
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
+                  
                         <!-- /# column -->
-                        <div class="col-lg-8">
+                        <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-header pr">
                                     <h4>All Exam Result</h4>
@@ -353,60 +274,7 @@
                         <!-- /# column -->
                     </div>
                     <!-- /# row -->
-                    <div class="row">
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-facebook">
-                                        <i class="ti-facebook"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">8,268</div>
-                                        <div class="stat-text">Likes</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-youtube">
-                                        <i class="ti-youtube"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">12,545</div>
-                                        <div class="stat-text">Subscribes</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-twitter">
-                                        <i class="ti-twitter"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">7,982</div>
-                                        <div class="stat-text">Tweets</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-danger">
-                                        <i class="ti-linkedin"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">9,658</div>
-                                        <div class="stat-text">Followers</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+           
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="card alert">
@@ -791,7 +659,7 @@
                                 <p>This dashboard was generated on <span id="date-time"></span> <a href="#" class="page-refresh">Refresh Dashboard</a></p>
                             </div>
                         </div>
-                    </div> --}}
+                    </div>
                 </div>
             </div>
         </div>

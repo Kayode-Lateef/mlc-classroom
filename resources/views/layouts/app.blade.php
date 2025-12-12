@@ -50,7 +50,7 @@
         </form>
     </div>
 
-    <!-- Base Scripts -->
+    <!-- Base Scripts (Load jQuery FIRST) -->
     <script src="{{ asset('assets/js/lib/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/lib/jquery.nanoscroller.min.js') }}"></script>
     <script src="{{ asset('assets/js/lib/menubar/sidebar.js') }}"></script>
@@ -69,15 +69,27 @@
     <script src="{{ asset('assets/js/lib/weather/weather-init.js') }}"></script>
     <script src="{{ asset('assets/js/lib/circle-progress/circle-progress.min.js') }}"></script>
     <script src="{{ asset('assets/js/lib/circle-progress/circle-progress-init.js') }}"></script>
+    
+    <!-- Chart Libraries (Load libraries BEFORE init scripts) -->
     <script src="{{ asset('assets/js/lib/chartist/chartist.min.js') }}"></script>
-    <script src="{{ asset('assets/js/lib/chartist/chartist-init.js') }}"></script>
+    
     <script src="{{ asset('assets/js/lib/sparklinechart/jquery.sparkline.min.js') }}"></script>
     <script src="{{ asset('assets/js/lib/sparklinechart/sparkline.init.js') }}"></script>
     <script src="{{ asset('assets/js/lib/owl-carousel/owl.carousel.min.js') }}"></script>
     <script src="{{ asset('assets/js/lib/owl-carousel/owl.carousel-init.js') }}"></script>
-    <script src="{{ asset('assets/js/scripts.js') }}"></script>
     
-    <!-- Page-specific scripts -->
+    <!-- Custom scripts (before page-specific scripts) -->
+    <script src="{{ asset('assets/js/scripts.js') }}"></script>
+
+    <!-- Page-specific scripts (loads Chart.js and init scripts) -->
     @stack('scripts')
+    
+    <!-- Initialize charts AFTER everything is loaded -->
+    <script>
+        $(document).ready(function() {
+            // Wait for DOM to be fully loaded before initializing charts
+            console.log('DOM Ready - Charts can now initialize');
+        });
+    </script>
 </body>
 </html>

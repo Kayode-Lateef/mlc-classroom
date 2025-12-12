@@ -65,7 +65,7 @@
                     </div>
                 </li>
              
-                <li class="header-icon dib"><img class="avatar-img" src="{{ asset('assets/images/avatar/1.jpg') }}" alt="" /> <span class="user-avatar"> Ajayiiiii <i class="ti-angle-down f-s-10"></i></span>
+                <li class="header-icon dib"><img class="avatar-img" src="{{ asset('assets/images/avatar/1.jpg') }}" alt="" /> <span class="user-avatar"> {{ auth()->user()->name }} <i class="ti-angle-down f-s-10"></i></span>
                     <div class="drop-down dropdown-profile">
                    
                         <div class="dropdown-content-body">

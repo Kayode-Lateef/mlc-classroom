@@ -815,14 +815,14 @@
                     </div>
                 </div>
 
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="footer">
-                                <p>MLC Classroom - <span id="date-time"></span> <a href="#" class="page-refresh">Refresh Dashboard</a></p>
-                            </div>
+                <!-- Footer -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="footer">
+                            <p>MLC Classroom - Admin Dashboard | Last Updated: <span id="date-time"></span></p>
                         </div>
                     </div>
-
+                </div>
 
             </div>
         </div>

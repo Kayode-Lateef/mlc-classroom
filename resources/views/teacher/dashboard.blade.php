@@ -1,802 +1,635 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
+@section('title', 'Teacher Dashboard')
 
 @push('styles')
 
 @endpush
 
 @section('content')
-        <div class="main">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-lg-8 p-r-0 title-margin-right">
-                        <div class="page-header">
-                            <div class="page-title">
-                                <h1>Hello, <span>Welcome Here Teacher</span></h1>
-                            </div>
+    <div class="main">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="row">
+                <div class="col-lg-8 p-r-0 title-margin-right">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h1>Teacher Dashboard <span>Welcome, {{ auth()->user()->name }}</span></h1>
+                            <p class="text-muted">{{ date('l, F d, Y') }}</p>
                         </div>
                     </div>
-                    <!-- /# column -->
-                    <div class="col-lg-4 p-l-0 title-margin-left">
-                        <div class="page-header">
-                            <div class="page-title">
-                                <ol class="breadcrumb text-right">
-                                    <li><a href="#">Dashboard</a></li>
-                                    <li class="active">Home</li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /# column -->
                 </div>
-                <!-- /# row -->
-                <div id="main-content">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-bag f-s-22 color-primary border-primary round-widget"></i></span>
-                                    </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>128</h4>
-                                        <h6>Total Students</h6>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="col-lg-4 p-l-0 title-margin-left">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <ol class="breadcrumb text-right">
+                                <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                                <li class="active">My Classes</li>
+                            </ol>
                         </div>
-                        <div class="col-md-3">
-                            <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-bar-chart f-s-22 color-warning border-warning round-widget"></i></span>
-                                    </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>10</h4>
-                                        <h6>Total Teachers</h6>
-                                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="main-content">
+                <!-- Quick Stats - Teacher Focus -->
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="card">
+                            <div class="stat-widget-four">
+                                <div class="stat-icon">
+                                    <i class="ti-user"></i>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-comment f-s-22 color-success border-success round-widget"></i></span>
-                                    </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>48</h4>
-                                        <h6>Total Classes</h6>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card">
-                                <div class="media">
-                                    <div class="media-left meida media-middle">
-                                        <span><i class="ti-location-pin f-s-22 border-danger color-danger round-widget"></i></span>
-                                    </div>
-                                    <div class="media-body media-text-right">
-                                        <h4>50 present / 100 total</h4>
-                                        <h6>Attendance Rate</h6>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">My Students</div>
+                                        <div class="stat-text">Total: <strong>156</strong></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {{-- <div class="row">
-                        <div class="col-lg-8">
-                            <div class="card alert">
-                                <div class="card-header">
-                                    <h4>Fee Collections and Expenses</h4>
-                                    <div class="card-header-right-icon">
-                                        <ul>
-                                            <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                            <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                                <ul class="card-option-dropdown dropdown-menu">
-                                                    <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                    <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                    <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                    <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                        </ul>
-                                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="card">
+                            <div class="stat-widget-four">
+                                <div class="stat-icon">
+                                    <i class="ti-blackboard"></i>
                                 </div>
-                                <div class="card-body">
-                                    <div class="ct-bar-chart m-t-30"></div>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">My Classes</div>
+                                        <div class="stat-text">Total: <strong>6</strong></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="card">
+                            <div class="stat-widget-four">
+                                <div class="stat-icon">
+                                    <i class="ti-clipboard"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">Pending Grades</div>
+                                        <div class="stat-text">Count: <strong>23</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="card">
+                            <div class="stat-widget-four">
+                                <div class="stat-icon ">
+                                    <i class="ti-write"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">Assignments</div>
+                                        <div class="stat-text">Active: <strong>8</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="col-lg-4">
-                            <div class="card alert">
+                <!-- Today's Overview -->
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="card bg-success">
+                            <div class="stat-widget-six">
+                                <div class="stat-icon">
+                                    <i class="ti-calendar"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">Classes Today</div>
+                                        <div class="stat-text">Count: <strong>4</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="card bg-info">
+                            <div class="stat-widget-six">
+                                <div class="stat-icon">
+                                    <i class="ti-check-box"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">Attendance Rate</div>
+                                        <div class="stat-text">Today: <strong>94%</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="card bg-warning">
+                            <div class="stat-widget-six">
+                                <div class="stat-icon">
+                                    <i class="ti-pencil-alt"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">Due Assignments</div>
+                                        <div class="stat-text">This Week: <strong>3</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3">
+                        <div class="card bg-danger">
+                            <div class="stat-widget-six">
+                                <div class="stat-icon">
+                                    <i class="ti-alert"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="text-left dib">
+                                        <div class="stat-heading">Absent Students</div>
+                                        <div class="stat-text">Today: <strong>9</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Schedule & Quick Actions -->
+                <div class="row">
+                    <!-- Today's Teaching Schedule -->
+                    <div class="col-lg-8">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-calendar"></i> My Schedule Today - {{ date('l, F d, Y') }}</h4>
                                 <div class="card-header-right-icon">
                                     <ul>
-                                        <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                        <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                            <ul class="card-option-dropdown dropdown-menu">
-                                                <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                    </ul>
-                                </div>
-                                <div class="card-body">
-                                    <div class="ct-pie-chart"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="card bg-primary">
-                                        <div class="weather-widget">
-                                            <div id="weather-one" class="weather-one p-22"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-12">
-                                    <div class="card">
-                                        <div class="testimonial-widget-one p-17">
-                                            <div class="testimonial-widget-one owl-carousel owl-theme">
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                                <div class="item">
-                                                    <div class="testimonial-content">
-                                                        <div class="testimonial-text">
-                                                            <i class="fa fa-quote-left"></i> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation <i class="fa fa-quote-right"></i>
-                                                        </div>
-                                                        <img class="testimonial-author-img" src="assets/images/avatar/1.jpg" alt="" />
-                                                        <div class="testimonial-author">TYRION LANNISTER</div>
-                                                        <div class="testimonial-author-position">Founder-Ceo. Dell Corp</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                        <!-- /# column -->
-                        <div class="col-lg-8">
-                            <div class="card alert">
-                                <div class="card-header pr">
-                                    <h4>All Exam Result</h4>
-                                    <div class="search-action">
-                                        <div class="search-type dib">
-                                            <input class="form-control input-rounded" placeholder="Search by exam" type="text">
-                                        </div>
-                                        <div class="search-type dib">
-                                            <input class="form-control input-rounded" placeholder="Search by date..." type="text">
-                                        </div>
-                                        <div class="search-type dib">
-                                            <input class="form-control input-rounded" placeholder="search" type="text">
-                                        </div>
-                                    </div>
-                                    <div class="card-header-right-icon">
-                                        <ul>
-                                            <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                            <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                                <ul class="card-option-dropdown dropdown-menu">
-                                                    <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                    <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                    <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                    <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table student-data-table m-t-20">
-                                            <thead>
-                                                <tr>
-                                                    <th><label><input type="checkbox" value=""></label>Exam Name</th>
-                                                    <th>Subject</th>
-                                                    <th>Grade Point</th>
-                                                    <th>Percent Form</th>
-                                                    <th>Percent Upto</th>
-                                                    <th>Date</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Class Test</td>
-                                                    <td>Mathmatics</td>
-                                                    <td>
-                                                        4.00
-                                                    </td>
-                                                    <td>
-                                                        95.00
-                                                    </td>
-                                                    <td>
-                                                        100
-                                                    </td>
-                                                    <td>20/04/2017</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Class Test</td>
-                                                    <td>English</td>
-                                                    <td>
-                                                        4.00
-                                                    </td>
-                                                    <td>
-                                                        95.00
-                                                    </td>
-                                                    <td>
-                                                        100
-                                                    </td>
-                                                    <td>20/04/2017</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Class Test</td>
-                                                    <td>Bangla</td>
-                                                    <td>
-                                                        4.00
-                                                    </td>
-                                                    <td>
-                                                        95.00
-                                                    </td>
-                                                    <td>
-                                                        100
-                                                    </td>
-                                                    <td>20/04/2017</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Class Test</td>
-                                                    <td>Mathmatics</td>
-                                                    <td>
-                                                        4.00
-                                                    </td>
-                                                    <td>
-                                                        95.00
-                                                    </td>
-                                                    <td>
-                                                        100
-                                                    </td>
-                                                    <td>20/04/2017</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Class Test</td>
-                                                    <td>English</td>
-                                                    <td>
-                                                        4.00
-                                                    </td>
-                                                    <td>
-                                                        95.00
-                                                    </td>
-                                                    <td>
-                                                        100
-                                                    </td>
-                                                    <td>20/04/2017</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Class Test</td>
-                                                    <td>Mathmatics</td>
-                                                    <td>
-                                                        4.00
-                                                    </td>
-                                                    <td>
-                                                        95.00
-                                                    </td>
-                                                    <td>
-                                                        100
-                                                    </td>
-                                                    <td>20/04/2017</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- /# column -->
-                    </div>
-                    <!-- /# row -->
-                    <div class="row">
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-facebook">
-                                        <i class="ti-facebook"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">8,268</div>
-                                        <div class="stat-text">Likes</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-youtube">
-                                        <i class="ti-youtube"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">12,545</div>
-                                        <div class="stat-text">Subscribes</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-twitter">
-                                        <i class="ti-twitter"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">7,982</div>
-                                        <div class="stat-text">Tweets</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three home-widget-three">
-                                    <div class="stat-icon bg-danger">
-                                        <i class="ti-linkedin"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">9,658</div>
-                                        <div class="stat-text">Followers</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="card alert">
-                                <div class="card-header">
-                                    <h4>Calender</h4>
-                                    <div class="card-header-right-icon">
-                                        <ul>
-                                            <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                            <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                                <ul class="card-option-dropdown dropdown-menu">
-                                                    <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                    <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                    <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                    <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="year-calendar"></div>
-                                </div>
-                            </div>
-                            <!-- /# card -->
-                        </div>
-                        <!-- /# column -->
-                        <div class="col-lg-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h4>Notice Board </h4>
-                                    <div class="card-header-right-icon">
-                                        <ul>
-                                            <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                            <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                                <ul class="card-option-dropdown dropdown-menu">
-                                                    <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                    <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                    <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                    <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="recent-comment m-t-15">
-                                    <div class="media">
-                                        <div class="media-left">
-                                            <a href="#"><img class="media-object" src="assets/images/avatar/1.jpg" alt="..."></a>
-                                        </div>
-                                        <div class="media-body">
-                                            <h4 class="media-heading color-primary">Mr.  Ajay</h4>
-                                            <p>Cras sit amet nibh libero, in gravida nulla.</p>
-                                            <p class="comment-date">10 min ago</p>
-                                        </div>
-                                    </div>
-                                    <div class="media">
-                                        <div class="media-left">
-                                            <a href="#"><img class="media-object" src="assets/images/avatar/2.jpg" alt="..."></a>
-                                        </div>
-                                        <div class="media-body">
-                                            <h4 class="media-heading color-success">Mr.  Ajay</h4>
-                                            <p>Cras sit amet nibh libero, in gravida nulla.</p>
-                                            <p class="comment-date">1 hour ago</p>
-                                        </div>
-                                    </div>
-                                    <div class="media">
-                                        <div class="media-left">
-                                            <a href="#"><img class="media-object" src="assets/images/avatar/3.jpg" alt="..."></a>
-                                        </div>
-                                        <div class="media-body">
-                                            <h4 class="media-heading color-danger">Mr.  Ajay</h4>
-                                            <p>Cras sit amet nibh libero, in gravida nulla.</p>
-                                            <div class="comment-date">Yesterday</div>
-                                        </div>
-                                    </div>
-                                    <div class="media no-border">
-                                        <div class="media-left">
-                                            <a href="#"><img class="media-object" src="assets/images/avatar/3.jpg" alt="..."></a>
-                                        </div>
-                                        <div class="media-body">
-                                            <h4 class="media-heading color-info">Mr.  Ajay</h4>
-                                            <p>Cras sit amet nibh libero, in gravida nulla.</p>
-                                            <div class="comment-date">Yesterday</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- /# card -->
-                        </div>
-                        <!-- /# column -->
-                        <div class="col-lg-4">
-                            <div class="card alert">
-                                <div class="card-header">
-                                    <h4>Timeline</h4>
-                                    <div class="card-header-right-icon">
-                                        <ul>
-                                            <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                            <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                                <ul class="card-option-dropdown dropdown-menu">
-                                                    <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                    <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                    <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                    <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="timeline">
-                                        <li>
-                                            <div class="timeline-badge primary"><i class="fa fa-smile-o"></i></div>
-                                            <div class="timeline-panel">
-                                                <div class="timeline-heading">
-                                                    <h5 class="timeline-title">School promote video sharing</h5>
-                                                </div>
-                                                <div class="timeline-body">
-                                                    <p>10 minutes ago</p>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="timeline-badge warning"><i class="fa fa-sun-o"></i></div>
-                                            <div class="timeline-panel">
-                                                <div class="timeline-heading">
-                                                    <h5 class="timeline-title">Ready our school website and online service</h5>
-                                                </div>
-                                                <div class="timeline-body">
-                                                    <p>20 minutes ago</p>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="timeline-badge danger"><i class="fa fa-times-circle-o"></i></div>
-                                            <div class="timeline-panel">
-                                                <div class="timeline-heading">
-                                                    <h5 class="timeline-title">Routine pubish our website form 10/03/2017 </h5>
-                                                </div>
-                                                <div class="timeline-body">
-                                                    <p>30 minutes ago</p>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="timeline-badge success"><i class="fa fa-check-circle-o"></i></div>
-                                            <div class="timeline-panel">
-                                                <div class="timeline-heading">
-                                                    <h5 class="timeline-title">Principle quotation publish our website</h5>
-                                                </div>
-                                                <div class="timeline-body">
-                                                    <p>15 minutes ago</p>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="timeline-badge warning"><i class="fa fa-sun-o"></i></div>
-                                            <div class="timeline-panel">
-                                                <div class="timeline-heading">
-                                                    <h5 class="timeline-title">Class schedule publish our website</h5>
-                                                </div>
-                                                <div class="timeline-body">
-                                                    <p>20 minutes ago</p>
-                                                </div>
-                                            </div>
-                                        </li>
+                                        <li><a href="#"><i class="ti-reload"></i></a></li>
+                                        <li><a href="#"><i class="ti-printer"></i></a></li>
                                     </ul>
                                 </div>
                             </div>
-                            <!-- /# card -->
+                            <div class="card-body">
+                                <!-- Completed Class -->
+                                <div class="class-card completed">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5 class="mb-1"><i class="ti-check-box text-success"></i> Grade 10A - Mathematics</h5>
+                                            <p class="mb-1"><i class="ti-time"></i> <strong>08:00 AM - 09:00 AM</strong> | Room 101</p>
+                                            <p class="mb-0 text-muted">Topic: Quadratic Equations</p>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <span class="badge badge-secondary">Completed</span><br>
+                                            <small>Attendance: 28/30 (93%)</small><br>
+                                            <a href="#" class="btn btn-sm btn-info mt-2"><i class="ti-eye"></i> View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Active Class -->
+                                <div class="class-card active">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5 class="mb-1"><i class="ti-video-clapper text-success"></i> Grade 11B - Advanced Math</h5>
+                                            <p class="mb-1"><i class="ti-time"></i> <strong>09:30 AM - 10:30 AM</strong> | Room 205</p>
+                                            <p class="mb-0 text-muted">Topic: Calculus - Derivatives</p>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <span class="badge badge-success">In Progress</span><br>
+                                            <small>Started 15 mins ago</small><br>
+                                            <a href="#" class="btn btn-sm btn-success mt-2"><i class="ti-clipboard"></i> Mark Attendance</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Upcoming Classes -->
+                                <div class="class-card upcoming">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5 class="mb-1"><i class="ti-alarm-clock text-warning"></i> Grade 9C - Basic Mathematics</h5>
+                                            <p class="mb-1"><i class="ti-time"></i> <strong>11:00 AM - 12:00 PM</strong> | Room 103</p>
+                                            <p class="mb-0 text-muted">Topic: Geometry - Triangles</p>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <span class="badge badge-warning">Upcoming</span><br>
+                                            <small>Starts in 30 mins</small><br>
+                                            <a href="#" class="btn btn-sm btn-primary mt-2"><i class="ti-eye"></i> Prepare</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="class-card upcoming">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5 class="mb-1"><i class="ti-alarm-clock text-warning"></i> Grade 12A - Statistics</h5>
+                                            <p class="mb-1"><i class="ti-time"></i> <strong>02:00 PM - 03:00 PM</strong> | Room 202</p>
+                                            <p class="mb-0 text-muted">Topic: Probability Distributions</p>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <span class="badge badge-warning">Upcoming</span><br>
+                                            <small>Starts in 4 hours</small><br>
+                                            <a href="#" class="btn btn-sm btn-primary mt-2"><i class="ti-eye"></i> Prepare</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <!-- /# row -->
 
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="card alert">
-                                <div class="card-header">
-                                    <h4>Todo</h4>
-                                    <div class="card-header-right-icon">
-                                        <ul>
-                                            <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                            <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                                <ul class="card-option-dropdown dropdown-menu">
-                                                    <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                    <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                    <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                    <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                        </ul>
-                                    </div>
+                    <!-- Quick Actions & Reminders -->
+                    <div class="col-lg-4">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-bolt"></i> Quick Actions</h4>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary quick-action-btn">
+                                    <i class="ti-clipboard"></i> Mark Attendance
+                                </button>
+                                <button class="btn btn-success quick-action-btn">
+                                    <i class="ti-pencil-alt"></i> Grade Assignments
+                                </button>
+                                <button class="btn btn-info quick-action-btn">
+                                    <i class="ti-write"></i> Create Assignment
+                                </button>
+                                <button class="btn btn-warning quick-action-btn">
+                                    <i class="ti-calendar"></i> View Lesson Plan
+                                </button>
+                                <button class="btn btn-secondary quick-action-btn">
+                                    <i class="ti-bar-chart"></i> Student Reports
+                                </button>
+                                <button class="btn btn-dark quick-action-btn">
+                                    <i class="ti-announcement"></i> Send Notice
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Important Reminders -->
+                        <div class="card alert mt-3">
+                            <div class="card-header">
+                                <h4><i class="ti-bell"></i> Reminders <span class="badge badge-danger">5</span></h4>
+                            </div>
+                            <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                                <div class="alert alert-danger">
+                                    <strong><i class="ti-alert"></i> Urgent!</strong>
+                                    <p class="mb-0">Grade 10A test papers due by 3 PM today</p>
                                 </div>
-                                <div class="todo-list">
-                                    <div class="tdl-holder">
-                                        <div class="tdl-content">
-                                            <ul>
-                                                <li>
-                                                    <label>
-                                                        <input type="checkbox"><i></i><span>22,Dec Publish The Final Exam Result</span>
-                                                        <a href='#' class="ti-close"></a>
-                                                    </label>
-                                                </li>
-                                                <li>
-                                                    <label>
-                                                        <input type="checkbox" checked><i></i><span>First Jan Start Our School</span>
-                                                        <a href='#' class="ti-close"></a>
-                                                    </label>
-                                                </li>
-                                                <li>
-                                                    <label>
-                                                        <input type="checkbox"><i></i><span>Recently Our Maganement Programme Start</span>
-                                                        <a href='#' class="ti-close"></a>
-                                                    </label>
-                                                </li>
-                                                <li>
-                                                    <label>
-                                                        <input type="checkbox" checked><i></i><span>Check out some Popular courses</span>
-                                                        <a href='#' class="ti-close"></a>
-                                                    </label>
-                                                </li>
-                                                <li>
-                                                    <label>
-                                                        <input type="checkbox" checked><i></i><span>Connect with one new person</span>
-                                                        <a href='#' class="ti-close"></a>
-                                                    </label>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <input type="text" class="tdl-new form-control" placeholder="Write new item and hit 'Enter'...">
-                                    </div>
+                                <div class="alert alert-warning">
+                                    <strong><i class="ti-time"></i> Deadline</strong>
+                                    <p class="mb-0">Submit lesson plans for next week by Dec 15</p>
+                                </div>
+                                <div class="alert alert-info">
+                                    <strong><i class="ti-calendar"></i> Upcoming</strong>
+                                    <p class="mb-0">Parent-Teacher meeting on Dec 18</p>
+                                </div>
+                                <div class="alert alert-success">
+                                    <strong><i class="ti-check"></i> Complete</strong>
+                                    <p class="mb-0">3 assignments graded today</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-8">
-                            <div class="card alert">
-                                <div class="card-header pr">
-                                    <h4>All Expense</h4>
-                                    <div class="search-action">
-                                        <div class="search-type dib">
-                                            <input class="form-control input-rounded" placeholder="#Search by id..." type="text">
-                                        </div>
-                                        <div class="search-type dib">
-                                            <input class="form-control input-rounded" placeholder="search" type="text">
-                                        </div>
-                                    </div>
-                                    <div class="card-header-right-icon">
-                                        <ul>
-                                            <li class="card-close" data-dismiss="alert"><i class="ti-close"></i></li>
-                                            <li class="card-option drop-menu"><i class="ti-settings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" role="link"></i>
-                                                <ul class="card-option-dropdown dropdown-menu">
-                                                    <li><a href="#"><i class="ti-loop"></i> Update data</a></li>
-                                                    <li><a href="#"><i class="ti-menu-alt"></i> Detail log</a></li>
-                                                    <li><a href="#"><i class="ti-pulse"></i> Statistics</a></li>
-                                                    <li><a href="#"><i class="ti-power-off"></i> Clear ist</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
-                                        </ul>
-                                    </div>
+                    </div>
+                </div>
+
+                <!-- Student Performance & Assignments -->
+                <div class="row">
+                    <!-- Recent Student Performance -->
+                    <div class="col-lg-6">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-bar-chart"></i> Recent Student Performance - My Classes</h4>
+                                <div class="card-header-right-icon">
+                                    <ul>
+                                        <li><a href="#"><i class="ti-reload"></i></a></li>
+                                    </ul>
                                 </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table student-data-table m-t-20">
-                                            <thead>
-                                                <tr>
-                                                    <th><label><input type="checkbox" value=""></label>ID</th>
-                                                    <th>Expense Type</th>
-                                                    <th>Amount</th>
-                                                    <th>Status</th>
-                                                    <th>Email</th>
-                                                    <th>Date</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td><label><input type="checkbox" value=""></label>#2901</td>
-                                                    <td>
-                                                        Salary
-                                                    </td>
-                                                    <td>
-                                                        $2000
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge badge-primary">Paid</span>
-                                                    </td>
-                                                    <td>
-                                                        Support@example.com
-                                                    </td>
-                                                    <td>
-                                                        10/05/2017
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td><label><input type="checkbox" value=""></label>#2901</td>
-                                                    <td>
-                                                        Salary
-                                                    </td>
-                                                    <td>
-                                                        $2000
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge badge-warning">Pending</span>
-                                                    </td>
-                                                    <td>
-                                                        Support@example.com
-                                                    </td>
-                                                    <td>
-                                                        10/05/2017
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td><label><input type="checkbox" value=""></label>#2901</td>
-                                                    <td>
-                                                        Salary
-                                                    </td>
-                                                    <td>
-                                                        $2000
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge badge-primary">Paid</span>
-                                                    </td>
-                                                    <td>
-                                                     Support@example.com
-                                                    </td>
-                                                    <td>
-                                                        10/05/2017
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td><label><input type="checkbox" value=""></label>#2901</td>
-                                                    <td>
-                                                        Salary
-                                                    </td>
-                                                    <td>
-                                                        $2000
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge badge-danger">Due</span>
-                                                    </td>
-                                                    <td>
-                                                        Support@example.com
-                                                    </td>
-                                                    <td>
-                                                        10/05/2017
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td><label><input type="checkbox" value=""></label>#2901</td>
-                                                    <td>
-                                                        Salary
-                                                    </td>
-                                                    <td>
-                                                        $2000
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge badge-primary">Paid</span>
-                                                    </td>
-                                                    <td>
-                                                       Support@example.com
-                                                    </td>
-                                                    <td>
-                                                        10/05/2017
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Class</th>
+                                                <th>Last Test</th>
+                                                <th>Avg</th>
+                                                <th>Attendance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <strong>John Smith</strong><br>
+                                                    <small class="text-muted">STD-001</small>
+                                                </td>
+                                                <td><span class="badge badge-primary">10A</span></td>
+                                                <td><span class="badge badge-success grade-badge">92%</span></td>
+                                                <td><span class="badge badge-success grade-badge">88%</span></td>
+                                                <td><span class="badge badge-success">95%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>Emily Davis</strong><br>
+                                                    <small class="text-muted">STD-002</small>
+                                                </td>
+                                                <td><span class="badge badge-primary">11B</span></td>
+                                                <td><span class="badge badge-info grade-badge">85%</span></td>
+                                                <td><span class="badge badge-info grade-badge">82%</span></td>
+                                                <td><span class="badge badge-success">92%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>Michael Brown</strong><br>
+                                                    <small class="text-muted">STD-003</small>
+                                                </td>
+                                                <td><span class="badge badge-primary">9C</span></td>
+                                                <td><span class="badge badge-warning grade-badge">68%</span></td>
+                                                <td><span class="badge badge-warning grade-badge">70%</span></td>
+                                                <td><span class="badge badge-warning">78%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>Sarah Wilson</strong><br>
+                                                    <small class="text-muted">STD-004</small>
+                                                </td>
+                                                <td><span class="badge badge-primary">12A</span></td>
+                                                <td><span class="badge badge-success grade-badge">95%</span></td>
+                                                <td><span class="badge badge-success grade-badge">94%</span></td>
+                                                <td><span class="badge badge-success">98%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>David Lee</strong><br>
+                                                    <small class="text-muted">STD-005</small>
+                                                </td>
+                                                <td><span class="badge badge-primary">10B</span></td>
+                                                <td><span class="badge badge-danger grade-badge">52%</span></td>
+                                                <td><span class="badge badge-danger grade-badge">58%</span></td>
+                                                <td><span class="badge badge-danger">65%</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="#" class="btn btn-primary btn-sm">View All Students</a>
                                 </div>
                             </div>
                         </div>
-                        <!-- /# column -->
                     </div>
 
+                    <!-- Pending Assignments to Grade -->
+                    <div class="col-lg-6">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-pencil"></i> Pending Assignments to Grade <span class="badge badge-warning">23</span></h4>
+                            </div>
+                            <div class="card-body" style="max-height: 450px; overflow-y: auto;">
+                                <div class="assignment-item assignment-due-soon">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">Quadratic Equations Worksheet</h6>
+                                            <p class="mb-1"><span class="badge badge-primary">Grade 10A</span></p>
+                                            <small class="text-muted">Submitted: 28 students | Graded: 5</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-danger">Due Today</span><br>
+                                            <a href="#" class="btn btn-sm btn-success mt-2">Grade Now</a>
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="footer">
-                                <p>This dashboard was generated on <span id="date-time"></span> <a href="#" class="page-refresh">Refresh Dashboard</a></p>
+                                <div class="assignment-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">Calculus Problem Set #5</h6>
+                                            <p class="mb-1"><span class="badge badge-primary">Grade 11B</span></p>
+                                            <small class="text-muted">Submitted: 25 students | Graded: 10</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-warning">Due Tomorrow</span><br>
+                                            <a href="#" class="btn btn-sm btn-primary mt-2">Grade Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="assignment-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">Geometry - Triangle Properties</h6>
+                                            <p class="mb-1"><span class="badge badge-primary">Grade 9C</span></p>
+                                            <small class="text-muted">Submitted: 22 students | Graded: 8</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-info">Due Dec 16</span><br>
+                                            <a href="#" class="btn btn-sm btn-primary mt-2">Grade Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="assignment-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">Statistics Quiz #3</h6>
+                                            <p class="mb-1"><span class="badge badge-primary">Grade 12A</span></p>
+                                            <small class="text-muted">Submitted: 30 students | Graded: 0</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-info">Due Dec 18</span><br>
+                                            <a href="#" class="btn btn-sm btn-primary mt-2">Grade Now</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div> --}}
+                    </div>
+                </div>
+
+                <!-- Class Performance Charts -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>My Classes - Average Performance</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="classPerformanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Attendance Trend - This Month</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="attendanceTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Needs Attention & Recent Submissions -->
+                <div class="row">
+                    <!-- Students Needing Attention -->
+                    <div class="col-lg-6">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-alert"></i> Students Needing Attention <span class="badge badge-danger">12</span></h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Class</th>
+                                                <th>Issue</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>David Lee</td>
+                                                <td><span class="badge badge-primary">10B</span></td>
+                                                <td><span class="badge badge-danger">Low Score (52%)</span></td>
+                                                <td>
+                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Lisa Wang</td>
+                                                <td><span class="badge badge-primary">9C</span></td>
+                                                <td><span class="badge badge-warning">Poor Attendance (60%)</span></td>
+                                                <td>
+                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mark Johnson</td>
+                                                <td><span class="badge badge-primary">11B</span></td>
+                                                <td><span class="badge badge-danger">Missing 3 Assignments</span></td>
+                                                <td>
+                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Anna Chen</td>
+                                                <td><span class="badge badge-primary">10A</span></td>
+                                                <td><span class="badge badge-warning">Declining Grades</span></td>
+                                                <td>
+                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Assignment Submissions -->
+                    <div class="col-lg-6">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-files"></i> Recent Assignment Submissions</h4>
+                            </div>
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                <div class="student-list-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>John Smith</strong> - Grade 10A<br>
+                                            <small class="text-muted">Quadratic Equations Worksheet</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-success">Submitted</span><br>
+                                            <small class="text-muted">5 mins ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="student-list-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>Emma Wilson</strong> - Grade 11B<br>
+                                            <small class="text-muted">Calculus Problem Set #5</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-success">Submitted</span><br>
+                                            <small class="text-muted">15 mins ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="student-list-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>Oliver Brown</strong> - Grade 9C<br>
+                                            <small class="text-muted">Geometry - Triangle Properties</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-success">Submitted</span><br>
+                                            <small class="text-muted">1 hour ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="student-list-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>Sophia Garcia</strong> - Grade 12A<br>
+                                            <small class="text-muted">Statistics Quiz #3</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge badge-warning">Late</span><br>
+                                            <small class="text-muted">2 hours ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="student-list-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>James Martinez</strong> - Grade 10A<br>
+                                            <small class="text-muted">Quadratic Equations Worksheet</small>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="badge badge-success">Submitted</span><br>
+                                        <small class="text-muted">3 hours ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="footer">
+                        <p>MLC Classroom - Teacher Dashboard | Last Updated: <span id="date-time"></span></p>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
-   
+    <script src="{{ asset('assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
+    <script src="{{ asset('assets/js/custom-chart-init.js') }}"></script>
 @endpush

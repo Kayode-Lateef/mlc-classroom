@@ -3,6 +3,34 @@
 @section('title', 'Admin Dashboard')
 
 @push('styles')
+    <style>
+        .quick-action-btn {
+            width: 100%;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .task-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .task-priority-high {
+            background-color: #f8d7da;
+        }
+        .task-priority-medium {
+            background-color: #fff3cd;
+        }
+        .task-priority-low {
+            background-color: #d1ecf1;
+        }
+        .activity-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .activity-time {
+            font-size: 0.85em;
+            color: #888;
+        }
+    </style>
 
 @endpush
 

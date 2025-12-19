@@ -65,22 +65,54 @@
                     </div>
                 </li>
              
-                <li class="header-icon dib"><img class="avatar-img" src="{{ asset('assets/images/avatar/1.jpg') }}" alt="" /> <span class="user-avatar"> {{ auth()->user()->name }} <i class="ti-angle-down f-s-10"></i></span>
+                <li class="header-icon dib">
+                    {{-- User Avatar --}}
+                    <img class="avatar-img" 
+                        src="{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : asset('assets/images/avatar/1.jpg') }}" 
+                        alt="{{ auth()->user()->name }}" /> 
+                    
+                    {{-- User Name with Dropdown Arrow --}}
+                    <span class="user-avatar">
+                        {{ auth()->user()->name }} 
+                        <i class="ti-angle-down f-s-10"></i>
+                    </span>
+                    
+                    {{-- Dropdown Menu --}}
                     <div class="drop-down dropdown-profile">
-                   
                         <div class="dropdown-content-body">
                             <ul>
-                                <li><a href="#"><i class="ti-user"></i> <span>Profile</span></a></li>
-                                {{-- <li><a href="#"><i class="ti-write"></i> <span>My Task</span></a></li>
-                                <li><a href="#"><i class="ti-calendar"></i> <span>My Calender</span></a></li> --}}
-                                <li><a href="#"><i class="ti-settings"></i> <span>Setting</span></a></li>
-                                {{-- <li><a href="#"><i class="ti-help-alt"></i> <span>Help</span></a></li>
-                                <li><a href="#"><i class="ti-lock"></i> <span>Lock Screen</span></a></li> --}}
-                                <li><a href="#"><i class="ti-power-off"></i> <span>Logout</span></a></li>
+                                {{-- Profile --}}
+                                <li>
+                                    <a href="{{ route('profile.edit') }}">
+                                        <i class="ti-user"></i> <span>Profile</span>
+                                    </a>
+                                </li>
+                                
+                                {{-- Settings (SuperAdmin & Admin only) --}}
+                                @if(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                                    <li>
+                                        <a href="{{ auth()->user()->isSuperAdmin() ? route('superadmin.settings.index') : route('admin.settings.index') }}">
+                                            <i class="ti-settings"></i> <span>Settings</span>
+                                        </a>
+                                    </li>
+                                @endif
+                                
+                                {{-- Logout --}}
+                                <li>
+                                    <a href="{{ route('logout') }}" 
+                                    onclick="event.preventDefault(); document.getElementById('navbar-logout-form').submit();">
+                                        <i class="ti-power-off"></i> <span>Logout</span>
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </li>
+
+                {{-- Logout Form --}}
+                <form id="navbar-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </ul>
         </div>
     </div>

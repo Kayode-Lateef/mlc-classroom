@@ -17,6 +17,15 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             TeacherSeeder::class,
             ParentSeeder::class,
+            StudentSeeder::class,
+            ClassSeeder::class,
+            ScheduleSeeder::class,
+            ClassEnrollmentSeeder::class,
+            AttendanceSeeder::class,
+            ProgressSheetSeeder::class,
+            HomeworkSeeder::class,
+            LearningResourceSeeder::class,
+            SystemSettingsSeeder::class,
         ]);
     }
 }

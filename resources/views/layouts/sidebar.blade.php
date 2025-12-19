@@ -175,9 +175,11 @@
                 {{-- Settings (SuperAdmin & Admin) --}}
                 @if(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
                     <li class="label">Settings</li>
-                    @admin
-                        <li><a href="{{ route('admin.settings.index') }}"><i class="ti-settings"></i> Settings</a></li>
-                    @endadmin
+                    <li>
+                        <a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.settings.index' : 'admin.settings.index') }}">
+                            <i class="ti-settings"></i> Settings
+                        </a>
+                    </li>
                 @endif
 
                 {{-- Logout for all roles --}}

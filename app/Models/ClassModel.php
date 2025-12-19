@@ -51,10 +51,11 @@ class ClassModel extends Model
 
     /**
      * Relationship: Class has many students (through enrollments)
+     * Fixed: Specify the correct foreign key 'class_id' instead of default 'class_model_id'
      */
     public function students()
     {
-        return $this->belongsToMany(Student::class, 'class_enrollments')
+        return $this->belongsToMany(Student::class, 'class_enrollments', 'class_id', 'student_id')
                     ->withPivot('enrollment_date', 'status')
                     ->withTimestamps();
     }

@@ -223,9 +223,9 @@
                                     </div>
                                 </div>
                             </div>
-                            {{-- <div class="card-footer text-center">
+                            <div class="card-footer text-center">
                                 <a href="{{ route('parent.students.classes', $selectedChild) }}" class="text-info">View classes →</a>
-                            </div> --}}
+                            </div>
                         </div>
                     </div>
                     
@@ -330,9 +330,9 @@
                                         </div>
                                     </div>
                                     @endforeach
-                                    {{-- <div class="text-center mt-3 pt-3 border-top">
+                                    <div class="text-center mt-3 pt-3 border-top">
                                         <a href="{{ route('parent.students.progress', $selectedChild) }}" class="btn btn-primary">View All Progress Reports</a>
-                                    </div> --}}
+                                    </div>
                                 @else
                                     <p class="text-center text-muted py-5">No progress reports yet.</p>
                                 @endif

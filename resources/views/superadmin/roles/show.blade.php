@@ -1,0 +1,548 @@
+@extends('layouts.app')
+
+@section('title', ucwords(str_replace('_', ' ', $role->name)))
+
+@push('styles')
+    <style>
+        .role-info-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #212529;
+            font-weight: 500;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0 5px;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .permission-module {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .permission-module-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #212529;
+            text-transform: capitalize;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .permission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .permission-badge {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #155724;
+        }
+
+        .permission-badge i {
+            margin-right: 8px;
+            color: #28a745;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 15px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-bottom-color: #dee2e6;
+            color: #495057;
+        }
+
+        .nav-tabs .nav-link.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+            background-color: transparent;
+        }
+
+        .tab-content {
+            padding: 20px 0;
+        }
+
+        .user-table {
+            width: 100%;
+        }
+
+        .user-table th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .user-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-avatar-initial {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background-color: #e7f3ff;
+            color: #007bff;
+        }
+
+        .activity-item {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+            margin-bottom: 10px;
+        }
+
+        .activity-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e7f3ff;
+            color: #007bff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #cbd5e0;
+            margin-bottom: 20px;
+        }
+
+        .system-role-badge {
+            background-color: #e7f3ff;
+            border: 1px solid #0066cc;
+            color: #0066cc;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .protected-notice {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: inline-flex;
+            align-items: center;
+            color: #6c757d;
+        }
+
+        .protected-notice i {
+            margin-right: 8px;
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div class="content-wrap">
+        <div class="main">
+            <div class="container-fluid">
+                <!-- Page Header -->
+                <div class="row">
+                    <div class="col-lg-8 p-r-0 title-margin-right">
+                        <div class="page-header">
+                            <div class="page-title">
+                                <h1>{{ ucwords(str_replace('_', ' ', $role->name)) }}</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 p-l-0 title-margin-left">
+                        <div class="page-header">
+                            <div class="page-title">
+                                <ol class="breadcrumb text-right">
+                                    <li><a href="{{ route('superadmin.roles.index') }}">Roles</a></li>
+                                    <li class="active">{{ ucwords(str_replace('_', ' ', $role->name)) }}</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="main-content">
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+                                @if(!in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
+                                    <a href="{{ route('superadmin.roles.edit', $role) }}" class="btn btn-primary">
+                                        <i class="ti-pencil-alt"></i> Edit Role
+                                    </a>
+                                    <form action="{{ route('superadmin.roles.destroy', $role) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this role? This action cannot be undone.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="ti-trash"></i> Delete Role
+                                        </button>
+                                    </form>
+                                @else
+                                    <div class="protected-notice">
+                                        <i class="ti-lock"></i>
+                                        <span>System Role (Protected)</span>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Role Information Card -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card alert">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="info-item">
+                                                <div class="info-label">Role Name</div>
+                                                <div class="info-value">
+                                                    {{ ucwords(str_replace('_', ' ', $role->name)) }}
+                                                    @if(in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
+                                                        <span class="system-role-badge">System Role</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="info-item">
+                                                <div class="info-label">Assigned Permissions</div>
+                                                <div class="info-value">{{ $role->permissions->count() }}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="info-item">
+                                                <div class="info-label">Users with this Role</div>
+                                                <div class="info-value">{{ $role->users->count() }}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="info-item">
+                                                <div class="info-label">Created</div>
+                                                <div class="info-value">
+                                                    {{ $role->created_at->format('d F Y') }}
+                                                    <small class="text-muted d-block">{{ $role->created_at->diffForHumans() }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="info-item">
+                                                <div class="info-label">Last Updated</div>
+                                                <div class="info-value">{{ $role->updated_at->format('d F Y') }}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="info-item">
+                                                <div class="info-label">Guard</div>
+                                                <div class="info-value">{{ $role->guard_name }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="stat-card">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="stat-icon bg-success text-white">
+                                        <i class="ti-key"></i>
+                                    </div>
+                                    <div style="margin-left: 15px; flex: 1;">
+                                        <div class="stat-label">Total Permissions</div>
+                                        <div class="stat-number text-success">{{ $role->permissions->count() }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="stat-card">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="stat-icon bg-primary text-white">
+                                        <i class="ti-user"></i>
+                                    </div>
+                                    <div style="margin-left: 15px; flex: 1;">
+                                        <div class="stat-label">Assigned Users</div>
+                                        <div class="stat-number text-primary">{{ $role->users->count() }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="stat-card">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="stat-icon bg-info text-white">
+                                        <i class="ti-folder"></i>
+                                    </div>
+                                    <div style="margin-left: 15px; flex: 1;">
+                                        <div class="stat-label">Permission Modules</div>
+                                        <div class="stat-number text-info">{{ $groupedPermissions->count() }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="row mt-4">
+                        <div class="col-lg-12">
+                            <div class="card alert">
+                                <!-- Tab Navigation -->
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-toggle="tab" href="#permissions-tab" role="tab">
+                                            <i class="ti-key"></i> Permissions ({{ $role->permissions->count() }})
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#users-tab" role="tab">
+                                            <i class="ti-user"></i> Users ({{ $role->users->count() }})
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#activity-tab" role="tab">
+                                            <i class="ti-time"></i> Recent Activity
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <!-- Tab Content -->
+                                <div class="tab-content card-body">
+                                    <!-- Permissions Tab -->
+                                    <div class="tab-pane fade show active" id="permissions-tab" role="tabpanel">
+                                        @if($groupedPermissions->count() > 0)
+                                            @foreach($groupedPermissions as $module => $permissions)
+                                            <div class="permission-module">
+                                                <h5 class="permission-module-title">
+                                                    <i class="ti-folder"></i> {{ str_replace('_', ' ', $module) }}
+                                                </h5>
+                                                <div class="permission-grid">
+                                                    @foreach($permissions as $permission)
+                                                    <div class="permission-badge">
+                                                        <i class="ti-check"></i>
+                                                        <span>{{ ucwords(str_replace(['.', '_'], ' ', $permission->name)) }}</span>
+                                                    </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        @else
+                                            <div class="empty-state">
+                                                <i class="ti-key"></i>
+                                                <h4>No Permissions Assigned</h4>
+                                                <p>This role doesn't have any permissions yet.</p>
+                                                @if(!in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
+                                                <a href="{{ route('superadmin.roles.edit', $role) }}" class="btn btn-primary mt-3">
+                                                    <i class="ti-plus"></i> Assign Permissions
+                                                </a>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Users Tab -->
+                                    <div class="tab-pane fade" id="users-tab" role="tabpanel">
+                                        @if($role->users->count() > 0)
+                                            <div class="table-responsive">
+                                                <table class="user-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>User</th>
+                                                            <th>Email</th>
+                                                            <th>Phone</th>
+                                                            <th>Created</th>
+                                                            <th style="text-align: right;">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($role->users as $user)
+                                                        <tr>
+                                                            <td>
+                                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                                    @if($user->profile_photo)
+                                                                        <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->name }}" class="user-avatar">
+                                                                    @else
+                                                                        <div class="user-avatar-initial">
+                                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                                        </div>
+                                                                    @endif
+                                                                    <span style="font-weight: 500;">{{ $user->name }}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td>{{ $user->email }}</td>
+                                                            <td>{{ $user->phone ?? '-' }}</td>
+                                                            <td>{{ $user->created_at->format('d M Y') }}</td>
+                                                            <td style="text-align: right;">
+                                                                <a href="{{ route('superadmin.users.show', $user) }}" class="btn btn-sm btn-info">
+                                                                    <i class="ti-eye"></i> View
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        @else
+                                            <div class="empty-state">
+                                                <i class="ti-user"></i>
+                                                <h4>No Users Assigned</h4>
+                                                <p>No users have been assigned to this role yet.</p>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Activity Tab -->
+                                    <div class="tab-pane fade" id="activity-tab" role="tabpanel">
+                                        @if($recentActivity->count() > 0)
+                                            @foreach($recentActivity as $activity)
+                                            <div class="activity-item">
+                                                <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                                    <div class="activity-icon">
+                                                        <i class="ti-info-alt"></i>
+                                                    </div>
+                                                    <div style="flex: 1;">
+                                                        <p style="margin-bottom: 5px; color: #212529;">{{ $activity->description }}</p>
+                                                        <small class="text-muted">
+                                                            {{ $activity->user ? $activity->user->name : 'System' }} • 
+                                                            <i class="ti-time"></i> {{ $activity->created_at->diffForHumans() }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        @else
+                                            <div class="empty-state">
+                                                <i class="ti-time"></i>
+                                                <h4>No Recent Activity</h4>
+                                                <p>No activity recorded for this role yet.</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="footer">
+                                <p>MLC Classroom - Role Details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            // Add any custom JavaScript here if needed
+        });
+    </script>
+@endpush

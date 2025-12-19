@@ -25,6 +25,7 @@ class User extends Authenticatable
         'role',
         'phone',
         'profile_photo',
+        'email_verified_at',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -135,6 +136,29 @@ class User extends Authenticatable
         return $this->hasMany(LearningResource::class, 'uploaded_by');
     }
 
+    /**
+     * Homework assignments created by user (if teacher)
+     */
+    public function homeworkAssignments()
+    {
+        return $this->hasMany(HomeworkAssignment::class, 'teacher_id');
+    }
+
+    /**
+     * Progress sheets created by user (if teacher)
+     */
+    public function progressSheets()
+    {
+        return $this->hasMany(ProgressSheet::class, 'teacher_id');
+    }
+
+    /**
+     * Attendance records marked by user (if teacher)
+     */
+    public function markedAttendance()
+    {
+        return $this->hasMany(Attendance::class, 'marked_by');
+    }
 
     /**
      * Get the user's full phone number for SMS

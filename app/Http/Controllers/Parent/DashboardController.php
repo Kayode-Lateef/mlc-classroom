@@ -66,7 +66,7 @@ class DashboardController extends Controller
         $attendanceSummary = $this->getAttendanceSummary($selectedChild);
 
         // Notifications
-        $notifications = auth()->user()->unreadNotifications()->limit(5)->get();
+        // $notifications = auth()->user()->unreadNotifications()->limit(5)->get();
 
         return view('parent.dashboard', compact(
             'children',
@@ -76,7 +76,7 @@ class DashboardController extends Controller
             'recentProgress',
             'weeklySchedule',
             'attendanceSummary',
-            'notifications'
+            // 'notifications'
         ));
     }
 

@@ -3,6 +3,27 @@
 @section('title', 'Dashboard')
 
 @push('styles')
+    <style>
+        .quick-action-btn {
+            margin: 5px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .system-status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .activity-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .activity-time {
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
 
 @endpush
 
@@ -211,108 +232,7 @@
                     </div>
                 </div>
 
-                <!-- System Status & Quick Actions -->
-                <div class="row">
-                    <!-- System Status -->
-                    <div class="col-lg-4">
-                        <div class="card alert">
-                            <div class="card-header">
-                                <h4><i class="ti-settings"></i> System Status</h4>
-                            </div>
-                            <div class="card-body">
-                                <ul class="list-unstyled">
-                                    <li class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span>Database</span>
-                                            <span class="badge badge-success system-status-badge">Online</span>
-                                        </div>
-                                    </li>
-                                    <li class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span>Server Status</span>
-                                            <span class="badge badge-success system-status-badge">Healthy</span>
-                                        </div>
-                                    </li>
-                                    <li class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span>Backup Status</span>
-                                            <span class="badge badge-success system-status-badge">Up to date</span>
-                                        </div>
-                                    </li>
-                                    <li class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span>Storage Usage</span>
-                                            <span class="badge badge-warning system-status-badge">68% Used</span>
-                                        </div>
-                                    </li>
-                                    <li class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span>System Version</span>
-                                            <span class="badge badge-info system-status-badge">v2.5.1</span>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                                        <!-- Quick Actions -->
-                    <div class="col-lg-4">
-                        <div class="card alert">
-                            <div class="card-header">
-                                <h4><i class="ti-bolt"></i> Quick Actions</h4>
-                            </div>
-                            <div class="card-body">
-                                <button class="btn btn-primary quick-action-btn">
-                                    <i class="ti-plus"></i> Add New Student
-                                </button>
-                                <button class="btn btn-success quick-action-btn">
-                                    <i class="ti-user"></i> Add New Teacher
-                                </button>
-                                <button class="btn btn-info quick-action-btn">
-                                    <i class="ti-blackboard"></i> Create New Class
-                                </button>
-                                <button class="btn btn-warning quick-action-btn">
-                                    <i class="ti-announcement"></i> Send Announcement
-                                </button>
-                                <button class="btn btn-secondary quick-action-btn">
-                                    <i class="ti-file"></i> Generate Report
-                                </button>
-                                <button class="btn btn-dark quick-action-btn">
-                                    <i class="ti-settings"></i> System Settings
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                                      <!-- Recent System Alerts -->
-                    <div class="col-lg-4">
-                        <div class="card alert">
-                            <div class="card-header">
-                                <h4><i class="ti-bell"></i> System Alerts</h4>
-                            </div>
-                            <div class="card-body" style="max-height: 350px; overflow-y: auto;">
-                                <div class="alert-item">
-                                    <strong>Low Storage Warning</strong>
-                                    <p class="mb-0" style="font-size: 0.85rem;">Storage is 68% full. Consider cleanup.</p>
-                                    <span class="activity-time">2 hours ago</span>
-                                </div>
-                                <div class="alert-item">
-                                    <strong>Backup Completed</strong>
-                                    <p class="mb-0" style="font-size: 0.85rem;">Daily backup completed successfully.</p>
-                                    <span class="activity-time">5 hours ago</span>
-                                </div>
-                                <div class="alert-item">
-                                    <strong>New User Registration</strong>
-                                    <p class="mb-0" style="font-size: 0.85rem;">3 new teachers registered. Pending approval.</p>
-                                    <span class="activity-time">1 day ago</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                               <!-- Recent Activities & Pending Approvals -->
+                <!-- Recent Activities & Pending Approvals -->
                 <div class="row">
                     <!-- Recent Activities -->
                     <div class="col-lg-6">
@@ -751,7 +671,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="text-center mt-3">
+                                <div class="text-center mt-5" style="margin-top: 12px">
                                     <a href="#" class="btn btn-primary">View Complete Progress Report</a>
                                     <a href="#" class="btn btn-success"><i class="ti-download"></i> Export to Excel</a>
                                     <a href="#" class="btn btn-info"><i class="ti-printer"></i> Print Report</a>
@@ -760,6 +680,8 @@
                         </div>
                     </div>
                 </div>
+
+
 
                 <!-- Performance Summary Cards -->
                 <div class="row">
@@ -803,13 +725,115 @@
 
                 <!-- Class-wise Performance Comparison -->
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-8">
                         <div class="card">
                             <div class="card-header">
                                 <h4><i class="ti-stats-up"></i> Class-wise Performance Comparison</h4>
                             </div>
                             <div class="card-body">
                                 <canvas id="classPerformanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <!-- Quick Actions -->
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-bolt"></i> Quick Actions</h4>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary quick-action-btn mb-2">
+                                    <i class="ti-plus"></i> Add New Student
+                                </button>
+                                <button class="btn btn-success quick-action-btn mb-2">
+                                    <i class="ti-user"></i> Add New Teacher
+                                </button>
+                                <button class="btn btn-info quick-action-btn mb-2">
+                                    <i class="ti-blackboard"></i> Create New Class
+                                </button>
+                                <button class="btn btn-warning quick-action-btn mb-2">
+                                    <i class="ti-announcement"></i> Send Announcement
+                                </button>
+                                <button class="btn btn-secondary quick-action-btn mb-2">
+                                    <i class="ti-file"></i> Generate Report
+                                </button>
+                                <button class="btn btn-dark quick-action-btn">
+                                    <i class="ti-settings"></i> System Settings
+                                </button>
+                            </div>
+                        </div>
+                       
+                    </div>
+                </div>
+
+                <!-- System Status & Quick Actions -->
+                <div class="row">
+                    <!-- System Status -->
+                    <div class="col-lg-3">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-settings"></i> System Status</h4>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Database</span>
+                                            <span class="badge badge-success system-status-badge">Online</span>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Server Status</span>
+                                            <span class="badge badge-success system-status-badge">Healthy</span>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Backup Status</span>
+                                            <span class="badge badge-success system-status-badge">Up to date</span>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Storage Usage</span>
+                                            <span class="badge badge-warning system-status-badge">68% Used</span>
+                                        </div>
+                                    </li>
+                                    <li class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>System Version</span>
+                                            <span class="badge badge-info system-status-badge">v2.5.1</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Recent System Alerts -->
+                    <div class="col-lg-4">
+                        <div class="card alert">
+                            <div class="card-header">
+                                <h4><i class="ti-bell"></i> System Alerts</h4>
+                            </div>
+                            <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                                <div class="alert-item">
+                                    <strong>Low Storage Warning</strong>
+                                    <p class="mb-0" style="font-size: 0.85rem;">Storage is 68% full. Consider cleanup.</p>
+                                    <span class="activity-time">2 hours ago</span>
+                                </div>
+                                <div class="alert-item">
+                                    <strong>Backup Completed</strong>
+                                    <p class="mb-0" style="font-size: 0.85rem;">Daily backup completed successfully.</p>
+                                    <span class="activity-time">5 hours ago</span>
+                                </div>
+                                <div class="alert-item">
+                                    <strong>New User Registration</strong>
+                                    <p class="mb-0" style="font-size: 0.85rem;">3 new teachers registered. Pending approval.</p>
+                                    <span class="activity-time">1 day ago</span>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -3,6 +3,55 @@
 @section('title', 'Teacher Dashboard')
 
 @push('styles')
+<style>
+        .quick-action-btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .class-card {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .class-card:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .class-card.active {
+            background-color: #d4edda;
+        }
+        
+
+        .class-card.completed {
+            opacity: 0.7;
+        }
+        
+        .student-list-item {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .student-list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .assignment-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+        }
+        
+        
+        .grade-badge {
+            min-width: 50px;
+            text-align: center;
+        }
+</style>
 
 @endpush
 
@@ -15,7 +64,6 @@
                     <div class="page-header">
                         <div class="page-title">
                             <h1>Teacher Dashboard <span>Welcome, {{ auth()->user()->name }}</span></h1>
-                            <p class="text-muted">{{ date('l, F d, Y') }}</p>
                         </div>
                     </div>
                 </div>

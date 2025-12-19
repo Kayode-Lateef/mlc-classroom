@@ -42,9 +42,9 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     
     // User Management
     Route::resource('users', UserManagementController::class);
-    Route::post('users/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('users.assign-role');
-    Route::post('users/{user}/assign-permissions', [UserManagementController::class, 'assignPermissions'])->name('users.assign-permissions');
-    Route::post('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('users/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('users.assignRole');
+    Route::post('users/{user}/assign-permissions', [UserManagementController::class, 'assignPermissions'])->name('users.assignPermissions');
+    Route::patch('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggleStatus');
     
     // Roles
     Route::resource('roles', RoleController::class);

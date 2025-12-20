@@ -4,44 +4,8 @@
 
 @push('styles')
     <style>
-        .stat-card {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
         .info-banner {
             background-color: #e7f3ff;
-            border: 1px solid #0066cc;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
@@ -52,25 +16,9 @@
             font-size: 1.2rem;
         }
 
-        .module-card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .module-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            color: white;
-        }
-
-        .module-title {
-            font-size: 1.25rem;
-            font-weight: 600;
+        .panel-title {
             text-transform: capitalize;
-            margin: 0;
+           
         }
 
         .module-icon {
@@ -88,7 +36,7 @@
             background-color: rgba(255,255,255,0.3);
             padding: 8px 16px;
             border-radius: 20px;
-            font-size: 0.875rem;
+            font-size: 1rem;
         }
 
         .permission-grid {
@@ -108,18 +56,17 @@
 
         .permission-card:hover {
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
         }
 
         .permission-name {
-            font-size: 1rem;
+            font-size: 1.4rem;
             font-weight: 600;
             color: #212529;
             margin-bottom: 8px;
         }
 
         .permission-roles {
-            font-size: 0.8rem;
+            font-size: 1rem;
             color: #6c757d;
             display: flex;
             align-items: center;
@@ -190,7 +137,6 @@
                         <div class="page-header">
                             <div class="page-title">
                                 <h1>Permissions Management</h1>
-                                <p class="text-muted">Manage system permissions and their assignments</p>
                             </div>
                         </div>
                     </div>
@@ -210,7 +156,7 @@
                     <!-- Create Button -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                                 <a href="{{ route('superadmin.permissions.create') }}" class="btn btn-primary">
                                     <i class="ti-plus"></i> Create New Permission
                                 </a>
@@ -218,65 +164,54 @@
                         </div>
                     </div>
 
+
                     <!-- Statistics Cards -->
                     <div class="row">
                         <div class="col-lg-3">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-primary text-white">
-                                        <i class="ti-key"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Total Permissions</div>
-                                        <div class="stat-value text-primary">{{ $permissions->flatten()->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-key color-primary border-primary"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Total Permissions</div>
+                                        <div class="stat-digit">{{ $permissions->flatten()->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-3">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-success text-white">
-                                        <i class="ti-folder"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Permission Modules</div>
-                                        <div class="stat-value text-success">{{ $permissions->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-folder color-success border-success"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Permission Modules</div>
+                                        <div class="stat-digit">{{ $permissions->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-3">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-info text-white">
-                                        <i class="ti-shield"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Total Roles</div>
-                                        <div class="stat-value text-info">{{ \Spatie\Permission\Models\Role::count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-shield color-pink border-pink"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Total Roles</div>
+                                        <div class="stat-digit">{{ \Spatie\Permission\Models\Role::count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-3">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-warning text-white">
-                                        <i class="ti-check-box"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Assigned</div>
-                                        <div class="stat-value text-warning">
-                                            {{ $permissions->flatten()->filter(function($p) { return $p->roles_count > 0; })->count() }}
-                                        </div>
+                         <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-check-box color-info border-info"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Assigned</div>
+                                        <div class="stat-digit">{{ $permissions->flatten()->filter(function($p) { return $p->roles_count > 0; })->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                      
                     </div>
 
                     <!-- Info Banner -->
@@ -325,16 +260,15 @@
                         <div class="row mt-4">
                             <div class="col-lg-12">
                                 @foreach($permissions->sortKeys() as $module => $modulePermissions)
-                                <div class="module-card">
-                                    <!-- Module Header -->
-                                    <div class="module-header">
+                                <div class="panel lobipanel-basic panel-primary">
+                                    <div class="panel-heading">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
                                             <div style="display: flex; align-items: center;">
                                                 <div class="module-icon">
                                                     <i class="ti-folder"></i>
                                                 </div>
                                                 <div>
-                                                    <h3 class="module-title">{{ str_replace('_', ' ', $module) }} Module</h3>
+                                                    <h3 class="panel-title">{{ str_replace('_', ' ', $module) }} Module</h3>
                                                     <small style="opacity: 0.9;">{{ $modulePermissions->count() }} permissions</small>
                                                 </div>
                                             </div>
@@ -343,8 +277,8 @@
                                             </span>
                                         </div>
                                     </div>
-
-                                    <!-- Permissions Grid -->
+                                    <div class="panel-body">
+                                         <!-- Permissions Grid -->
                                     <div class="permission-grid">
                                         @foreach($modulePermissions->sortBy('name') as $permission)
                                         <div class="permission-card">
@@ -380,7 +314,9 @@
                                         </div>
                                         @endforeach
                                     </div>
+                                    </div>
                                 </div>
+                               
                                 @endforeach
                             </div>
                         </div>

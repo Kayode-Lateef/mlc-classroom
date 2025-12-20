@@ -16,17 +16,9 @@
             color: #dc3545;
         }
 
-        .info-box {
-            background-color: #e7f3ff;
-            border: 1px solid #0066cc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
 
         .guidelines-box {
             background-color: #e7f3ff;
-            border: 1px solid #0066cc;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
@@ -42,7 +34,7 @@
             display: flex;
             align-items: flex-start;
             margin-bottom: 8px;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         .guidelines-box li i {
@@ -82,7 +74,7 @@
         }
 
         .module-name {
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 500;
             color: #212529;
             text-transform: capitalize;
@@ -97,18 +89,19 @@
 
         .example-box code {
             color: #495057;
-            font-size: 0.875rem;
+            font-size: 1rem;
         }
 
         code {
             background-color: #f8f9fa;
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #0066cc;
         }
 
         .sidebar-section {
+            margin-top: 25px;
             margin-bottom: 25px;
             padding-bottom: 25px;
             border-bottom: 1px solid #e9ecef;
@@ -159,12 +152,12 @@
                 </div>
 
                 <div id="main-content">
+
                     <div class="row">
                         <!-- Main Form Column -->
-                        <div class="col-lg-8">
+                        <div class="col-md-8">
                             <div class="card alert">
-                                <div class="card-body">
-                                    <form method="POST" action="{{ route('superadmin.permissions.store') }}">
+                                 <form method="POST" action="{{ route('superadmin.permissions.store') }}">
                                         @csrf
 
                                         <!-- Permission Name -->
@@ -209,7 +202,7 @@
 
                                         <!-- Naming Guidelines -->
                                         <div class="guidelines-box">
-                                            <h4 style="margin: 0 0 10px 0; font-size: 1rem; font-weight: 600; color: #0066cc;">
+                                            <h4 style="margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 600; color: #0066cc;">
                                                 <i class="ti-info-alt"></i> Naming Guidelines
                                             </h4>
                                             <ul>
@@ -242,19 +235,17 @@
                                             </button>
                                         </div>
                                     </form>
-                                </div>
                             </div>
                         </div>
-
                         <!-- Sidebar Column -->
                         <div class="col-lg-4">
-                            <div class="sidebar-card">
+                            <div class="card">
                                 <!-- Existing Modules -->
-                                <div class="sidebar-section">
-                                    <h3 class="sidebar-title">
-                                        <i class="ti-folder"></i> Existing Modules
-                                    </h3>
-                                    
+                                <div class="card-header pr">
+                                    <h4><i class="ti-folder"></i> Existing Modules</h4>                                                                     
+                                </div>
+                                <div class="card">
+                                    <div class="recent-comment m-t-15">
                                     @if($categories->count() > 0)
                                         <div>
                                             @foreach($categories->sort() as $category)
@@ -274,58 +265,63 @@
                                             <i class="ti-info-alt"></i> No existing modules yet. You're creating the first permission!
                                         </p>
                                     @endif
-                                </div>
+                                    </div>
 
-                                <!-- Common Examples -->
-                                <div class="sidebar-section">
-                                    <h4 class="sidebar-title">
-                                        <i class="ti-light-bulb"></i> Common Examples
-                                    </h4>
-                                    <div>
-                                        <div class="example-box">
-                                            <code>create users</code>
+                             
+                                    <!-- Common Examples -->
+                                    <div class="sidebar-section">
+                                        <h4 class="sidebar-title">
+                                            <i class="ti-light-bulb"></i> Common Examples
+                                        </h4>
+                                        <div>
+                                            <div class="example-box">
+                                                <code>create users</code>
+                                            </div>
+                                            <div class="example-box">
+                                                <code>view students</code>
+                                            </div>
+                                            <div class="example-box">
+                                                <code>edit classes</code>
+                                            </div>
+                                            <div class="example-box">
+                                                <code>delete attendance</code>
+                                            </div>
+                                            <div class="example-box">
+                                                <code>manage settings</code>
+                                            </div>
+                                            <div class="example-box">
+                                                <code>export reports</code>
+                                            </div>
                                         </div>
-                                        <div class="example-box">
-                                            <code>view students</code>
-                                        </div>
-                                        <div class="example-box">
-                                            <code>edit classes</code>
-                                        </div>
-                                        <div class="example-box">
-                                            <code>delete attendance</code>
-                                        </div>
-                                        <div class="example-box">
-                                            <code>manage settings</code>
-                                        </div>
-                                        <div class="example-box">
-                                            <code>export reports</code>
-                                        </div>
+                                    </div>
+                                    <!-- Quick Tips -->
+                                    <div class="sidebar-section">
+                                        <h4 class="sidebar-title">
+                                            <i class="ti-help-alt"></i> Quick Tips
+                                        </h4>
+                                        <ul style="list-style: none; padding: 0; margin: 0;">
+                                            <li style="margin-bottom: 10px;">
+                                                <i class="ti-angle-right text-primary"></i> Keep names short and clear
+                                            </li>
+                                            <li style="margin-bottom: 10px;">
+                                                <i class="ti-angle-right text-primary"></i> Group related permissions by module
+                                            </li>
+                                            <li style="margin-bottom: 10px;">
+                                                <i class="ti-angle-right text-primary"></i> Avoid duplicate permission names
+                                            </li>
+                                            <li style="margin-bottom: 10px;">
+                                                <i class="ti-angle-right text-primary"></i> Think about who needs this permission
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
 
-                                <!-- Quick Tips -->
-                                <div class="sidebar-section">
-                                    <h4 class="sidebar-title">
-                                        <i class="ti-help-alt"></i> Quick Tips
-                                    </h4>
-                                    <ul style="list-style: none; padding: 0; margin: 0;">
-                                        <li style="margin-bottom: 10px; font-size: 0.875rem;">
-                                            <i class="ti-angle-right text-primary"></i> Keep names short and clear
-                                        </li>
-                                        <li style="margin-bottom: 10px; font-size: 0.875rem;">
-                                            <i class="ti-angle-right text-primary"></i> Group related permissions by module
-                                        </li>
-                                        <li style="margin-bottom: 10px; font-size: 0.875rem;">
-                                            <i class="ti-angle-right text-primary"></i> Avoid duplicate permission names
-                                        </li>
-                                        <li style="margin-bottom: 10px; font-size: 0.875rem;">
-                                            <i class="ti-angle-right text-primary"></i> Think about who needs this permission
-                                        </li>
-                                    </ul>
-                                </div>
+                                <!-- /# card -->
                             </div>
+                            <!-- /# column -->
+
                         </div>
-                    </div>
+                        <!-- /# row -->
 
                     <!-- Footer -->
                     <div class="row">

@@ -18,7 +18,6 @@
 
         .warning-box {
             background-color: #fff3cd;
-            border: 1px solid #ffc107;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
@@ -42,7 +41,6 @@
 
         .role-item:hover {
             background-color: #f8f9fa;
-            border-color: #007bff;
         }
 
         .role-item input[type="checkbox"] {
@@ -54,7 +52,6 @@
         }
 
         .role-name {
-            font-size: 0.95rem;
             font-weight: 500;
             color: #212529;
             text-transform: capitalize;
@@ -63,7 +60,7 @@
         .role-meta {
             display: flex;
             align-items: center;
-            font-size: 0.8rem;
+            font-size: 1rem;
             color: #6c757d;
             margin-top: 5px;
         }
@@ -78,7 +75,7 @@
             color: #0066cc;
             padding: 3px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 1rem;
             font-weight: 600;
             display: inline-block;
             margin-top: 5px;
@@ -106,7 +103,6 @@
         }
 
         .info-label {
-            font-size: 0.75rem;
             color: #6c757d;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -114,7 +110,7 @@
         }
 
         .info-value {
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 500;
             color: #212529;
         }
@@ -146,7 +142,6 @@
         }
 
         .sidebar-title {
-            font-size: 0.875rem;
             font-weight: 600;
             color: #212529;
             margin-bottom: 12px;
@@ -191,10 +186,9 @@
                 <div id="main-content">
                     <div class="row">
                         <!-- Main Form Column -->
-                        <div class="col-lg-8">
+                        <div class="col-md-8">
                             <div class="card alert">
-                                <div class="card-body">
-                                    <form method="POST" action="{{ route('superadmin.permissions.update', $permission) }}">
+                                <form method="POST" action="{{ route('superadmin.permissions.update', $permission) }}">
                                         @csrf
                                         @method('PUT')
 
@@ -279,70 +273,71 @@
                                             </button>
                                         </div>
                                     </form>
-                                </div>
                             </div>
                         </div>
 
                         <!-- Sidebar Column -->
                         <div class="col-lg-4">
-                            <div class="sidebar-card">
-                                <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 20px;">
-                                    <i class="ti-info-alt"></i> Current Information
-                                </h3>
-                                
-                                <div class="info-item">
-                                    <div class="info-label">Permission Name</div>
-                                    <div class="info-value">{{ ucwords($permission->name) }}</div>
+                            <div class="card">                              
+                                <div class="card-header pr">
+                                    <h4><i class="ti-info-alt"></i> Current Information</h4>                                                                     
                                 </div>
+                                <div class="sidebar-card">
+                                   
+                                    <div class="info-item">
+                                        <div class="info-label">Permission Name</div>
+                                        <div class="info-value">{{ ucwords($permission->name) }}</div>
+                                    </div>
 
-                                <div class="info-item">
-                                    <div class="info-label">Guard</div>
-                                    <div class="info-value">{{ $permission->guard_name }}</div>
-                                </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Guard</div>
+                                        <div class="info-value">{{ $permission->guard_name }}</div>
+                                    </div>
 
-                                <div class="info-item">
-                                    <div class="info-label">Assigned Roles</div>
-                                    <div class="info-value-large">{{ $permission->roles->count() }}</div>
-                                </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Assigned Roles</div>
+                                        <div class="info-value-large">{{ $permission->roles->count() }}</div>
+                                    </div>
 
-                                <div class="info-item">
-                                    <div class="info-label">Created</div>
-                                    <div class="info-value">{{ $permission->created_at->format('d M Y') }}</div>
-                                    <small class="text-muted">{{ $permission->created_at->diffForHumans() }}</small>
-                                </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Created</div>
+                                        <div class="info-value">{{ $permission->created_at->format('d M Y') }}</div>
+                                        <small class="text-muted">{{ $permission->created_at->diffForHumans() }}</small>
+                                    </div>
 
-                                <div class="info-item">
-                                    <div class="info-label">Last Updated</div>
-                                    <div class="info-value">{{ $permission->updated_at->format('d M Y') }}</div>
-                                </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Last Updated</div>
+                                        <div class="info-value">{{ $permission->updated_at->format('d M Y') }}</div>
+                                    </div>
 
-                                <!-- Current Roles Section -->
-                                @if($permission->roles->count() > 0)
-                                <div class="sidebar-section">
-                                    <div class="sidebar-title">Currently Assigned To:</div>
-                                    <div>
-                                        @foreach($permission->roles as $role)
-                                        <div class="current-role-item">
-                                            <i class="ti-check"></i>
-                                            <span style="font-size: 0.85rem; font-weight: 500; text-transform: capitalize;">
-                                                {{ str_replace('_', ' ', $role->name) }}
-                                            </span>
+                                    <!-- Current Roles Section -->
+                                    @if($permission->roles->count() > 0)
+                                    <div class="sidebar-section">
+                                        <div class="sidebar-title">Currently Assigned To:</div>
+                                        <div>
+                                            @foreach($permission->roles as $role)
+                                            <div class="current-role-item">
+                                                <i class="ti-check"></i>
+                                                <span style="font-size: 1rem; font-weight: 500; text-transform: capitalize;">
+                                                    {{ str_replace('_', ' ', $role->name) }}
+                                                </span>
+                                            </div>
+                                            @endforeach
                                         </div>
-                                        @endforeach
                                     </div>
-                                </div>
-                                @endif
+                                    @endif
 
-                                <!-- Impact Notice -->
-                                <div class="sidebar-section">
-                                    <div class="sidebar-title">
-                                        <i class="ti-help-alt"></i> Impact Notice
+                                    <!-- Impact Notice -->
+                                    <div class="sidebar-section">
+                                        <div class="sidebar-title">
+                                            <i class="ti-help-alt"></i> Impact Notice
+                                        </div>
+                                        <p style="font-size: 1rem; color: #6c757d; margin: 0;">
+                                            This permission affects 
+                                            <strong>{{ $permission->roles->sum(function($role) { return $role->users->count(); }) }} users</strong> 
+                                            across {{ $permission->roles->count() }} role(s).
+                                        </p>
                                     </div>
-                                    <p style="font-size: 0.85rem; color: #6c757d; margin: 0;">
-                                        This permission affects 
-                                        <strong>{{ $permission->roles->sum(function($role) { return $role->users->count(); }) }} users</strong> 
-                                        across {{ $permission->roles->count() }} role(s).
-                                    </p>
                                 </div>
                             </div>
                         </div>

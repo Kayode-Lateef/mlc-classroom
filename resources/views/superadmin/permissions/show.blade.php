@@ -23,7 +23,6 @@
         }
 
         .info-label {
-            font-size: 0.875rem;
             color: #6c757d;
             margin-bottom: 5px;
         }
@@ -83,7 +82,6 @@
 
         .role-card:hover {
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
         }
 
         .role-card-header {
@@ -94,7 +92,7 @@
         }
 
         .role-name {
-            font-size: 1rem;
+            font-size: 1.4rem;
             font-weight: 600;
             color: #212529;
             text-transform: capitalize;
@@ -106,7 +104,7 @@
             color: #0066cc;
             padding: 3px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 1rem;
             font-weight: 600;
             display: inline-block;
             margin-top: 5px;
@@ -115,7 +113,7 @@
         .role-stats {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 1.2rem;
             color: #6c757d;
             margin-bottom: 12px;
         }
@@ -198,7 +196,6 @@
         }
 
         .user-name {
-            font-size: 0.9rem;
             font-weight: 500;
             color: #212529;
             white-space: nowrap;
@@ -207,7 +204,7 @@
         }
 
         .user-email {
-            font-size: 0.8rem;
+            font-size: 1rem;
             color: #6c757d;
             white-space: nowrap;
             overflow: hidden;
@@ -228,7 +225,6 @@
         }
 
         .role-section-title {
-            font-size: 1rem;
             font-weight: 600;
             color: #212529;
             text-transform: capitalize;
@@ -280,7 +276,7 @@
                     <!-- Action Buttons -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; margin-bottom: 10px;">
                                 <a href="{{ route('superadmin.permissions.edit', $permission) }}" class="btn btn-primary">
                                     <i class="ti-pencil-alt"></i> Edit Permission
                                 </a>
@@ -345,172 +341,159 @@
                         </div>
                     </div>
 
+
                     <!-- Statistics Cards -->
                     <div class="row">
                         <div class="col-lg-4">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-primary text-white">
-                                        <i class="ti-shield"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Roles with Permission</div>
-                                        <div class="stat-number text-primary">{{ $rolesWithPermission->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-shield color-primary border-primary"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Roles with Permission</div>
+                                        <div class="stat-digit">{{ $rolesWithPermission->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-4">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-success text-white">
-                                        <i class="ti-user"></i>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-user color-success border-success"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Total Users Affected</div>
+                                        <div class="stat-digit">{{ $rolesWithPermission->sum(function($role) { return $role->users->count(); }) }}</div>
                                     </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Total Users Affected</div>
-                                        <div class="stat-number text-success">
-                                            {{ $rolesWithPermission->sum(function($role) { return $role->users->count(); }) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-time color-pink border-pink"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Age</div>
+                                        <div class="stat-digit">{{ $permission->created_at->diffForHumans(null, true) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                      
+                    </div>
+        
+                    <!-- Tabs -->
+                    
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card alert">
+                                <div class="card-body">
+                                    <div class="custom-tab">
+                                        <ul class="nav nav-tabs" role="tablist">
+                                            <li role="presentation" class="active"><a href="#roles-tab" aria-controls="roles-tab" role="tab" data-toggle="tab"> <i class="ti-shield"></i> Assigned Roles ({{ $rolesWithPermission->count() }})</a></li>
+                                            <li role="presentation"><a href="#users-tab" aria-controls="users-tab" role="tab" data-toggle="tab"><i class="ti-user"></i> Affected Users</a></li>
+                                        </ul>
+                                        <div class="tab-content">
+                                            <!-- Roles Tab -->
+                                            <div role="tabpanel" class="tab-pane active" id="roles-tab">
+                                                    @if($rolesWithPermission->count() > 0)
+                                                        <div class="row">
+                                                            @foreach($rolesWithPermission as $role)
+                                                            <div class="col-lg-4 col-md-6 mb-3">
+                                                                <div class="role-card">
+                                                                    <div class="role-card-header">
+                                                                        <div>
+                                                                            <div class="role-name">{{ str_replace('_', ' ', $role->name) }}</div>
+                                                                            @if(in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
+                                                                                <span class="role-badge">System Role</span>
+                                                                            @endif
+                                                                        </div>
+                                                                        <div class="check-icon">
+                                                                            <i class="ti-check"></i>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="role-stats">
+                                                                        <div>
+                                                                            <i class="ti-user"></i>
+                                                                            {{ $role->users->count() }} users
+                                                                        </div>
+                                                                        <div>
+                                                                            <i class="ti-key"></i>
+                                                                            {{ $role->permissions->count() }} permissions
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <a href="{{ route('superadmin.roles.show', $role) }}" class="btn btn-primary btn-sm btn-block">
+                                                                        <i class="ti-eye"></i> View Role
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <div class="empty-state">
+                                                            <i class="ti-shield"></i>
+                                                            <h3 class="mb-3">Not Assigned to Any Roles</h3>
+                                                            <p class="text-muted mb-4">This permission is not currently assigned to any roles.</p>
+                                                            <a href="{{ route('superadmin.permissions.edit', $permission) }}" class="btn btn-primary">
+                                                                <i class="ti-plus"></i> Assign to Roles
+                                                            </a>
+                                                        </div>
+                                                    @endif
+                                            </div>
+                                            <div role="tabpanel" class="tab-pane" id="users-tab">
+                                                @if($rolesWithPermission->count() > 0)
+                                                    @foreach($rolesWithPermission as $role)
+                                                        @if($role->users->count() > 0)
+                                                        <div class="role-section">
+                                                            <div class="role-section-header">
+                                                                <div class="role-section-title">
+                                                                    {{ str_replace('_', ' ', $role->name) }}
+                                                                    <span style="font-weight: 400; font-size: 1.2rem; color: #6c757d;">
+                                                                        ({{ $role->users->count() }} users)
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="role-section-body">
+                                                                <div class="row">
+                                                                    @foreach($role->users as $user)
+                                                                    <div class="col-lg-4 col-md-6 mb-3">
+                                                                        <div class="user-card">
+                                                                            @if($user->profile_photo)
+                                                                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->name }}" class="user-avatar">
+                                                                            @else
+                                                                                <div class="user-avatar-initial">
+                                                                                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                                                </div>
+                                                                            @endif
+                                                                            <div class="user-info">
+                                                                                <div class="user-name">{{ $user->name }}</div>
+                                                                                <div class="user-email">{{ $user->email }}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                    @endforeach
+                                                @else
+                                                    <div class="empty-state">
+                                                        <i class="ti-user"></i>
+                                                        <h3 class="mb-3">No Users Affected</h3>
+                                                        <p class="text-muted">This permission is not assigned to any roles yet.</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-4">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-info text-white">
-                                        <i class="ti-time"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Age</div>
-                                        <div class="stat-number text-info">{{ $permission->created_at->diffForHumans(null, true) }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- /# column -->
                     </div>
 
-                    <!-- Tabs -->
-                    <div class="row mt-4">
-                        <div class="col-lg-12">
-                            <div class="card alert">
-                                <!-- Tab Navigation -->
-                                <ul class="nav nav-tabs" role="tablist">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" data-toggle="tab" href="#roles-tab" role="tab">
-                                            <i class="ti-shield"></i> Assigned Roles ({{ $rolesWithPermission->count() }})
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#users-tab" role="tab">
-                                            <i class="ti-user"></i> Affected Users
-                                        </a>
-                                    </li>
-                                </ul>
-
-                                <!-- Tab Content -->
-                                <div class="tab-content card-body">
-                                    <!-- Roles Tab -->
-                                    <div class="tab-pane fade show active" id="roles-tab" role="tabpanel">
-                                        @if($rolesWithPermission->count() > 0)
-                                            <div class="row">
-                                                @foreach($rolesWithPermission as $role)
-                                                <div class="col-lg-4 col-md-6 mb-3">
-                                                    <div class="role-card">
-                                                        <div class="role-card-header">
-                                                            <div>
-                                                                <div class="role-name">{{ str_replace('_', ' ', $role->name) }}</div>
-                                                                @if(in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
-                                                                    <span class="role-badge">System Role</span>
-                                                                @endif
-                                                            </div>
-                                                            <div class="check-icon">
-                                                                <i class="ti-check"></i>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="role-stats">
-                                                            <div>
-                                                                <i class="ti-user"></i>
-                                                                {{ $role->users->count() }} users
-                                                            </div>
-                                                            <div>
-                                                                <i class="ti-key"></i>
-                                                                {{ $role->permissions->count() }} permissions
-                                                            </div>
-                                                        </div>
-
-                                                        <a href="{{ route('superadmin.roles.show', $role) }}" class="btn btn-primary btn-sm btn-block">
-                                                            <i class="ti-eye"></i> View Role
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        @else
-                                            <div class="empty-state">
-                                                <i class="ti-shield"></i>
-                                                <h3 class="mb-3">Not Assigned to Any Roles</h3>
-                                                <p class="text-muted mb-4">This permission is not currently assigned to any roles.</p>
-                                                <a href="{{ route('superadmin.permissions.edit', $permission) }}" class="btn btn-primary">
-                                                    <i class="ti-plus"></i> Assign to Roles
-                                                </a>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <!-- Users Tab -->
-                                    <div class="tab-pane fade" id="users-tab" role="tabpanel">
-                                        @if($rolesWithPermission->count() > 0)
-                                            @foreach($rolesWithPermission as $role)
-                                                @if($role->users->count() > 0)
-                                                <div class="role-section">
-                                                    <div class="role-section-header">
-                                                        <div class="role-section-title">
-                                                            {{ str_replace('_', ' ', $role->name) }}
-                                                            <span style="font-weight: 400; font-size: 0.875rem; color: #6c757d;">
-                                                                ({{ $role->users->count() }} users)
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="role-section-body">
-                                                        <div class="row">
-                                                            @foreach($role->users as $user)
-                                                            <div class="col-lg-4 col-md-6 mb-3">
-                                                                <div class="user-card">
-                                                                    @if($user->profile_photo)
-                                                                        <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->name }}" class="user-avatar">
-                                                                    @else
-                                                                        <div class="user-avatar-initial">
-                                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                                                        </div>
-                                                                    @endif
-                                                                    <div class="user-info">
-                                                                        <div class="user-name">{{ $user->name }}</div>
-                                                                        <div class="user-email">{{ $user->email }}</div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                @endif
-                                            @endforeach
-                                        @else
-                                            <div class="empty-state">
-                                                <i class="ti-user"></i>
-                                                <h3 class="mb-3">No Users Affected</h3>
-                                                <p class="text-muted">This permission is not assigned to any roles yet.</p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Footer -->
                     <div class="row">

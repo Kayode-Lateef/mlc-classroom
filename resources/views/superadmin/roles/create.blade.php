@@ -18,7 +18,6 @@
 
         .info-box {
             background-color: #e7f3ff;
-            border: 1px solid #0066cc;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
@@ -29,11 +28,17 @@
             font-size: 1.2rem;
         }
 
+        #permissions-container{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 10px;
+
+        }
+
         .permission-module {
             border: 1px solid #e9ecef;
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 20px;
             background-color: #fff;
         }
 

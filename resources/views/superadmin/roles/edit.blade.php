@@ -78,6 +78,13 @@
             margin-right: 8px;
         }
 
+        #permissions-container{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 10px;
+
+        }
+
         .permission-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -125,7 +132,6 @@
 
         .role-info-card {
             background-color: #e7f3ff;
-            border: 1px solid #0066cc;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;

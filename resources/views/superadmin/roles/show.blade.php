@@ -17,7 +17,6 @@
         }
 
         .info-label {
-            font-size: 0.875rem;
             color: #6c757d;
             margin-bottom: 5px;
         }
@@ -62,12 +61,18 @@
             color: #6c757d;
         }
 
+        #permissions-container {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
         .permission-module {
             border: 1px solid #e9ecef;
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 20px;
             background-color: #fff;
+            
         }
 
         .permission-module-title {
@@ -93,7 +98,7 @@
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #155724;
         }
 
@@ -257,7 +262,7 @@
                     <!-- Action Buttons -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
                                 @if(!in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
                                     <a href="{{ route('superadmin.roles.edit', $role) }}" class="btn btn-primary">
                                         <i class="ti-pencil-alt"></i> Edit Role
@@ -343,187 +348,174 @@
                     <!-- Statistics Cards -->
                     <div class="row">
                         <div class="col-lg-4">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-success text-white">
-                                        <i class="ti-key"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Total Permissions</div>
-                                        <div class="stat-number text-success">{{ $role->permissions->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-key color-success border-success"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Total Permissions</div>
+                                        <div class="stat-digit">{{ $role->permissions->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-4">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-primary text-white">
-                                        <i class="ti-user"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Assigned Users</div>
-                                        <div class="stat-number text-primary">{{ $role->users->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-user color-primary border-primary"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Assigned Users</div>
+                                        <div class="stat-digit">{{ $role->users->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-4">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-info text-white">
-                                        <i class="ti-folder"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Permission Modules</div>
-                                        <div class="stat-number text-info">{{ $groupedPermissions->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-folder color-pink border-pink"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Permission Modules</div>
+                                        <div class="stat-digit">{{ $groupedPermissions->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                      
                     </div>
 
-                    <!-- Tabs -->
-                    <div class="row mt-4">
+                    {{-- Tabs --}}
+                        <div class="row">
+
+                        <!-- /# column -->
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <!-- Tab Navigation -->
-                                <ul class="nav nav-tabs" role="tablist">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" data-toggle="tab" href="#permissions-tab" role="tab">
-                                            <i class="ti-key"></i> Permissions ({{ $role->permissions->count() }})
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#users-tab" role="tab">
-                                            <i class="ti-user"></i> Users ({{ $role->users->count() }})
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#activity-tab" role="tab">
-                                            <i class="ti-time"></i> Recent Activity
-                                        </a>
-                                    </li>
-                                </ul>
-
-                                <!-- Tab Content -->
-                                <div class="tab-content card-body">
-                                    <!-- Permissions Tab -->
-                                    <div class="tab-pane fade show active" id="permissions-tab" role="tabpanel">
-                                        @if($groupedPermissions->count() > 0)
-                                            @foreach($groupedPermissions as $module => $permissions)
-                                            <div class="permission-module">
-                                                <h5 class="permission-module-title">
-                                                    <i class="ti-folder"></i> {{ str_replace('_', ' ', $module) }}
-                                                </h5>
-                                                <div class="permission-grid">
-                                                    @foreach($permissions as $permission)
-                                                    <div class="permission-badge">
-                                                        <i class="ti-check"></i>
-                                                        <span>{{ ucwords(str_replace(['.', '_'], ' ', $permission->name)) }}</span>
+                                <div class="card-body">
+                                    <div class="custom-tab">
+                                        <ul class="nav nav-tabs" role="tablist">
+                                            <li role="presentation" class="active"><a href="#permissions-tab" aria-controls="permissions-tab" role="tab" data-toggle="tab">Permissions ({{ $role->permissions->count() }})</a></li>
+                                            <li role="presentation"><a href="#users-tab" aria-controls="users-tab" role="tab" data-toggle="tab">Users ({{ $role->users->count() }})</a></li>
+                                            <li role="presentation"><a href="#activity-tab" aria-controls="activity-tab" role="tab" data-toggle="tab">Recent Activity</a></li>
+                                        </ul>
+                                        <div class="tab-content">
+                                            <!-- Permissions Tab -->
+                                            <div role="tabpanel" class="tab-pane active" id="permissions-tab">                                                
+                                                @if($groupedPermissions->count() > 0)
+                                                    <div id="permissions-container">
+                                                        @foreach($groupedPermissions as $module => $permissions)
+                                                        <div class="permission-module">
+                                                            <h5 class="permission-module-title">
+                                                                <i class="ti-folder"></i> {{ str_replace('_', ' ', $module) }}
+                                                            </h5>
+                                                            <div class="permission-grid">
+                                                                @foreach($permissions as $permission)
+                                                                <div class="permission-badge">
+                                                                    <i class="ti-check"></i>
+                                                                    <span>{{ ucwords(str_replace(['.', '_'], ' ', $permission->name)) }}</span>
+                                                                </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                        @endforeach
                                                     </div>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                        @else
-                                            <div class="empty-state">
-                                                <i class="ti-key"></i>
-                                                <h4>No Permissions Assigned</h4>
-                                                <p>This role doesn't have any permissions yet.</p>
-                                                @if(!in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
-                                                <a href="{{ route('superadmin.roles.edit', $role) }}" class="btn btn-primary mt-3">
-                                                    <i class="ti-plus"></i> Assign Permissions
-                                                </a>
+                                                @else
+                                                    <div class="empty-state">
+                                                        <i class="ti-key"></i>
+                                                        <h4>No Permissions Assigned</h4>
+                                                        <p>This role doesn't have any permissions yet.</p>
+                                                        @if(!in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
+                                                        <a href="{{ route('superadmin.roles.edit', $role) }}" class="btn btn-primary mt-activity-tab">
+                                                            <i class="ti-plus"></i> Assign Permissions
+                                                        </a>
+                                                        @endif
+                                                    </div>
                                                 @endif
                                             </div>
-                                        @endif
-                                    </div>
-
-                                    <!-- Users Tab -->
-                                    <div class="tab-pane fade" id="users-tab" role="tabpanel">
-                                        @if($role->users->count() > 0)
-                                            <div class="table-responsive">
-                                                <table class="user-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>User</th>
-                                                            <th>Email</th>
-                                                            <th>Phone</th>
-                                                            <th>Created</th>
-                                                            <th style="text-align: right;">Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($role->users as $user)
-                                                        <tr>
-                                                            <td>
-                                                                <div style="display: flex; align-items: center; gap: 10px;">
-                                                                    @if($user->profile_photo)
-                                                                        <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->name }}" class="user-avatar">
-                                                                    @else
-                                                                        <div class="user-avatar-initial">
-                                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                            <!-- Users Tab -->
+                                            <div role="tabpanel" class="tab-pane" id="users-tab">
+                                                @if($role->users->count() > 0)
+                                                    <div class="table-responsive">
+                                                        <table class="user-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>User</th>
+                                                                    <th>Email</th>
+                                                                    <th>Phone</th>
+                                                                    <th>Created</th>
+                                                                    <th style="text-align: right;">Actions</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach($role->users as $user)
+                                                                <tr>
+                                                                    <td>
+                                                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                                                            @if($user->profile_photo)
+                                                                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->name }}" class="user-avatar">
+                                                                            @else
+                                                                                <div class="user-avatar-initial">
+                                                                                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                                                </div>
+                                                                            @endif
+                                                                            <span style="font-weight: 500;">{{ $user->name }}</span>
                                                                         </div>
-                                                                    @endif
-                                                                    <span style="font-weight: 500;">{{ $user->name }}</span>
-                                                                </div>
-                                                            </td>
-                                                            <td>{{ $user->email }}</td>
-                                                            <td>{{ $user->phone ?? '-' }}</td>
-                                                            <td>{{ $user->created_at->format('d M Y') }}</td>
-                                                            <td style="text-align: right;">
-                                                                <a href="{{ route('superadmin.users.show', $user) }}" class="btn btn-sm btn-info">
-                                                                    <i class="ti-eye"></i> View
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @else
-                                            <div class="empty-state">
-                                                <i class="ti-user"></i>
-                                                <h4>No Users Assigned</h4>
-                                                <p>No users have been assigned to this role yet.</p>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <!-- Activity Tab -->
-                                    <div class="tab-pane fade" id="activity-tab" role="tabpanel">
-                                        @if($recentActivity->count() > 0)
-                                            @foreach($recentActivity as $activity)
-                                            <div class="activity-item">
-                                                <div style="display: flex; align-items: flex-start; gap: 15px;">
-                                                    <div class="activity-icon">
-                                                        <i class="ti-info-alt"></i>
+                                                                    </td>
+                                                                    <td>{{ $user->email }}</td>
+                                                                    <td>{{ $user->phone ?? '-' }}</td>
+                                                                    <td>{{ $user->created_at->format('d M Y') }}</td>
+                                                                    <td style="text-align: right;">
+                                                                        <a href="{{ route('superadmin.users.show', $user) }}" class="btn btn-sm btn-info">
+                                                                            <i class="ti-eye"></i> View
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
                                                     </div>
-                                                    <div style="flex: 1;">
-                                                        <p style="margin-bottom: 5px; color: #212529;">{{ $activity->description }}</p>
-                                                        <small class="text-muted">
-                                                            {{ $activity->user ? $activity->user->name : 'System' }} • 
-                                                            <i class="ti-time"></i> {{ $activity->created_at->diffForHumans() }}
-                                                        </small>
+                                                @else
+                                                    <div class="empty-state">
+                                                        <i class="ti-user"></i>
+                                                        <h4>No Users Assigned</h4>
+                                                        <p>No users have been assigned to this role yet.</p>
                                                     </div>
-                                                </div>
+                                                @endif
                                             </div>
-                                            @endforeach
-                                        @else
-                                            <div class="empty-state">
-                                                <i class="ti-time"></i>
-                                                <h4>No Recent Activity</h4>
-                                                <p>No activity recorded for this role yet.</p>
+                                            <!-- Activity Tab -->
+                                            <div role="tabpanel" class="tab-pane" id="activity-tab">
+                                                @if($recentActivity->count() > 0)
+                                                    @foreach($recentActivity as $activity)
+                                                    <div class="activity-item">
+                                                        <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                                            <div class="activity-icon">
+                                                                <i class="ti-info-alt"></i>
+                                                            </div>
+                                                            <div style="flex: 1;">
+                                                                <p style="margin-bottom: 5px; color: #212529;">{{ $activity->description }}</p>
+                                                                <small class="text-muted">
+                                                                    {{ $activity->user ? $activity->user->name : 'System' }} • 
+                                                                    <i class="ti-time"></i> {{ $activity->created_at->diffForHumans() }}
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @endforeach
+                                                @else
+                                                    <div class="empty-state">
+                                                        <i class="ti-time"></i>
+                                                        <h4>No Recent Activity</h4>
+                                                        <p>No activity recorded for this role yet.</p>
+                                                    </div>
+                                                @endif
                                             </div>
-                                        @endif
+                                          
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <!-- /# column -->
                     </div>
+
 
                     <!-- Footer -->
                     <div class="row">

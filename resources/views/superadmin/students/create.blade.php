@@ -18,7 +18,6 @@
 
         .info-box {
             background-color: #e7f3ff;
-            border: 1px solid #007bff;
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
@@ -37,17 +36,11 @@
         }
 
         .form-group label {
-            font-size: 1rem;
             font-weight: 500;
         }
 
-        .form-control {
-            font-size: 1rem;
-        }
 
-        .form-text {
-            font-size: 0.95rem;
-        }
+      
     </style>
 @endpush
 

@@ -20,14 +20,6 @@
             border-bottom: 2px solid #f0f0f0;
         }
 
-        .profile-photo-large {
-            width: 150px;
-            height: 150px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 3px solid #e9ecef;
-        }
-
         .profile-initial-large {
             width: 150px;
             height: 150px;
@@ -45,15 +37,15 @@
         }
 
         .info-label {
-            font-size: 0.875rem;
             color: #6c757d;
             margin-bottom: 5px;
         }
 
         .info-value {
-            font-size: 1rem;
-            color: #212529;
             font-weight: 500;
+            font-family: MontserratLight, sans-serif;
+            font-size: 16px;
+            color: #252525;
         }
 
         .stat-card {
@@ -120,7 +112,6 @@
         }
 
         .role-badge {
-            font-size: 0.75rem;
             padding: 4px 8px;
         }
     </style>
@@ -155,7 +146,7 @@
                     <!-- Action Buttons -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="action-button-group" style="margin-bottom: 20px;">
+                            <div class="action-button-group" style="margin-top: 10px; margin-bottom: 10px;">
                                 <a href="{{ route('superadmin.students.edit', $student) }}" class="btn btn-primary">
                                     <i class="ti-pencil-alt"></i> Edit Student
                                 </a>
@@ -175,188 +166,169 @@
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-body">
-                                    <div class="profile-header">
-                                        <!-- Profile Photo -->
-                                        <div>
-                                            @if($student->profile_photo)
-                                                <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="{{ $student->full_name }}" class="profile-photo-large">
-                                            @else
-                                                <div class="profile-initial-large bg-primary text-white">
-                                                    {{ strtoupper(substr($student->first_name, 0, 1)) }}
+                                    <div class="user-profile">
+                                        <div style="display: flex; align-items: center;">
+                                            <!-- Profile Photo -->
+                                            <div class="user-photo m-b-30">
+                                                @if($student->profile_photo)
+                                                    <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="{{ $student->full_name }}" class="img-responsive">
+                                                @else
+                                                    <div class="profile-initial-large bg-primary text-white">
+                                                        {{ strtoupper(substr($student->first_name, 0, 1)) }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <div class="user-profile-name">{{ $student->full_name }}</div>
+                                                <div class="info-item" style="padding: 0 15px">
+                                                    <div class="info-label">Status</div>
+                                                    <div class="info-value">
+                                                        @if($student->status === 'active')
+                                                            <span class="badge badge-success role-badge">Active</span>
+                                                        @elseif($student->status === 'inactive')
+                                                            <span class="badge badge-secondary role-badge">Inactive</span>
+                                                        @elseif($student->status === 'graduated')
+                                                            <span class="badge badge-info role-badge">Graduated</span>
+                                                        @else
+                                                            <span class="badge badge-danger role-badge">Withdrawn</span>
+                                                        @endif
+                                                    </div>
                                                 </div>
-                                            @endif
+                                            </div>
                                         </div>
-
-                                        <!-- Student Details Grid -->
-                                        <div style="flex: 1;">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="info-item">
-                                                        <div class="info-label">Full Name</div>
-                                                        <div class="info-value">{{ $student->full_name }}</div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6">
-                                                    <div class="info-item">
-                                                        <div class="info-label">Status</div>
-                                                        <div class="info-value">
-                                                            @if($student->status === 'active')
-                                                                <span class="badge badge-success role-badge">Active</span>
-                                                            @elseif($student->status === 'inactive')
-                                                                <span class="badge badge-secondary role-badge">Inactive</span>
-                                                            @elseif($student->status === 'graduated')
-                                                                <span class="badge badge-info role-badge">Graduated</span>
-                                                            @else
-                                                                <span class="badge badge-danger role-badge">Withdrawn</span>
-                                                            @endif
+                                               
+                                        <div class="custom-tab user-profile-tab">
+                                            <ul class="nav nav-tabs" role="tablist">
+                                                <li role="presentation" class="active"><a href="#1" aria-controls="1" role="tab" data-toggle="tab">Student information</a></li>
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div role="tabpanel" class="tab-pane active" id="1">
+                                                    <div class="contact-information">
+                                                        
+                                                        <div class="phone-content">
+                                                            <span class="contact-title">Full Name:</span>
+                                                            <span class="phone-number">{{ $student->full_name }}</span>
                                                         </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6">
-                                                    <div class="info-item">
-                                                        <div class="info-label">Date of Birth</div>
-                                                        <div class="info-value">
-                                                            {{ $student->date_of_birth->format('d F Y') }}
+                                                        <div class="address-content">
+                                                            <span class="contact-title">Date of Birth:</span>
+                                                            <span class="info-value">{{ $student->date_of_birth->format('d F Y') }}</span>
                                                             <small class="text-muted d-block">({{ $student->date_of_birth->age }} years old)</small>
                                                         </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6">
-                                                    <div class="info-item">
-                                                        <div class="info-label">Enrollment Date</div>
-                                                        <div class="info-value">{{ $student->enrollment_date->format('d F Y') }}</div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6">
-                                                    <div class="info-item">
-                                                        <div class="info-label">Parent</div>
-                                                        <div class="info-value">
-                                                            {{ $student->parent->name }}
-                                                            <small class="text-muted d-block">{{ $student->parent->email }}</small>
+                                                        <div class="email-content">
+                                                            <span class="contact-title">Enrollment Date:</span>
+                                                            <span class="contact-email">{{ $student->enrollment_date->format('d F Y') }}</span>
                                                         </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-6">
-                                                    <div class="info-item">
-                                                        <div class="info-label">Emergency Contact</div>
-                                                        <div class="info-value">
-                                                            {{ $student->emergency_contact ?? 'N/A' }}
-                                                            @if($student->emergency_phone)
-                                                                <small class="text-muted d-block">{{ $student->emergency_phone }}</small>
-                                                            @endif
+                                                        <div class="website-content">
+                                                            <span class="contact-title">Parent:</span>
+                                                            <span class="contact-website">{{ $student->parent->name }}
+                                                            <small class="text-muted d-block">{{ $student->parent->email }}</small></span>
                                                         </div>
-                                                    </div>
-                                                </div>
+                                                        <div class="skype-content">
+                                                            <span class="contact-title">Emergency Contact:</span>
+                                                            <span class="contact-skype">
+                                                                {{ $student->emergency_contact ?? 'N/A' }}
+                                                                @if($student->emergency_phone)
+                                                                    <small class="text-muted d-block">{{ $student->emergency_phone }}</small>
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                        @if($student->medical_info)
+                                                        <div class="birthday-content">
+                                                            <span class="contact-title">Medical Information:</span>
+                                                            <span class="birth-date">{{ $student->medical_info }} </span>
+                                                        </div>
+                                                        @endif
 
-                                                @if($student->medical_info)
-                                                <div class="col-md-12">
-                                                    <div class="info-item">
-                                                        <div class="info-label">Medical Information</div>
-                                                        <div class="info-value">{{ $student->medical_info }}</div>
                                                     </div>
+                                                    
                                                 </div>
-                                                @endif
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <!-- /# column -->
+                     
                     </div>
+                    <!-- /# row -->
 
                     <!-- Statistics Cards -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-primary text-white">
-                                        <i class="ti-book"></i>
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="" style="display: flex; justify-content: center; align-items: center;">
+                                        <div class="stat-icon bg-primary text-white">
+                                            <i class="ti-book"></i>
+                                        </div>
+                                        <div style="margin-left: 15px; flex: 1;">
+                                            <div class="stat-text">Enrolled Classes</div>
+                                            <div class="stat-digit">{{ $stats['enrolled_classes'] }}</div>
+                                        </div>
                                     </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Enrolled Classes</div>
-                                        <div class="stat-number text-primary">{{ $stats['enrolled_classes'] }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="" style="display: flex; justify-content: center; align-items: center;">
+                                        <div class="stat-icon bg-success text-white">
+                                            <i class="ti-check"></i>
+                                        </div>
+                                        <div style="margin-left: 15px; flex: 1;">
+                                            <div class="stat-text">Attendance Rate</div>
+                                            <div class="stat-digit">{{ number_format($stats['attendance_rate'], 1) }}%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="" style="display: flex; justify-content: center; align-items: center;">
+                                        <div class="stat-icon bg-warning text-white">
+                                            <i class="ti-write"></i>
+                                        </div>
+                                        <div style="margin-left: 15px; flex: 1;">
+                                            <div class="stat-text">Total Homework</div>
+                                            <div class="stat-digit">{{ $stats['total_homework'] }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="" style="display: flex; justify-content: center; align-items: center;">
+                                        <div class="stat-icon bg-info text-white">
+                                            <i class="ti-clipboard"></i>
+                                        </div>
+                                        <div style="margin-left: 15px; flex: 1;">
+                                            <div class="stat-text">Progress Reports</div>
+                                            <div class="stat-digit">{{ $stats['graded_homework'] }}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-success text-white">
-                                        <i class="ti-check"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Attendance Rate</div>
-                                        <div class="stat-number text-success">{{ number_format($stats['attendance_rate'], 1) }}%</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-warning text-white">
-                                        <i class="ti-write"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Total Homework</div>
-                                        <div class="stat-number text-warning">{{ $stats['total_homework'] }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-info text-white">
-                                        <i class="ti-clipboard"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Progress Reports</div>
-                                        <div class="stat-number text-info">{{ $stats['graded_homework'] }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Tabs -->
                     <div class="row mt-4">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-body">
                                     <div class="custom-tab">
                                         <ul class="nav nav-tabs" role="tablist">
-                                            <li role="presentation" class="active">
-                                                <a href="#classes" aria-controls="classes" role="tab" data-toggle="tab">
-                                                    <i class="ti-book"></i> Enrolled Classes
-                                                </a>
-                                            </li>
-                                            <li role="presentation">
-                                                <a href="#attendance" aria-controls="attendance" role="tab" data-toggle="tab">
-                                                    <i class="ti-check-box"></i> Attendance History
-                                                </a>
-                                            </li>
-                                            <li role="presentation">
-                                                <a href="#homework" aria-controls="homework" role="tab" data-toggle="tab">
-                                                    <i class="ti-write"></i> Homework
-                                                </a>
-                                            </li>
-                                            <li role="presentation">
-                                                <a href="#progress" aria-controls="progress" role="tab" data-toggle="tab">
-                                                    <i class="ti-stats-up"></i> Progress Reports
-                                                </a>
-                                            </li>
+                                            <li role="presentation" class="active"><a href="#classes" aria-controls="classes" role="tab" data-toggle="tab"><i class="ti-book"></i> Enrolled Classes</a></li>
+                                            <li role="presentation"><a href="#attendance" aria-controls="attendance" role="tab" data-toggle="tab"><i class="ti-check-box"></i> Attendance History</a></li>
+                                            <li role="presentation"><a href="#homework" aria-controls="homework" role="tab" data-toggle="tab"> <i class="ti-write"></i> Homework</a></li>
+                                            <li role="presentation"><a href="#progress" aria-controls="progress" role="tab" data-toggle="tab"><i class="ti-stats-up"></i> Progress Reports</a></li>
                                         </ul>
-
                                         <div class="tab-content">
                                             <!-- Classes Tab -->
                                             <div role="tabpanel" class="tab-pane active" id="classes">
@@ -392,7 +364,6 @@
                                                     </div>
                                                 @endif
                                             </div>
-
                                             <!-- Attendance Tab -->
                                             <div role="tabpanel" class="tab-pane" id="attendance">
                                                 @if($student->attendance->count() > 0)
@@ -438,10 +409,9 @@
                                                     </div>
                                                 @endif
                                             </div>
-
                                             <!-- Homework Tab -->
                                             <div role="tabpanel" class="tab-pane" id="homework">
-                                                @if($student->homeworkSubmissions->count() > 0)
+                                                 @if($student->homeworkSubmissions->count() > 0)
                                                     <div style="display: flex; flex-direction: column; gap: 15px;">
                                                         @foreach($student->homeworkSubmissions->sortByDesc('created_at')->take(20) as $submission)
                                                         <div class="class-card">
@@ -477,10 +447,8 @@
                                                     </div>
                                                 @endif
                                             </div>
-
-                                            <!-- Progress Tab -->
                                             <div role="tabpanel" class="tab-pane" id="progress">
-                                                @if($student->progressNotes->count() > 0)
+                                                 @if($student->progressNotes->count() > 0)
                                                     <div style="display: flex; flex-direction: column; gap: 15px;">
                                                         @foreach($student->progressNotes->sortByDesc('created_at')->take(20) as $note)
                                                         <div class="class-card">
@@ -528,6 +496,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- /# column -->
                     </div>
 
                     <!-- Footer -->

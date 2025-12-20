@@ -50,12 +50,6 @@
             margin-bottom: 20px;
         }
 
-        .info-label {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-
         .info-value {
             font-size: 1rem;
             color: #212529;

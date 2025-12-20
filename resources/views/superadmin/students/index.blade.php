@@ -64,7 +64,6 @@
         }
 
         .related-info {
-            font-size: 0.85rem;
             color: #6c757d;
         }
 
@@ -118,73 +117,64 @@
 
                 <div id="main-content">
                     <!-- Add Button -->
-                    <div class="row">
+                    {{-- <div class="row">
                         <div class="col-lg-12">
-                            <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: flex-end; margin-top: 10px; margin-bottom: 10px;">
                                 <a href="{{ route('superadmin.students.create') }}" class="btn btn-primary">
                                     <i class="ti-plus"></i> Add Student
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <!-- Statistics Cards -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-primary text-white">
-                                        <i class="ti-user"></i>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-user color-primary border-primary"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Total</div>
+                                        <div class="stat-digit">{{ $stats['total'] }}</div>
                                     </div>
-                                    <div style="margin-left: 10px; flex: 1;">
-                                        <div class="stat-label">Total</div>
-                                        <div class="stat-value text-primary">{{ $stats['total'] }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-check color-success border-success"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Active</div>
+                                        <div class="stat-digit">{{ $stats['active'] }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-lock color-info border-info"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Inactive</div>
+                                        <div class="stat-digit">{{ $stats['inactive'] }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-success text-white">
-                                        <i class="ti-check"></i>
-                                    </div>
-                                    <div style="margin-left: 10px; flex: 1;">
-                                        <div class="stat-label">Active</div>
-                                        <div class="stat-value text-success">{{ $stats['active'] }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-medall color-warning border-warning"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Graduated</div>
+                                        <div class="stat-digit">{{ $stats['graduated'] }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-secondary text-white">
-                                        <i class="ti-lock"></i>
-                                    </div>
-                                    <div style="margin-left: 10px; flex: 1;">
-                                        <div class="stat-label">Inactive</div>
-                                        <div class="stat-value text-secondary">{{ $stats['inactive'] }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-info text-white">
-                                        <i class="ti-medall"></i>
-                                    </div>
-                                    <div style="margin-left: 10px; flex: 1;">
-                                        <div class="stat-label">Graduated</div>
-                                        <div class="stat-value text-info">{{ $stats['graduated'] }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                      
                     </div>
 
                     <!-- Filters -->

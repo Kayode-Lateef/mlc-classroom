@@ -18,7 +18,6 @@
 
         .info-box {
             background-color: #fff3cd;
-            border: 1px solid #ffc107;
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
@@ -31,14 +30,13 @@
 
         .warning-box {
             background-color: #fff3cd;
-            border: 1px solid #ffc107;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
         }
 
         .form-helper-text {
-            font-size: 0.875rem;
+            font-size: 1.2rem;
             color: #6c757d;
             margin-top: 5px;
         }
@@ -51,9 +49,8 @@
             display: inline-block;
             padding: 4px 10px;
             background-color: #e7f3ff;
-            border: 1px solid #0066cc;
             border-radius: 4px;
-            font-size: 0.875rem;
+            font-size: 1rem;
             color: #0066cc;
             margin-top: 5px;
         }

@@ -16,13 +16,12 @@
         }
 
         .info-label {
-            font-size: 0.875rem;
             color: #6c757d;
             margin-bottom: 5px;
         }
 
         .info-value {
-            font-size: 1rem;
+            /* font-size: 1rem; */
             color: #212529;
             font-weight: 500;
         }
@@ -149,7 +148,7 @@
                     <!-- Action Buttons -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="action-button-group" style="margin-bottom: 20px;">
+                            <div class="action-button-group" style="margin-bottom: 10px; margin-top: 10px;">
                                 <a href="{{ route('superadmin.classes.edit', $class) }}" class="btn btn-primary">
                                     <i class="ti-pencil-alt"></i> Edit Class
                                 </a>
@@ -212,64 +211,56 @@
                         </div>
                     </div>
 
+
                     <!-- Statistics Cards -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-primary text-white">
-                                        <i class="ti-user"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Enrolled Students</div>
-                                        <div class="stat-number text-primary">{{ $stats['enrolled'] }} / {{ $class->capacity }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-user color-primary border-primary"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Enrolled Students</div>
+                                        <div class="stat-digit">{{ $stats['enrolled'] }} / {{ $class->capacity }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-success text-white">
-                                        <i class="ti-calendar"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Schedules</div>
-                                        <div class="stat-number text-success">{{ $class->schedules->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-calendar color-success border-success"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Schedules</div>
+                                        <div class="stat-digit">{{ $class->schedules->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-warning text-white">
-                                        <i class="ti-book"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Homework</div>
-                                        <div class="stat-number text-warning">{{ $class->homeworkAssignments->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-book color-pink border-pink"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Homework</div>
+                                        <div class="stat-digit">{{ $class->homeworkAssignments->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-3 col-md-6">
-                            <div class="stat-card">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="stat-icon bg-info text-white">
-                                        <i class="ti-clipboard"></i>
-                                    </div>
-                                    <div style="margin-left: 15px; flex: 1;">
-                                        <div class="stat-label">Progress Sheets</div>
-                                        <div class="stat-number text-info">{{ $class->progressSheets->count() }}</div>
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-book color-info border-info"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Progress Sheets</div>
+                                        <div class="stat-digit">{{ $class->progressSheets->count() }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                      
                     </div>
+
 
                     <!-- Tabs -->
                     <div class="row mt-4">

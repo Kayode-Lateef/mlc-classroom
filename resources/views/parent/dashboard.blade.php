@@ -9,10 +9,6 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .stat-widget-four:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
         
         .child-card {
             border: 2px solid #e9ecef;
@@ -35,7 +31,6 @@
         .subject-card {
             padding: 15px;
             margin-bottom: 10px;
-            border-left: 4px solid #007bff;
             background-color: #f8f9fa;
             border-radius: 4px;
         }
@@ -91,7 +86,6 @@
         }
 
         .schedule-item {
-            font-size: 0.85rem;
             background-color: #f8f9fa;
             padding: 8px;
             border-radius: 4px;
@@ -109,7 +103,6 @@
                     <div class="page-header">
                         <div class="page-title">
                             <h1>Parent Dashboard <span>Welcome, {{ auth()->user()->name }}</span></h1>
-                            <p class="text-muted">{{ date('l, F d, Y') }}</p>
                         </div>
                     </div>
                 </div>
@@ -152,7 +145,7 @@
                 <!-- Child Info Header -->
                 <div class="row">
                     <div class="col-lg-12">
-                        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-9">
@@ -170,23 +163,23 @@
                     </div>
                 </div>
 
-                <!-- Statistics Cards -->
-                <div class="row">
+                <!-- Statistics Cards -->              
+                  <div class="row">
                     <div class="col-lg-3">
                         <div class="card">
                             <div class="stat-widget-four">
-                                <div class="stat-icon bg-success">
+                                <div class="stat-icon color-success border-success">
                                     <i class="ti-check"></i>
                                 </div>
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Attendance Rate</div>
                                         <div class="stat-text"><strong>{{ number_format($stats['attendance_rate'], 1) }}%</strong></div>
+                                        <div class="card-footer text-center text-muted">
+                                            {{ $stats['present_count'] }}/{{ $stats['total_attendance'] }} classes this month
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-footer text-center text-muted" style="font-size: 0.85rem;">
-                                {{ $stats['present_count'] }}/{{ $stats['total_attendance'] }} classes this month
                             </div>
                         </div>
                     </div>
@@ -194,18 +187,18 @@
                     <div class="col-lg-3">
                         <div class="card">
                             <div class="stat-widget-four">
-                                <div class="stat-icon bg-warning">
+                                <div class="stat-icon color-info border-info">
                                     <i class="ti-clipboard"></i>
                                 </div>
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Pending Homework</div>
-                                        <div class="stat-text"><strong>{{ $stats['pending_homework'] }}</strong></div>
+                                        <div class="stat-text">{{ $stats['pending_homework'] }}</strong></div>
+                                        <div class="card-footer text-center">
+                                            <a href="{{ route('parent.homework.index', $selectedChild) }}" class="text-warning">View homework →</a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-footer text-center">
-                                <a href="{{ route('parent.homework.index', $selectedChild) }}" class="text-warning">View homework →</a>
                             </div>
                         </div>
                     </div>
@@ -213,26 +206,26 @@
                     <div class="col-lg-3">
                         <div class="card">
                             <div class="stat-widget-four">
-                                <div class="stat-icon bg-info">
+                                <div class="stat-icon color-primary border-primary">
                                     <i class="ti-blackboard"></i>
                                 </div>
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Enrolled Classes</div>
                                         <div class="stat-text"><strong>{{ $stats['enrolled_classes'] }}</strong></div>
+                                        {{-- <div class="card-footer text-center">
+                                            <a href="{{ route('parent.students.classes', $selectedChild) }}" class="text-info">View classes →</a>
+                                        </div> --}}
                                     </div>
                                 </div>
                             </div>
-                            {{-- <div class="card-footer text-center">
-                                <a href="{{ route('parent.students.classes', $selectedChild) }}" class="text-info">View classes →</a>
-                            </div> --}}
                         </div>
                     </div>
                     
                     <div class="col-lg-3">
                         <div class="card">
                             <div class="stat-widget-four">
-                                <div class="stat-icon bg-primary">
+                                <div class="stat-icon color-pink border-pink">
                                     <i class="ti-star"></i>
                                 </div>
                                 <div class="stat-content">
@@ -247,15 +240,17 @@
                                                 @endif
                                             </strong>
                                         </div>
+                                        <div class="card-footer text-center text-muted">
+                                            Last {{ $stats['recent_grades']->count() }} assignments
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-footer text-center text-muted" style="font-size: 0.85rem;">
-                                Last {{ $stats['recent_grades']->count() }} assignments
                             </div>
                         </div>
                     </div>
                 </div>
+
+             
 
                 <!-- Upcoming Homework & Recent Progress -->
                 <div class="row">
@@ -318,7 +313,7 @@
                                         </div>
                                         <p class="mb-2 text-muted">{{ $progressNote->progressSheet->topic }}</p>
                                         @if($progressNote->notes)
-                                        <p class="mb-2" style="font-style: italic; font-size: 0.9rem;">"{{ Str::limit($progressNote->notes, 100) }}"</p>
+                                        <p class="mb-2" style="font-style: italic;">"{{ Str::limit($progressNote->notes, 100) }}"</p>
                                         @endif
                                         <div class="d-flex justify-content-between align-items-center">
                                             <small class="text-muted">
@@ -371,7 +366,7 @@
                                                     @endforeach
                                                 @endforeach
                                             @else
-                                                <p class="text-center text-muted" style="font-size: 0.85rem;">No classes</p>
+                                                <p class="text-center text-muted">No classes</p>
                                             @endif
                                         </div>
                                     </div>
@@ -492,25 +487,5 @@
 @endsection
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            // Update date-time
-            function updateDateTime() {
-                const now = new Date();
-                const options = { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                };
-                document.getElementById('date-time').textContent = now.toLocaleString('en-US', options);
-            }
-            
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
-        });
-    </script>
+
 @endpush

@@ -18,7 +18,6 @@
 
         .info-box {
             background-color: #fff3cd;
-            border: 1px solid #ffc107;
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;

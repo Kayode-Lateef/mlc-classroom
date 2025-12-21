@@ -56,13 +56,13 @@
             display: flex;
             align-items: center;
             margin-bottom: 12px;
-            font-size: 0.875rem;
+            font-size: 1.4rem;
             color: #6c757d;
         }
 
         .class-info-item i {
             margin-right: 8px;
-            font-size: 1rem;
+            font-size: 1.6rem;
             width: 16px;
             text-align: center;
         }
@@ -76,7 +76,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 5px;
-            font-size: 0.75rem;
+            font-size: 1.2rem;
             color: #6c757d;
         }
 
@@ -337,26 +337,26 @@
                         </div>
                     @endif
 
+
+
                     <!-- Classes Grid -->
                     @if($classes->count() > 0)
                     <div class="row">
                         @foreach($classes as $class)
                         <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="class-card">
-                                <!-- Class Header -->
-                                <div class="class-card-header">
-                                    <h3>{{ $class->name }}</h3>
-                                    <p>{{ $class->subject }}</p>
+                            <div class="panel lobipanel-basic panel-info">
+                                <div class="panel-heading">
+                                    <div class="panel-title">
+                                        <h3>{{ $class->name }}</h3>
+                                        <p>{{ $class->subject }}</p>
+                                    </div>
                                 </div>
-
-                                <!-- Class Body -->
-                                <div class="class-card-body">
-                                    <!-- Class Information -->
+                                <div class="panel-body">
+                                     <!-- Class Information -->
                                     <div class="class-info-item">
                                         <i class="ti-user"></i>
                                         <span>Teacher: <strong>{{ $class->teacher->name ?? 'Not assigned' }}</strong></span>
                                     </div>
-
                                     <div class="class-info-item">
                                         <i class="ti-id-badge"></i>
                                         <span>Students: <strong>{{ $class->enrollments()->where('status', 'active')->count() }} / {{ $class->capacity }}</strong></span>
@@ -406,10 +406,12 @@
                                             <i class="ti-pencil-alt"></i>
                                         </a>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
                         @endforeach
+                       
                     </div>
 
                     <!-- Pagination -->

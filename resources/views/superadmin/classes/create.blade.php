@@ -18,7 +18,6 @@
 
         .info-box {
             background-color: #e7f3ff;
-            border: 1px solid #0066cc;
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
@@ -30,7 +29,7 @@
         }
 
         .form-helper-text {
-            font-size: 0.875rem;
+            font-size: 1.2rem;
             color: #6c757d;
             margin-top: 5px;
         }

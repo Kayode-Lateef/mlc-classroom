@@ -9,6 +9,7 @@ use App\Models\ClassModel;
 use App\Models\Attendance;
 use App\Models\ClassEnrollment;
 use App\Models\HomeworkAssignment;
+use App\Models\ProgressSheet;  // ← ADDED: Missing import
 use App\Models\SmsLog;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
@@ -59,6 +60,13 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // Recent progress sheets (last 7 days)
+        $recentProgressSheets = ProgressSheet::with(['class', 'teacher', 'progressNotes'])
+            ->where('date', '>=', now()->subDays(7))
+            ->orderBy('date', 'desc')
+            ->limit(10)
+            ->get();
+
         // Homework completion rate (this week)
         $weekStart = now()->startOfWeek();
         $weekEnd = now()->endOfWeek();
@@ -105,17 +113,92 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // ============================================================
+        // CHART DATA CALCULATIONS - COMPLETE VERSION
+        // ============================================================
+
+        // Chart Data: Enrollment Trend (Last 6 months)
+        $enrollmentChartData = [
+            'labels' => [],
+            'students' => [],
+            'teachers' => []
+        ];
+        
+        // Loop through last 6 months and count registrations
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $enrollmentChartData['labels'][] = $month->format('M');
+            
+            // Count students created in this month
+            $enrollmentChartData['students'][] = Student::whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->count();
+            
+            // Count teachers created in this month
+            $enrollmentChartData['teachers'][] = User::where('role', 'teacher')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->count();
+        }
+
+        // Chart Data: User Distribution (Current totals)
+        $userDistributionData = [
+            'labels' => ['Students', 'Teachers', 'Parents', 'Admins'],
+            'data' => [
+                $stats['total_students'],
+                $stats['total_teachers'],
+                $stats['total_parents'],
+                $stats['total_admins'] + $stats['total_superadmins']
+            ]
+        ];
+
+        // Chart Data: Weekly Attendance (Last 7 days)
+        $weeklyAttendanceData = [
+            'labels' => [],
+            'data' => []
+        ];
+        
+        // Loop through last 7 days and calculate attendance percentage
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $weeklyAttendanceData['labels'][] = $date->format('D'); // Mon, Tue, Wed...
+            
+            // Calculate attendance percentage for this day
+            $dayTotal = Attendance::whereDate('date', $date->toDateString())->count();
+            $dayPresent = Attendance::whereDate('date', $date->toDateString())
+                ->where('status', 'present')
+                ->count();
+            
+            $weeklyAttendanceData['data'][] = $dayTotal > 0 
+                ? round(($dayPresent / $dayTotal) * 100, 1) 
+                : 0;
+        }
+
+        // Calculate attendance rate for today (used in stats card)
+        $attendanceRate = $attendanceToday['total'] > 0 
+            ? round(($attendanceToday['present'] / $attendanceToday['total']) * 100, 1) 
+            : 0;
+
+        // ============================================================
+        // RETURN VIEW WITH ALL DATA
+        // ============================================================
+
         return view('superadmin.dashboard', compact(
             'stats',
             'attendanceToday',
+            'attendanceRate',
             'recentUsers',
             'recentEnrollments',
+            'recentProgressSheets',
             'homeworkCompletionRate',
             'smsThisMonth',
             'smsLastMonth',
             'smsCostThisMonth',
             'recentActivity',
-            'criticalActivity'
+            'criticalActivity',
+            'enrollmentChartData',
+            'userDistributionData',
+            'weeklyAttendanceData'
         ));
     }
 }

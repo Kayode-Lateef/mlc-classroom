@@ -26,7 +26,6 @@
             background-color: #d4edda;
         }
         
-
         .class-card.completed {
             opacity: 0.7;
         }
@@ -46,13 +45,11 @@
             background-color: #f8f9fa;
         }
         
-        
         .grade-badge {
             min-width: 50px;
             text-align: center;
         }
 </style>
-
 @endpush
 
 @section('content')
@@ -91,7 +88,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">My Students</div>
-                                        <div class="stat-text">Total: <strong>156</strong></div>
+                                        <div class="stat-text">Total: <strong>{{ $stats['total_students'] }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -107,7 +104,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">My Classes</div>
-                                        <div class="stat-text">Total: <strong>6</strong></div>
+                                        <div class="stat-text">Total: <strong>{{ $stats['total_classes'] }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -123,7 +120,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Pending Grades</div>
-                                        <div class="stat-text">Count: <strong>23</strong></div>
+                                        <div class="stat-text">Count: <strong>{{ $stats['pending_grading'] }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -139,7 +136,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Assignments</div>
-                                        <div class="stat-text">Active: <strong>8</strong></div>
+                                        <div class="stat-text">Active: <strong>{{ $stats['active_assignments'] }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -158,7 +155,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Classes Today</div>
-                                        <div class="stat-text">Count: <strong>4</strong></div>
+                                        <div class="stat-text">Count: <strong>{{ $classesTodayCount }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -174,7 +171,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Attendance Rate</div>
-                                        <div class="stat-text">Today: <strong>94%</strong></div>
+                                        <div class="stat-text">Today: <strong>{{ $todayAttendanceRate }}%</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -190,7 +187,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Due Assignments</div>
-                                        <div class="stat-text">This Week: <strong>3</strong></div>
+                                        <div class="stat-text">This Week: <strong>{{ $dueThisWeek }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -206,7 +203,7 @@
                                 <div class="stat-content">
                                     <div class="text-left dib">
                                         <div class="stat-heading">Absent Students</div>
-                                        <div class="stat-text">Today: <strong>9</strong></div>
+                                        <div class="stat-text">Today: <strong>{{ $absentStudentsToday }}</strong></div>
                                     </div>
                                 </div>
                             </div>
@@ -229,68 +226,61 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <!-- Completed Class -->
-                                <div class="class-card completed">
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <h5 class="mb-1"><i class="ti-check-box text-success"></i> Grade 10A - Mathematics</h5>
-                                            <p class="mb-1"><i class="ti-time"></i> <strong>08:00 AM - 09:00 AM</strong> | Room 101</p>
-                                            <p class="mb-0 text-muted">Topic: Quadratic Equations</p>
-                                        </div>
-                                        <div class="col-md-4 text-right">
-                                            <span class="badge badge-secondary">Completed</span><br>
-                                            <small>Attendance: 28/30 (93%)</small><br>
-                                            <a href="#" class="btn btn-sm btn-info mt-2"><i class="ti-eye"></i> View Details</a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Active Class -->
-                                <div class="class-card active">
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <h5 class="mb-1"><i class="ti-video-clapper text-success"></i> Grade 11B - Advanced Math</h5>
-                                            <p class="mb-1"><i class="ti-time"></i> <strong>09:30 AM - 10:30 AM</strong> | Room 205</p>
-                                            <p class="mb-0 text-muted">Topic: Calculus - Derivatives</p>
-                                        </div>
-                                        <div class="col-md-4 text-right">
-                                            <span class="badge badge-success">In Progress</span><br>
-                                            <small>Started 15 mins ago</small><br>
-                                            <a href="#" class="btn btn-sm btn-success mt-2"><i class="ti-clipboard"></i> Mark Attendance</a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Upcoming Classes -->
-                                <div class="class-card upcoming">
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <h5 class="mb-1"><i class="ti-alarm-clock text-warning"></i> Grade 9C - Basic Mathematics</h5>
-                                            <p class="mb-1"><i class="ti-time"></i> <strong>11:00 AM - 12:00 PM</strong> | Room 103</p>
-                                            <p class="mb-0 text-muted">Topic: Geometry - Triangles</p>
-                                        </div>
-                                        <div class="col-md-4 text-right">
-                                            <span class="badge badge-warning">Upcoming</span><br>
-                                            <small>Starts in 30 mins</small><br>
-                                            <a href="#" class="btn btn-sm btn-primary mt-2"><i class="ti-eye"></i> Prepare</a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="class-card upcoming">
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <h5 class="mb-1"><i class="ti-alarm-clock text-warning"></i> Grade 12A - Statistics</h5>
-                                            <p class="mb-1"><i class="ti-time"></i> <strong>02:00 PM - 03:00 PM</strong> | Room 202</p>
-                                            <p class="mb-0 text-muted">Topic: Probability Distributions</p>
-                                        </div>
-                                        <div class="col-md-4 text-right">
-                                            <span class="badge badge-warning">Upcoming</span><br>
-                                            <small>Starts in 4 hours</small><br>
-                                            <a href="#" class="btn btn-sm btn-primary mt-2"><i class="ti-eye"></i> Prepare</a>
+                                @if(count($todaysSchedule) > 0)
+                                    @foreach($todaysSchedule as $item)
+                                    <div class="class-card {{ $item['status'] }}">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h5 class="mb-1">
+                                                    @if($item['status'] === 'completed')
+                                                        <i class="ti-check-box text-success"></i>
+                                                    @elseif($item['status'] === 'in_progress')
+                                                        <i class="ti-video-clapper text-success"></i>
+                                                    @else
+                                                        <i class="ti-alarm-clock text-warning"></i>
+                                                    @endif
+                                                    {{ $item['class']->name }}
+                                                </h5>
+                                                <p class="mb-1">
+                                                    <i class="ti-time"></i> 
+                                                    <strong>{{ $item['start_time']->format('h:i A') }} - {{ $item['end_time']->format('h:i A') }}</strong> 
+                                                    | Room {{ $item['class']->room_number ?? 'TBA' }}
+                                                </p>
+                                                <p class="mb-0 text-muted">Subject: {{ $item['class']->subject }}</p>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                @if($item['status'] === 'completed')
+                                                    <span class="badge badge-secondary">Completed</span><br>
+                                                    @if(!empty($item['attendance']))
+                                                        <small>Attendance: {{ $item['attendance']['present'] }}/{{ $item['attendance']['total'] }} ({{ $item['attendance']['rate'] }}%)</small><br>
+                                                    @endif
+                                                    <a href="{{ route('teacher.classes.show', $item['class']->id) }}" class="btn btn-sm btn-info mt-2">
+                                                        <i class="ti-eye"></i> View Details
+                                                    </a>
+                                                @elseif($item['status'] === 'in_progress')
+                                                    <span class="badge badge-success">In Progress</span><br>
+                                                    <small>Started {{ $item['start_time']->diffForHumans() }}</small><br>
+                                                    <a href="{{ route('teacher.attendance.create', ['class_id' => $item['class']->id]) }}" class="btn btn-sm btn-success mt-2">
+                                                        <i class="ti-clipboard"></i> Mark Attendance
+                                                    </a>
+                                                @else
+                                                    <span class="badge badge-warning">Upcoming</span><br>
+                                                    <small>Starts {{ $item['start_time']->diffForHumans() }}</small><br>
+                                                    <a href="{{ route('teacher.classes.show', $item['class']->id) }}" class="btn btn-sm btn-primary mt-2">
+                                                        <i class="ti-eye"></i> Prepare
+                                                    </a>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                    @endforeach
+                                @else
+                                    <div class="text-center py-4">
+                                        <i class="ti-calendar" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                        <h4 class="mt-3">No Classes Today</h4>
+                                        <p class="text-muted">You don't have any classes scheduled for today.</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -302,48 +292,57 @@
                                 <h4><i class="ti-bolt"></i> Quick Actions</h4>
                             </div>
                             <div class="card-body">
-                                <button class="btn btn-primary quick-action-btn">
+                                <a href="{{ route('teacher.attendance.create') }}" class="btn btn-primary quick-action-btn">
                                     <i class="ti-clipboard"></i> Mark Attendance
-                                </button>
-                                <button class="btn btn-success quick-action-btn">
+                                </a>
+                                <a href="{{ route('teacher.homework.index') }}" class="btn btn-success quick-action-btn">
                                     <i class="ti-pencil-alt"></i> Grade Assignments
-                                </button>
-                                <button class="btn btn-info quick-action-btn">
+                                </a>
+                                <a href="{{ route('teacher.homework.create') }}" class="btn btn-info quick-action-btn">
                                     <i class="ti-write"></i> Create Assignment
-                                </button>
-                                <button class="btn btn-warning quick-action-btn">
-                                    <i class="ti-calendar"></i> View Lesson Plan
-                                </button>
-                                <button class="btn btn-secondary quick-action-btn">
-                                    <i class="ti-bar-chart"></i> Student Reports
-                                </button>
-                                <button class="btn btn-dark quick-action-btn">
-                                    <i class="ti-announcement"></i> Send Notice
-                                </button>
+                                </a>
+                                <a href="{{ route('teacher.progress-sheets.index') }}" class="btn btn-warning quick-action-btn">
+                                    <i class="ti-calendar"></i> Progress Sheets
+                                </a>
+                                <a href="{{ route('teacher.classes.index') }}" class="btn btn-secondary quick-action-btn">
+                                    <i class="ti-bar-chart"></i> My Classes
+                                </a>
+                                <a href="{{ route('teacher.resources.index') }}" class="btn btn-dark quick-action-btn">
+                                    <i class="ti-folder"></i> Learning Resources
+                                </a>
                             </div>
                         </div>
 
                         <!-- Important Reminders -->
                         <div class="card alert mt-3">
                             <div class="card-header">
-                                <h4><i class="ti-bell"></i> Reminders <span class="badge badge-danger">5</span></h4>
+                                <h4><i class="ti-bell"></i> Reminders <span class="badge badge-danger">{{ count($pendingByAssignment) }}</span></h4>
                             </div>
                             <div class="card-body" style="max-height: 350px; overflow-y: auto;">
-                                <div class="alert alert-danger">
-                                    <strong><i class="ti-alert"></i> Urgent!</strong>
-                                    <p class="mb-0">Grade 10A test papers due by 3 PM today</p>
-                                </div>
-                                <div class="alert alert-warning">
-                                    <strong><i class="ti-time"></i> Deadline</strong>
-                                    <p class="mb-0">Submit lesson plans for next week by Dec 15</p>
-                                </div>
-                                <div class="alert alert-info">
-                                    <strong><i class="ti-calendar"></i> Upcoming</strong>
-                                    <p class="mb-0">Parent-Teacher meeting on Dec 18</p>
-                                </div>
+                                @if($stats['pending_grading'] > 0)
+                                    <div class="alert alert-danger">
+                                        <strong><i class="ti-alert"></i> Urgent!</strong>
+                                        <p class="mb-0">{{ $stats['pending_grading'] }} assignments need grading</p>
+                                    </div>
+                                @endif
+                                
+                                @if($dueThisWeek > 0)
+                                    <div class="alert alert-warning">
+                                        <strong><i class="ti-time"></i> Deadline</strong>
+                                        <p class="mb-0">{{ $dueThisWeek }} assignments due this week</p>
+                                    </div>
+                                @endif
+                                
+                                @if(count($studentsNeedingAttention) > 0)
+                                    <div class="alert alert-info">
+                                        <strong><i class="ti-alert"></i> Attention Needed</strong>
+                                        <p class="mb-0">{{ count($studentsNeedingAttention) }} students need attention</p>
+                                    </div>
+                                @endif
+                                
                                 <div class="alert alert-success">
-                                    <strong><i class="ti-check"></i> Complete</strong>
-                                    <p class="mb-0">3 assignments graded today</p>
+                                    <strong><i class="ti-check"></i> Today</strong>
+                                    <p class="mb-0">{{ $classesTodayCount }} classes scheduled</p>
                                 </div>
                             </div>
                         </div>
@@ -364,73 +363,53 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Student</th>
-                                                <th>Class</th>
-                                                <th>Last Test</th>
-                                                <th>Avg</th>
-                                                <th>Attendance</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <strong>John Smith</strong><br>
-                                                    <small class="text-muted">STD-001</small>
-                                                </td>
-                                                <td><span class="badge badge-primary">10A</span></td>
-                                                <td><span class="badge badge-success grade-badge">92%</span></td>
-                                                <td><span class="badge badge-success grade-badge">88%</span></td>
-                                                <td><span class="badge badge-success">95%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <strong>Emily Davis</strong><br>
-                                                    <small class="text-muted">STD-002</small>
-                                                </td>
-                                                <td><span class="badge badge-primary">11B</span></td>
-                                                <td><span class="badge badge-info grade-badge">85%</span></td>
-                                                <td><span class="badge badge-info grade-badge">82%</span></td>
-                                                <td><span class="badge badge-success">92%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <strong>Michael Brown</strong><br>
-                                                    <small class="text-muted">STD-003</small>
-                                                </td>
-                                                <td><span class="badge badge-primary">9C</span></td>
-                                                <td><span class="badge badge-warning grade-badge">68%</span></td>
-                                                <td><span class="badge badge-warning grade-badge">70%</span></td>
-                                                <td><span class="badge badge-warning">78%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <strong>Sarah Wilson</strong><br>
-                                                    <small class="text-muted">STD-004</small>
-                                                </td>
-                                                <td><span class="badge badge-primary">12A</span></td>
-                                                <td><span class="badge badge-success grade-badge">95%</span></td>
-                                                <td><span class="badge badge-success grade-badge">94%</span></td>
-                                                <td><span class="badge badge-success">98%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <strong>David Lee</strong><br>
-                                                    <small class="text-muted">STD-005</small>
-                                                </td>
-                                                <td><span class="badge badge-primary">10B</span></td>
-                                                <td><span class="badge badge-danger grade-badge">52%</span></td>
-                                                <td><span class="badge badge-danger grade-badge">58%</span></td>
-                                                <td><span class="badge badge-danger">65%</span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                @if(count($recentStudentPerformance) > 0)
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student</th>
+                                                    <th>Class</th>
+                                                    <th>Last Test</th>
+                                                    <th>Avg</th>
+                                                    <th>Attendance</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($recentStudentPerformance as $performance)
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ $performance['student']->full_name }}</strong><br>
+                                                        <small class="text-muted">{{ $performance['student']->id }}</small>
+                                                    </td>
+                                                    <td><span class="badge badge-primary">{{ Str::limit($performance['class'], 10) }}</span></td>
+                                                    <td>
+                                                        <span class="badge {{ $performance['last_test'] >= 80 ? 'badge-success' : ($performance['last_test'] >= 70 ? 'badge-info' : ($performance['last_test'] >= 60 ? 'badge-warning' : 'badge-danger')) }} grade-badge">
+                                                            {{ $performance['last_test'] }}%
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $performance['avg_score'] >= 80 ? 'badge-success' : ($performance['avg_score'] >= 70 ? 'badge-info' : ($performance['avg_score'] >= 60 ? 'badge-warning' : 'badge-danger')) }} grade-badge">
+                                                            {{ $performance['avg_score'] }}%
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {{ $performance['attendance_rate'] >= 90 ? 'badge-success' : ($performance['attendance_rate'] >= 80 ? 'badge-warning' : 'badge-danger') }}">
+                                                            {{ $performance['attendance_rate'] }}%
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div class="text-center py-4">
+                                        <p class="text-muted">No student performance data available yet.</p>
+                                    </div>
+                                @endif
                                 <div class="text-center mt-3">
-                                    <a href="#" class="btn btn-primary btn-sm">View All Students</a>
+                                    <a href="{{ route('teacher.classes.index') }}" class="btn btn-primary btn-sm">View All Students</a>
                                 </div>
                             </div>
                         </div>
@@ -440,64 +419,50 @@
                     <div class="col-lg-6">
                         <div class="card alert">
                             <div class="card-header">
-                                <h4><i class="ti-pencil"></i> Pending Assignments to Grade <span class="badge badge-warning">23</span></h4>
+                                <h4><i class="ti-pencil"></i> Pending Assignments to Grade <span class="badge badge-warning">{{ $stats['pending_grading'] }}</span></h4>
                             </div>
                             <div class="card-body" style="max-height: 450px; overflow-y: auto;">
-                                <div class="assignment-item assignment-due-soon">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-1">Quadratic Equations Worksheet</h6>
-                                            <p class="mb-1"><span class="badge badge-primary">Grade 10A</span></p>
-                                            <small class="text-muted">Submitted: 28 students | Graded: 5</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-danger">Due Today</span><br>
-                                            <a href="#" class="btn btn-sm btn-success mt-2">Grade Now</a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="assignment-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-1">Calculus Problem Set #5</h6>
-                                            <p class="mb-1"><span class="badge badge-primary">Grade 11B</span></p>
-                                            <small class="text-muted">Submitted: 25 students | Graded: 10</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-warning">Due Tomorrow</span><br>
-                                            <a href="#" class="btn btn-sm btn-primary mt-2">Grade Now</a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="assignment-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-1">Geometry - Triangle Properties</h6>
-                                            <p class="mb-1"><span class="badge badge-primary">Grade 9C</span></p>
-                                            <small class="text-muted">Submitted: 22 students | Graded: 8</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-info">Due Dec 16</span><br>
-                                            <a href="#" class="btn btn-sm btn-primary mt-2">Grade Now</a>
+                                @if(count($pendingByAssignment) > 0)
+                                    @foreach($pendingByAssignment as $assignmentId => $data)
+                                    <div class="assignment-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="mb-1">{{ $data['assignment']->title }}</h6>
+                                                <p class="mb-1"><span class="badge badge-primary">{{ $data['assignment']->class->name }}</span></p>
+                                                <small class="text-muted">
+                                                    Submitted: {{ $data['total_submitted'] }} | Graded: {{ $data['total_graded'] }}
+                                                </small>
+                                            </div>
+                                            <div class="text-right">
+                                                @php
+                                                    $dueDate = \Carbon\Carbon::parse($data['assignment']->due_date);
+                                                    $isOverdue = $dueDate->isPast();
+                                                    $isDueToday = $dueDate->isToday();
+                                                    $isDueTomorrow = $dueDate->isTomorrow();
+                                                @endphp
+                                                
+                                                @if($isOverdue)
+                                                    <span class="badge badge-danger">Overdue</span>
+                                                @elseif($isDueToday)
+                                                    <span class="badge badge-danger">Due Today</span>
+                                                @elseif($isDueTomorrow)
+                                                    <span class="badge badge-warning">Due Tomorrow</span>
+                                                @else
+                                                    <span class="badge badge-info">Due {{ $dueDate->format('M d') }}</span>
+                                                @endif
+                                                <br>
+                                                <a href="{{ route('teacher.homework.submissions', $data['assignment']->id) }}" class="btn btn-sm btn-success mt-2">Grade Now</a>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="assignment-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-1">Statistics Quiz #3</h6>
-                                            <p class="mb-1"><span class="badge badge-primary">Grade 12A</span></p>
-                                            <small class="text-muted">Submitted: 30 students | Graded: 0</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-info">Due Dec 18</span><br>
-                                            <a href="#" class="btn btn-sm btn-primary mt-2">Grade Now</a>
-                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="text-center py-4">
+                                        <i class="ti-check" style="font-size: 3rem; color: #28a745;"></i>
+                                        <h5 class="mt-3">All Caught Up!</h5>
+                                        <p class="text-muted">No pending assignments to grade.</p>
                                     </div>
-                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -519,7 +484,7 @@
                     <div class="col-lg-6">
                         <div class="card">
                             <div class="card-header">
-                                <h4>Attendance Trend - This Month</h4>
+                                <h4>Attendance Trend - Last 4 Weeks</h4>
                             </div>
                             <div class="card-body">
                                 <canvas id="attendanceTrendChart"></canvas>
@@ -534,55 +499,53 @@
                     <div class="col-lg-6">
                         <div class="card alert">
                             <div class="card-header">
-                                <h4><i class="ti-alert"></i> Students Needing Attention <span class="badge badge-danger">12</span></h4>
+                                <h4><i class="ti-alert"></i> Students Needing Attention <span class="badge badge-danger">{{ count($studentsNeedingAttention) }}</span></h4>
                             </div>
                             <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Student</th>
-                                                <th>Class</th>
-                                                <th>Issue</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>David Lee</td>
-                                                <td><span class="badge badge-primary">10B</span></td>
-                                                <td><span class="badge badge-danger">Low Score (52%)</span></td>
-                                                <td>
-                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Lisa Wang</td>
-                                                <td><span class="badge badge-primary">9C</span></td>
-                                                <td><span class="badge badge-warning">Poor Attendance (60%)</span></td>
-                                                <td>
-                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Mark Johnson</td>
-                                                <td><span class="badge badge-primary">11B</span></td>
-                                                <td><span class="badge badge-danger">Missing 3 Assignments</span></td>
-                                                <td>
-                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Anna Chen</td>
-                                                <td><span class="badge badge-primary">10A</span></td>
-                                                <td><span class="badge badge-warning">Declining Grades</span></td>
-                                                <td>
-                                                    <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                @if(count($studentsNeedingAttention) > 0)
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student</th>
+                                                    <th>Class</th>
+                                                    <th>Issue</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($studentsNeedingAttention as $student)
+                                                <tr>
+                                                    <td>{{ $student['student']->full_name }}</td>
+                                                    <td><span class="badge badge-primary">{{ Str::limit($student['class'], 10) }}</span></td>
+                                                    <td>
+                                                        @if($student['avg_score'] < 60)
+                                                            <span class="badge badge-danger">Low Score ({{ $student['avg_score'] }}%)</span>
+                                                        @elseif($student['avg_score'] < 70)
+                                                            <span class="badge badge-warning">Below Average ({{ $student['avg_score'] }}%)</span>
+                                                        @endif
+                                                        
+                                                        @if($student['attendance_rate'] < 70)
+                                                            <span class="badge badge-danger">Poor Attendance ({{ $student['attendance_rate'] }}%)</span>
+                                                        @elseif($student['attendance_rate'] < 80)
+                                                            <span class="badge badge-warning">Low Attendance ({{ $student['attendance_rate'] }}%)</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <a href="#" class="btn btn-sm btn-warning"><i class="ti-comment"></i> Contact</a>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div class="text-center py-4">
+                                        <i class="ti-face-smile" style="font-size: 3rem; color: #28a745;"></i>
+                                        <h5 class="mt-3">All Students Doing Well!</h5>
+                                        <p class="text-muted">No students need immediate attention.</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -594,90 +557,57 @@
                                 <h4><i class="ti-files"></i> Recent Assignment Submissions</h4>
                             </div>
                             <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                                <div class="student-list-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>John Smith</strong> - Grade 10A<br>
-                                            <small class="text-muted">Quadratic Equations Worksheet</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-success">Submitted</span><br>
-                                            <small class="text-muted">5 mins ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="student-list-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>Emma Wilson</strong> - Grade 11B<br>
-                                            <small class="text-muted">Calculus Problem Set #5</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-success">Submitted</span><br>
-                                            <small class="text-muted">15 mins ago</small>
+                                @if(count($recentSubmissions) > 0)
+                                    @foreach($recentSubmissions as $submission)
+                                    <div class="student-list-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong>{{ $submission->student->full_name }}</strong> - {{ $submission->homeworkAssignment->class->name }}<br>
+                                                <small class="text-muted">{{ $submission->homeworkAssignment->title }}</small>
+                                            </div>
+                                            <div class="text-right">
+                                                @if($submission->status === 'graded')
+                                                    <span class="badge badge-success">Graded</span>
+                                                @elseif($submission->status === 'late')
+                                                    <span class="badge badge-warning">Late</span>
+                                                @else
+                                                    <span class="badge badge-info">Submitted</span>
+                                                @endif
+                                                <br>
+                                                <small class="text-muted">{{ $submission->submitted_date ? $submission->submitted_date->diffForHumans() : 'Not submitted' }}</small>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="student-list-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>Oliver Brown</strong> - Grade 9C<br>
-                                            <small class="text-muted">Geometry - Triangle Properties</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-success">Submitted</span><br>
-                                            <small class="text-muted">1 hour ago</small>
-                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="text-center py-4">
+                                        <p class="text-muted">No recent submissions.</p>
                                     </div>
-                                </div>
-
-                                <div class="student-list-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>Sophia Garcia</strong> - Grade 12A<br>
-                                            <small class="text-muted">Statistics Quiz #3</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="badge badge-warning">Late</span><br>
-                                            <small class="text-muted">2 hours ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="student-list-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>James Martinez</strong> - Grade 10A<br>
-                                            <small class="text-muted">Quadratic Equations Worksheet</small>
-                                    </div>
-                                    <div class="text-right">
-                                        <span class="badge badge-success">Submitted</span><br>
-                                        <small class="text-muted">3 hours ago</small>
-                                    </div>
-                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Footer -->
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="footer">
-                        <p>MLC Classroom - Teacher Dashboard | Last Updated: <span id="date-time"></span></p>
+                <!-- Footer -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="footer">
+                            <p>MLC Classroom - Teacher Dashboard | Last Updated: <span id="date-time"></span></p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
 @endsection
 
 @push('scripts')
     <script src="{{ asset('assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
+    <script>
+        // Inject chart data from controller
+        var classPerformanceData = {!! json_encode($classPerformanceData) !!};
+        var attendanceTrendData = {!! json_encode($attendanceTrendData) !!};
+    </script>
     <script src="{{ asset('assets/js/custom-chart-init.js') }}"></script>
 @endpush

@@ -1,178 +1,188 @@
 $(document).ready(function() {
     // Only initialize if elements exist
     
-
-                // Enrollment Trend Chart (Line Chart)
-            if (document.getElementById('enrollmentTrendChart')) {
-                var ctx = document.getElementById('enrollmentTrendChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['July', 'August', 'September', 'October', 'November', 'December'],
-                        datasets: [{
-                            label: 'Students Enrolled',
-                            data: [980, 1045, 1098, 1150, 1198, 1245],
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }, {
-                            label: 'Teachers Enrolled',
-                            data: [65, 70, 73, 78, 82, 85],
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }]
+    
+        // ====================================================================
+        // Super Admin dashboard charts
+        // ====================================================================
+        
+        // Enrollment Trend Chart (Line Chart) - DYNAMIC DATA
+        if (document.getElementById('enrollmentTrendChart') && typeof enrollmentChartData !== 'undefined') {
+            var ctx = document.getElementById('enrollmentTrendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: enrollmentChartData.labels,
+                    datasets: [{
+                        label: 'Students Enrolled',
+                        data: enrollmentChartData.students,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Teachers Enrolled',
+                        data: enrollmentChartData.teachers,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
+                    scales: {
+                        y: {
+                            beginAtZero: true
                         }
                     }
-                });
-            }
-            
-            // User Distribution Chart (Pie Chart)
-            if (document.getElementById('userDistributionChart')) {
-                var ctx2 = document.getElementById('userDistributionChart').getContext('2d');
-                new Chart(ctx2, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Students', 'Teachers', 'Admins', 'Staff'],
-                        datasets: [{
-                            data: [1245, 85, 12, 28],
-                            backgroundColor: [
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(153, 102, 255, 0.8)'
-                            ],
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'bottom'
-                            }
+                }
+            });
+        }
+        
+        // User Distribution Chart (Doughnut Chart) - DYNAMIC DATA
+        if (document.getElementById('userDistributionChart') && typeof userDistributionData !== 'undefined') {
+            var ctx2 = document.getElementById('userDistributionChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: userDistributionData.labels,
+                    datasets: [{
+                        data: userDistributionData.data,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
                         }
                     }
-                });
-            }
-            
+                }
+            });
+        }
+        
 
-            // Chartist Bar Chart for Attendance
-            if (document.querySelector('.ct-bar-chart')) {
-                new Chartist.Bar('.ct-bar-chart', {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-                    series: [[95, 92, 98, 94, 96, 88]]
-                }, {
-                    distributeSeries: true,
-                    axisY: {
-                        labelInterpolationFnc: function(value) {
-                            return value + '%';
-                        }
+        // Chartist Bar Chart for Attendance - DYNAMIC DATA
+        if (document.querySelector('.ct-bar-chart') && typeof weeklyAttendanceData !== 'undefined') {
+            new Chartist.Bar('.ct-bar-chart', {
+                labels: weeklyAttendanceData.labels,
+                series: [weeklyAttendanceData.data]
+            }, {
+                distributeSeries: true,
+                axisY: {
+                    labelInterpolationFnc: function(value) {
+                        return value + '%';
                     }
-                });
-            }
-            
-            // Chartist Pie Chart for Performance
-            if (document.querySelector('.ct-pie-chart')) {
-                new Chartist.Pie('.ct-pie-chart', {
-                    series: [45, 30, 15, 10],
-                    labels: ['Excellent', 'Good', 'Average', 'Below Average']
-                }, {
-                    donut: true,
-                    donutWidth: 60,
-                    startAngle: 270,
-                    showLabel: true
-                });
-            }
+                }
+            });
+        }
+        
+        // Chartist Pie Chart for Performance - STATIC (can be made dynamic later)
+        if (document.querySelector('.ct-pie-chart')) {
+            new Chartist.Pie('.ct-pie-chart', {
+                series: [45, 30, 15, 10],
+                labels: ['Excellent', 'Good', 'Average', 'Below Average']
+            }, {
+                donut: true,
+                donutWidth: 60,
+                startAngle: 270,
+                showLabel: true
+            });
+        }
 
 
-            // Class Performance Comparison Chart
-            if (document.getElementById('classPerformanceChart')) {
-                var ctx = document.getElementById('classPerformanceChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Grade 9A', 'Grade 9B', 'Grade 9C', 'Grade 10A', 'Grade 10B', 'Grade 11A', 'Grade 11B', 'Grade 12A'],
-                        datasets: [{
-                            label: 'Average Score (%)',
-                            data: [85, 78, 82, 88, 75, 90, 86, 92],
-                            backgroundColor: [
-                                'rgba(75, 192, 192, 0.6)',
-                                'rgba(255, 206, 86, 0.6)',
-                                'rgba(54, 162, 235, 0.6)',
-                                'rgba(153, 102, 255, 0.6)',
-                                'rgba(255, 159, 64, 0.6)',
-                                'rgba(75, 192, 192, 0.6)',
-                                'rgba(255, 99, 132, 0.6)',
-                                'rgba(54, 162, 235, 0.6)'
-                            ],
-                            borderColor: [
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)'
-                            ],
-                            borderWidth: 2
-                        }]
+        // Class Performance Comparison Chart - STATIC (can be made dynamic by querying class averages)
+        if (document.getElementById('classPerformanceChart')) {
+            var ctx = document.getElementById('classPerformanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Grade 9A', 'Grade 9B', 'Grade 9C', 'Grade 10A', 'Grade 10B', 'Grade 11A', 'Grade 11B', 'Grade 12A'],
+                    datasets: [{
+                        label: 'Average Score (%)',
+                        data: [85, 78, 82, 88, 75, 90, 86, 92],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                ticks: {
-                                    callback: function(value) {
-                                        return value + '%';
-                                    }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
                                 }
                             }
                         }
                     }
-                });
-            }
+                }
+            });
+        }
+        // Super Admin dashboard charts Ends
 
-            // Weekly Attendance Trend Chart
-            if (document.getElementById('weeklyAttendanceChart')) {
+
+            // ====================================================================
+            // ADMIN DASHBOARD CHARTS - DYNAMIC DATA
+            // ====================================================================
+            
+            // Weekly Attendance Trend Chart - DYNAMIC
+            if (document.getElementById('weeklyAttendanceChart') && typeof weeklyAttendanceChartData !== 'undefined') {
                 var ctx = document.getElementById('weeklyAttendanceChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                        labels: weeklyAttendanceChartData.labels,  // From controller
                         datasets: [{
                             label: 'Attendance %',
-                            data: [95, 92, 96, 94, 93, 88],
+                            data: weeklyAttendanceChartData.data,   // From controller
                             backgroundColor: 'rgba(54, 162, 235, 0.2)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 2,
@@ -204,16 +214,16 @@ $(document).ready(function() {
                 });
             }
             
-            // Class-wise Attendance Chart (Bar)
-            if (document.getElementById('classwiseAttendanceChart')) {
+            // Class-wise Attendance Chart (Bar) - DYNAMIC
+            if (document.getElementById('classwiseAttendanceChart') && typeof classwiseAttendanceData !== 'undefined') {
                 var ctx2 = document.getElementById('classwiseAttendanceChart').getContext('2d');
                 new Chart(ctx2, {
                     type: 'bar',
                     data: {
-                        labels: ['Grade 9C', 'Grade 10A', 'Grade 10B', 'Grade 11B', 'Grade 12A'],
+                        labels: classwiseAttendanceData.labels,  // From controller
                         datasets: [{
                             label: 'Attendance %',
-                            data: [72, 95, 88, 92, 98],
+                            data: classwiseAttendanceData.data,   // From controller
                             backgroundColor: [
                                 'rgba(255, 99, 132, 0.6)',
                                 'rgba(75, 192, 192, 0.6)',
@@ -254,34 +264,127 @@ $(document).ready(function() {
                     }
                 });
             }
-            
-   
+            // Admin dashboard charts Ends
+        
 
-        // Class Performance Chart
-        if (document.getElementById('classPerformanceChart')) {
-            var ctx = document.getElementById('classPerformanceChart').getContext('2d');
+            // ====================================================================
+            // TEACHER DASHBOARD CHARTS - DYNAMIC DATA
+            // ====================================================================
+            
+            // Class Performance Chart - DYNAMIC
+            if (document.getElementById('classPerformanceChart') && typeof classPerformanceData !== 'undefined') {
+                var ctx = document.getElementById('classPerformanceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: classPerformanceData.labels,  // From controller
+                        datasets: [{
+                            label: 'Average Score %',
+                            data: classPerformanceData.data,   // From controller
+                            backgroundColor: [
+                                'rgba(255, 159, 64, 0.6)',
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(153, 102, 255, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(153, 102, 255, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        
+            // Attendance Trend Chart - DYNAMIC
+            if (document.getElementById('attendanceTrendChart') && typeof attendanceTrendData !== 'undefined') {
+                var ctx2 = document.getElementById('attendanceTrendChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: attendanceTrendData.labels,  // From controller
+                        datasets: [{
+                            label: 'Overall Attendance %',
+                            data: attendanceTrendData.data,   // From controller
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            // Teacher dashboard charts Ends
+
+
+
+
+        // Parent dashboard charts
+        // Progress Trend Chart
+        if (document.getElementById('progressTrendChart')) {
+            var ctx = document.getElementById('progressTrendChart').getContext('2d');
             new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: ['Grade 9C', 'Grade 10A', 'Grade 10B', 'Grade 11B', 'Grade 12A'],
+                    labels: ['September', 'October', 'November', 'December'],
                     datasets: [{
-                        label: 'Average Score %',
-                        data: [72, 88, 75, 85, 92],
-                        backgroundColor: [
-                            'rgba(255, 159, 64, 0.6)',
-                            'rgba(75, 192, 192, 0.6)',
-                            'rgba(255, 206, 86, 0.6)',
-                            'rgba(54, 162, 235, 0.6)',
-                            'rgba(153, 102, 255, 0.6)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 159, 64, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(153, 102, 255, 1)'
-                        ],
-                        borderWidth: 2
+                        label: 'Overall Average %',
+                        data: [82, 85, 87, 88],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }]
                 },
                 options: {
@@ -307,22 +410,34 @@ $(document).ready(function() {
                 }
             });
         }
-        
-        // Attendance Trend Chart
-        if (document.getElementById('attendanceTrendChart')) {
-            var ctx2 = document.getElementById('attendanceTrendChart').getContext('2d');
+
+        // Subject Comparison Chart
+        if (document.getElementById('subjectComparisonChart')) {
+            var ctx2 = document.getElementById('subjectComparisonChart').getContext('2d');
             new Chart(ctx2, {
-                type: 'line',
+                type: 'radar',
                 data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    labels: ['Mathematics', 'Physics', 'English', 'Chemistry', 'History'],
                     datasets: [{
-                        label: 'Overall Attendance %',
-                        data: [92, 94, 91, 95],
+                        label: 'Sarah\'s Scores',
+                        data: [92, 88, 78, 90, 85],
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
+                        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(75, 192, 192, 1)'
+                    }, {
+                        label: 'Class Average',
+                        data: [85, 82, 80, 84, 83],
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(255, 206, 86, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(255, 206, 86, 1)'
                     }]
                 },
                 options: {
@@ -335,7 +450,7 @@ $(document).ready(function() {
                         }
                     },
                     scales: {
-                        y: {
+                        r: {
                             beginAtZero: true,
                             max: 100,
                             ticks: {
@@ -348,124 +463,7 @@ $(document).ready(function() {
                 }
             });
         }
+        // Parent dashboard charts Ends
+        
 
-
-    // Progress Trend Chart
-    if (document.getElementById('progressTrendChart')) {
-        var ctx = document.getElementById('progressTrendChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['September', 'October', 'November', 'December'],
-                datasets: [{
-                    label: 'Overall Average %',
-                    data: [82, 85, 87, 88],
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Subject Comparison Chart
-    if (document.getElementById('subjectComparisonChart')) {
-        var ctx2 = document.getElementById('subjectComparisonChart').getContext('2d');
-        new Chart(ctx2, {
-            type: 'radar',
-            data: {
-                labels: ['Mathematics', 'Physics', 'English', 'Chemistry', 'History'],
-                datasets: [{
-                    label: 'Sarah\'s Scores',
-                    data: [92, 88, 78, 90, 85],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(75, 192, 192, 1)'
-                }, {
-                    label: 'Class Average',
-                    data: [85, 82, 80, 84, 83],
-                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                    borderColor: 'rgba(255, 206, 86, 1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(255, 206, 86, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(255, 206, 86, 1)'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                },
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-        
-        // Update date-time
-        function updateDateTime() {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            };
-            document.getElementById('date-time').textContent = now.toLocaleString('en-US', options);
-        }
-        
-        updateDateTime();
-        setInterval(updateDateTime, 1000);
-        
-            
-        
-            
-            console.log('Super Admin Dashboard loaded successfully');
 });

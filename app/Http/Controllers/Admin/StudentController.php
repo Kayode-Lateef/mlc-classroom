@@ -115,7 +115,7 @@ class StudentController extends Controller
     {
         $student->load([
             'parent',
-            'classEnrollments.class.teacher',
+            'enrollments.class.teacher',
             'attendance' => function($query) {
                 $query->orderBy('date', 'desc')->limit(20);
             },
@@ -138,7 +138,7 @@ class StudentController extends Controller
             'present' => $presentCount,
             'total_homework' => $totalHomework,
             'submitted_homework' => $submittedHomework,
-            'enrolled_classes' => $student->classEnrollments()->where('status', 'active')->count(),
+            'enrolled_classes' => $student->enrollments()->where('status', 'active')->count(),
         ];
 
         return view('admin.students.show', compact('student', 'stats'));

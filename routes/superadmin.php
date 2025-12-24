@@ -92,7 +92,9 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     Route::resource('homework', HomeworkController::class);
     
     // Progress Sheets
+    Route::get('progress-sheets/get-students', [ProgressSheetController::class, 'getStudents'])->name('progress-sheets.get-students');        
     Route::resource('progress-sheets', ProgressSheetController::class);
+    
     
     // ========== RESOURCES ==========
     

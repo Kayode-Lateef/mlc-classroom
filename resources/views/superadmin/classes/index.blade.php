@@ -150,6 +150,7 @@
                                 <h1>Classes Management</h1>
                             </div>
                         </div>
+                        <span>Manage and view all classes in the system</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

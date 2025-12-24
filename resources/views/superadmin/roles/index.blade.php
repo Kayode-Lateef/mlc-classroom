@@ -139,6 +139,7 @@
                                 <h1>Roles & Permissions Management</h1>
                             </div>
                         </div>
+                        <span>Manage and view all roles and their associated permissions</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

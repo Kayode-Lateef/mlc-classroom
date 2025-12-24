@@ -80,14 +80,28 @@
                     @endif
 
                     {{-- Attendance (All three roles) --}}
-                    <li><a class="sidebar-sub-toggle"><i class="ti-check-box"></i> Attendance <span class="sidebar-collapse-icon ti-angle-down"></span></a>
+                    <li>
+                        <a class="sidebar-sub-toggle">
+                            <i class="ti-check-box"></i> Attendance 
+                            <span class="sidebar-collapse-icon ti-angle-down"></span>
+                        </a>
                         <ul>
                             @if(auth()->user()->isTeacher())
                                 <li><a href="{{ route('teacher.attendance.index') }}">View Attendance</a></li>
                                 <li><a href="{{ route('teacher.attendance.create') }}">Mark Attendance</a></li>
                             @else
-                                <li><a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.attendance.index' : 'admin.attendance.index') }}">View Attendance</a></li>
+                                {{-- For SuperAdmin and Admin --}}
+                                <li><a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.attendance.daily' : 'admin.attendance.index') }}">{{ auth()->user()->isSuperAdmin() ? 'Daily Dashboard' : 'View Attendance' }}</a></li>
+                                
+                                @if(auth()->user()->isSuperAdmin())
+                                    <li><a href="{{ route('superadmin.attendance.index') }}">All Records</a></li>
+                                @endif
+                                
                                 <li><a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.attendance.create' : 'admin.attendance.create') }}">Mark Attendance</a></li>
+                                
+                                @if(auth()->user()->isSuperAdmin())
+                                    <li><a href="{{ route('superadmin.attendance.reports') }}">Reports & Analytics</a></li>
+                                @endif
                             @endif
                         </ul>
                     </li>

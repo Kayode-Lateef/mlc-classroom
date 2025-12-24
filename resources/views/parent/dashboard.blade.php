@@ -233,8 +233,8 @@
                                         <div class="stat-heading">Recent Average</div>
                                         <div class="stat-text">
                                             <strong>
-                                                @if($stats['recent_grades']->count() > 0)
-                                                    {{ $stats['recent_grades']->first() }}
+                                                @if($stats['recent_average'] > 0)
+                                                    {{ $stats['recent_average'] }}%
                                                 @else
                                                     N/A
                                                 @endif
@@ -331,6 +331,31 @@
                                 @else
                                     <p class="text-center text-muted py-5">No progress reports yet.</p>
                                 @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Charts -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Progress Trend - Last 4 Months</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="progressTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Subject Comparison - {{ $selectedChild->first_name }}'s Performance</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="subjectComparisonChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -487,5 +512,16 @@
 @endsection
 
 @push('scripts')
-
+    <script src="{{ asset('assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
+    
+    @if($selectedChild && $progressTrendData && $subjectComparisonData)
+    <script>
+        var progressTrendData = {!! json_encode($progressTrendData) !!};
+        var subjectComparisonData = {!! json_encode($subjectComparisonData) !!};
+        var childName = "{{ $selectedChild->first_name }}";
+    </script>
+    @endif
+    
+    <script src="{{ asset('assets/js/custom-chart-init.js') }}"></script>
 @endpush
+

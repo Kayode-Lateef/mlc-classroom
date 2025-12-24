@@ -26,6 +26,7 @@ class User extends Authenticatable
         'phone',
         'profile_photo',
         'email_verified_at',
+        'status', 
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -85,6 +86,31 @@ class User extends Authenticatable
     }
 
 
+    // Add helper methods
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === 'inactive';
+    }
+
+    public function isBanned(): bool
+    {
+        return $this->status === 'banned';
+    }
+
+    public function canAccessSystem(): bool
+    {
+        return in_array($this->status, ['active']);
+    }
 
     // === RELATIONSHIPS ===
     

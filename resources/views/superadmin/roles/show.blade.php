@@ -245,6 +245,7 @@
                                 <h1>{{ ucwords(str_replace('_', ' ', $role->name)) }}</h1>
                             </div>
                         </div>
+                        <span>{{ $role->description }}</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

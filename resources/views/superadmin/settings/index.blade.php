@@ -112,6 +112,7 @@
                                 <h1>System Settings</h1>
                             </div>
                         </div>
+                        <span>Configure and manage system-wide settings</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

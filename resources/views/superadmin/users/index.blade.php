@@ -91,6 +91,7 @@
                                 <h1>User Management</h1>
                             </div>
                         </div>
+                        <span>Manage and view all user accounts</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
@@ -174,7 +175,110 @@
                         </div>
                     </div>
 
-                    <!-- Filters & Search -->
+
+                    <div class="row">
+    <div class="col-lg-12">
+        <div class="filter-card">
+            <form method="GET" 
+                  action="{{ route('superadmin.users.index') }}" 
+                  id="userFilterForm">
+                <div class="row">
+                    <!-- Search Field -->
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Search</label>
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control" 
+                                   placeholder="Name, Email, or Phone" 
+                                   value="{{ request('search') }}">
+                        </div>
+                    </div>
+
+                    <!-- Role Filter -->
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Filter by Role</label>
+                            <select name="role" class="form-control">
+                                <option value="">All Roles</option>
+                                <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
+                                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="teacher" {{ request('role') == 'teacher' ? 'selected' : '' }}>Teacher</option>
+                                <option value="parent" {{ request('role') == 'parent' ? 'selected' : '' }}>Parent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Email Status Filter -->
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Email Status</label>
+                            <select name="verified" class="form-control">
+                                <option value="">All</option>
+                                <option value="1" {{ request('verified') == '1' ? 'selected' : '' }}>Verified</option>
+                                <option value="0" {{ request('verified') == '0' ? 'selected' : '' }}>Unverified</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Add after Email Status filter -->
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Account Status</label>
+                            <select name="status" class="form-control">
+                                <option value="">All Statuses</option>
+                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="suspended" {{ request('status') == 'suspended' ? 'selected' : '' }}>Suspended</option>
+                                <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                <option value="banned" {{ request('status') == 'banned' ? 'selected' : '' }}>Banned</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Sort By</label>
+                            <select name="sort_by" class="form-control">
+                                <option value="created_at" {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>Date Created</option>
+                                <option value="name" {{ request('sort_by') == 'name' ? 'selected' : '' }}>Name</option>
+                                <option value="email" {{ request('sort_by') == 'email' ? 'selected' : '' }}>Email</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sort Order -->
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label>Order</label>
+                            <select name="sort_order" class="form-control">
+                                <option value="desc" {{ request('sort_order') == 'desc' ? 'selected' : '' }}>Desc</option>
+                                <option value="asc" {{ request('sort_order') == 'asc' ? 'selected' : '' }}>Asc</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Reset Buttons -->
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div style="display: flex; gap: 5px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                    <i class="ti-search"></i> Filter
+                                </button>
+                                <a href="{{ route('superadmin.users.index') }}" class="btn btn-secondary" title="Clear Filters">
+                                    <i class="ti-reload"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+                    {{-- <!-- Filters & Search -->
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="filter-card">
@@ -241,7 +345,7 @@
                                 </form>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <!-- Users Table -->
                     <div class="row">
@@ -333,14 +437,30 @@
                                                                 <span class="badge badge-secondary role-badge">{{ ucfirst($user->role) }}</span>
                                                             @endif
                                                         </td>
+                                                        <!-- Replace email verification badge with status badge -->
                                                         <td>
-                                                            @if($user->email_verified_at)
+                                                            @if($user->status === 'active')
                                                                 <span class="badge badge-success">
-                                                                    <i class="ti-check status-verified"></i> Verified
+                                                                    <i class="ti-check"></i> Active
                                                                 </span>
-                                                            @else
+                                                            @elseif($user->status === 'suspended')
                                                                 <span class="badge badge-warning">
-                                                                    <i class="ti-alert status-unverified"></i> Unverified
+                                                                    <i class="ti-lock"></i> Suspended
+                                                                </span>
+                                                            @elseif($user->status === 'inactive')
+                                                                <span class="badge badge-secondary">
+                                                                    <i class="ti-time"></i> Inactive
+                                                                </span>
+                                                            @elseif($user->status === 'banned')
+                                                                <span class="badge badge-danger">
+                                                                    <i class="ti-na"></i> Banned
+                                                                </span>
+                                                            @endif
+                                                            
+                                                            <!-- Email verification (separate) -->
+                                                            @if($user->email_verified_at)
+                                                                <span class="badge badge-info badge-sm ml-1">
+                                                                    <i class="ti-email"></i> Verified
                                                                 </span>
                                                             @endif
                                                         </td>
@@ -367,17 +487,25 @@
                                                                     <i class="ti-pencil-alt"></i>
                                                                 </a>
                                                                 
-                                                                <!-- FIXED SUSPEND BUTTON - Using onsubmit instead of onclick -->
-                                                                <form action="{{ route('superadmin.users.toggleStatus', $user) }}" 
-                                                                    method="POST" 
-                                                                    style="display: inline-block;"
-                                                                    onsubmit="return confirm('Are you sure you want to {{ $user->email_verified_at ? 'suspend' : 'activate' }} {{ $user->name }}?');">
-                                                                    @csrf
-                                                                    @method('PATCH')
-                                                                    <button type="submit" class="btn btn-sm btn-warning" title="{{ $user->email_verified_at ? 'Suspend' : 'Activate' }}">
-                                                                        <i class="ti-lock"></i>
-                                                                    </button>
-                                                                </form>
+                                                               @if($user->id !== auth()->id())
+                                                                    <!-- Suspend/Activate Form -->
+                                                                    <form action="{{ route('superadmin.users.toggleStatus', $user) }}" 
+                                                                        method="POST" 
+                                                                        style="display: inline-block;"
+                                                                        id="suspendForm_{{ $user->id }}">
+                                                                        @csrf
+                                                                        @method('PATCH')
+                                                                        
+                                                                        <button type="button" 
+                                                                                class="btn btn-sm btn-warning" 
+                                                                                title="{{ $user->status === 'active' ? 'Suspend' : 'Activate' }}"
+                                                                                onclick="handleSuspend({{ $user->id }}, '{{ addslashes($user->name) }}', {{ $user->status === 'active' ? 'true' : 'false' }})">
+                                                                            <i class="ti-lock"></i>
+                                                                        </button>
+                                                                    </form>
+                                                                @else
+                                                                    <span class="badge badge-secondary badge-sm">Current User</span>
+                                                                @endif
                                                                 
                                                                 <!-- DELETE BUTTON - Also using onsubmit -->
                                                                 <form action="{{ route('superadmin.users.destroy', $user) }}" 
@@ -435,5 +563,44 @@
 @endsection
 
 @push('scripts')
+<script>
+function handleSuspend(userId, userName, isVerified) {
+    var action = isVerified ? 'suspend' : 'activate';
+    
+    if (!confirm('Are you sure you want to ' + action + ' ' + userName + '?')) {
+        return false;
+    }
+    
+    console.log('Suspending user:', userId);
+    console.log('Action:', action);
+    
+    var form = document.getElementById('suspendForm_' + userId);
+    
+    if (!form) {
+        console.error('Form not found:', 'suspendForm_' + userId);
+        alert('Error: Form not found. Please refresh the page.');
+        return false;
+    }
+    
+    console.log('Submitting form to:', form.action);
+    form.submit();
+}
 
+// jQuery initialization
+$(document).ready(function() {
+    console.log('User management initialized');
+    console.log('handleSuspend available:', typeof handleSuspend === 'function');
+    
+    $('#userFilterForm').off('submit').on('submit', function() {
+        console.log('Filter form submitting...');
+        return true;
+    });
+    
+    $('#userFilterForm input[name="search"]').on('keypress', function(e) {
+        if (e.which === 13) {
+            $('#userFilterForm').submit();
+        }
+    });
+});
+</script>
 @endpush

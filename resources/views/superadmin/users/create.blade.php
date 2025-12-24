@@ -49,6 +49,7 @@
                                 <h1>Add New User</h1>
                             </div>
                         </div>
+                        <span>Fill out the form below to create a new user account</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

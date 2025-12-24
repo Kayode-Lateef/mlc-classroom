@@ -151,6 +151,7 @@
                                 <h1>Edit Role: {{ ucwords(str_replace('_', ' ', $role->name)) }}</h1>
                             </div>
                         </div>
+                        <span>Edit an existing role and its permissions</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

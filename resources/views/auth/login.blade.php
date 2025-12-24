@@ -7,7 +7,7 @@
         /* Error message styling */
         .text-danger {
             color: #dc3545;
-            font-size: 0.875rem;
+            font-size: 1.2rem;
             margin-top: 0.25rem;
             display: block;
         }

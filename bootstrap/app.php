@@ -40,6 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register role middleware alias
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+            'check.status' => \App\Http\Middleware\CheckUserStatus::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

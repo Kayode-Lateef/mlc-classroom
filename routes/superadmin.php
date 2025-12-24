@@ -32,7 +32,7 @@ use App\Http\Controllers\SuperAdmin\ReportController;
 */
 
 
-    Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::middleware(['auth', 'role:superadmin', 'check.status'])->group(function () {
 
     
     // Dashboard
@@ -41,10 +41,10 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     // ========== SYSTEM MANAGEMENT ==========
     
     // User Management
-    Route::resource('users', UserManagementController::class);
+    Route::patch('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggleStatus');
     Route::post('users/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('users.assignRole');
     Route::post('users/{user}/assign-permissions', [UserManagementController::class, 'assignPermissions'])->name('users.assignPermissions');
-    Route::patch('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggleStatus');
+    Route::resource('users', UserManagementController::class);
     
     // Roles
     Route::resource('roles', RoleController::class);
@@ -74,9 +74,20 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     // Schedules
     Route::resource('schedules', ScheduleController::class);
     
-    // Attendance
-    Route::resource('attendance', AttendanceController::class);
-    
+    // Attendance Management
+    Route::get('attendance/daily', [AttendanceController::class, 'daily'])->name('attendance.daily');
+    Route::get('attendance/reports', [AttendanceController::class, 'reports'])->name('attendance.reports');
+    Route::post('attendance/bulk-mark', [AttendanceController::class, 'bulkMark'])->name('attendance.bulk-mark');
+
+    // Attendance CRUD with custom parameters
+    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('attendance/create', [AttendanceController::class, 'create'])->name('attendance.create');
+    Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::get('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::get('attendance/{date}/{classId}/{scheduleId}/edit', [AttendanceController::class, 'edit'])->name('attendance.edit');
+    Route::put('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'update'])->name('attendance.update');
+    Route::delete('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
+        
     // Homework
     Route::resource('homework', HomeworkController::class);
     

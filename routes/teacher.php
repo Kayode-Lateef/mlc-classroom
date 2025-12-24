@@ -8,7 +8,7 @@ use App\Http\Controllers\Teacher\HomeworkController;
 use App\Http\Controllers\Teacher\ProgressSheetController;
 use App\Http\Controllers\Teacher\LearningResourceController;
 
-    Route::middleware(['auth', 'role:teacher'])->group(function () {
+    Route::middleware(['auth', 'role:teacher', 'check.status'])->group(function () {
 
     
     // Dashboard

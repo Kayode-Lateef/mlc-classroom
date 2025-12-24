@@ -56,6 +56,7 @@
                                 <h1>Add New Student</h1>
                             </div>
                         </div>
+                        <span>Enter student details to create a new record</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

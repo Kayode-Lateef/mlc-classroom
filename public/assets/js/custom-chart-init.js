@@ -367,17 +367,20 @@ $(document).ready(function() {
 
 
 
-        // Parent dashboard charts
-        // Progress Trend Chart
-        if (document.getElementById('progressTrendChart')) {
+       // ====================================================================
+        // PARENT DASHBOARD CHARTS - DYNAMIC DATA
+        // ====================================================================
+        
+        // Progress Trend Chart - DYNAMIC
+        if (document.getElementById('progressTrendChart') && typeof progressTrendData !== 'undefined') {
             var ctx = document.getElementById('progressTrendChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['September', 'October', 'November', 'December'],
+                    labels: progressTrendData.labels,  // ← FROM CONTROLLER
                     datasets: [{
                         label: 'Overall Average %',
-                        data: [82, 85, 87, 88],
+                        data: progressTrendData.data,   // ← FROM CONTROLLER
                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 3,
@@ -411,16 +414,16 @@ $(document).ready(function() {
             });
         }
 
-        // Subject Comparison Chart
-        if (document.getElementById('subjectComparisonChart')) {
+        // Subject Comparison Chart - DYNAMIC
+        if (document.getElementById('subjectComparisonChart') && typeof subjectComparisonData !== 'undefined') {
             var ctx2 = document.getElementById('subjectComparisonChart').getContext('2d');
             new Chart(ctx2, {
                 type: 'radar',
                 data: {
-                    labels: ['Mathematics', 'Physics', 'English', 'Chemistry', 'History'],
+                    labels: subjectComparisonData.labels,  // ← FROM CONTROLLER
                     datasets: [{
-                        label: 'Sarah\'s Scores',
-                        data: [92, 88, 78, 90, 85],
+                        label: (typeof childName !== 'undefined' ? childName : 'Student') + '\'s Scores',  // ← DYNAMIC NAME
+                        data: subjectComparisonData.studentData,  // ← FROM CONTROLLER
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 2,
@@ -430,7 +433,7 @@ $(document).ready(function() {
                         pointHoverBorderColor: 'rgba(75, 192, 192, 1)'
                     }, {
                         label: 'Class Average',
-                        data: [85, 82, 80, 84, 83],
+                        data: subjectComparisonData.classAverageData,  // ← FROM CONTROLLER
                         backgroundColor: 'rgba(255, 206, 86, 0.2)',
                         borderColor: 'rgba(255, 206, 86, 1)',
                         borderWidth: 2,

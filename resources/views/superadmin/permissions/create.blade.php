@@ -138,6 +138,7 @@
                                 <h1>Create New Permission</h1>
                             </div>
                         </div>
+                        <span>Define a new permission for the system</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">

@@ -8,7 +8,7 @@ use App\Http\Controllers\Parent\HomeworkController;
 use App\Http\Controllers\Parent\ProgressController;
 use App\Http\Controllers\Parent\ResourceController;
 
-    Route::middleware(['auth', 'role:parent'])->group(function () {
+    Route::middleware(['auth', 'role:parent', 'check.status'])->group(function () {
 
     
     // Dashboard

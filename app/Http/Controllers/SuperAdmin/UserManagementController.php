@@ -23,12 +23,24 @@ class UserManagementController extends Controller
         $query = User::with('roles');
 
         // Filter by role
-        if ($request->has('role') && $request->role != '') {
+        if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
-        // Search by name or email
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('verified')) {
+            if ($request->verified == '1') {
+                $query->whereNotNull('email_verified_at');
+            } elseif ($request->verified == '0') {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search by name, email, or phone
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -366,18 +378,18 @@ class UserManagementController extends Controller
 
         // Prevent suspending the last superadmin
         if ($user->role === 'superadmin') {
-            $superadminCount = User::where('role', 'superadmin')->count();
+            $superadminCount = User::where('role', 'superadmin')
+                ->where('status', 'active')
+                ->count();
             if ($superadminCount <= 1) {
                 return redirect()->route('superadmin.users.index')
-                    ->with('error', 'Cannot suspend the last superadmin account.');
+                    ->with('error', 'Cannot suspend the last active superadmin account.');
             }
         }
 
-        // Toggle email_verified_at as a way to suspend (or add a 'status' column)
-        $newStatus = $user->email_verified_at ? null : now();
-        $user->update(['email_verified_at' => $newStatus]);
-
-        $status = $newStatus ? 'activated' : 'suspended';
+        // Toggle status
+        $newStatus = $user->status === 'active' ? 'suspended' : 'active';
+        $user->update(['status' => $newStatus]);
 
         // Log activity
         ActivityLog::create([
@@ -385,12 +397,12 @@ class UserManagementController extends Controller
             'action' => 'user_status_changed',
             'model_type' => 'User',
             'model_id' => $user->id,
-            'description' => "User {$status}: {$user->name}",
+            'description' => "User {$newStatus}: {$user->name}",
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
 
         return redirect()->route('superadmin.users.index')
-            ->with('success', "User {$status} successfully!");
+            ->with('success', "User {$newStatus} successfully!");
     }
 }

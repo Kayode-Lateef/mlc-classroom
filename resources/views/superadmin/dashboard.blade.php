@@ -11,7 +11,7 @@
         }
 
         .system-status-badge {
-            font-size: 0.75rem;
+            font-size: 1rem;
             padding: 0.25rem 0.5rem;
         }
         
@@ -283,7 +283,7 @@
                                     <a href="{{ route('superadmin.roles.index') }}" class="btn btn-warning quick-action-btn mb-2">
                                         <i class="ti-shield"></i> Manage Roles
                                     </a>
-                                    <a href="{{ route('superadmin.permissions.index') }}" class="btn btn-secondary quick-action-btn mb-2">
+                                    <a href="{{ route('superadmin.permissions.index') }}" class="btn btn-pink quick-action-btn mb-2">
                                         <i class="ti-key"></i> Manage Permissions
                                     </a>
                                     <a href="{{ route('superadmin.settings.index') }}" class="btn btn-dark quick-action-btn">

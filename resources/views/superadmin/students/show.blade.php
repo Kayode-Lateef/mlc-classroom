@@ -172,7 +172,7 @@
                                             <!-- Profile Photo -->
                                             <div class="user-photo m-b-30">
                                                 @if($student->profile_photo)
-                                                    <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="{{ $student->full_name }}" class="img-responsive">
+                                                    <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="{{ $student->full_name }}" class="img-responsive" width="150" height="150" style="border-radius: 12px; object-fit: cover;">
                                                 @else
                                                     <div class="profile-initial-large bg-primary text-white">
                                                         {{ strtoupper(substr($student->first_name, 0, 1)) }}

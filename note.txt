@@ -1,0 +1,24 @@
+CRON JOB SETUP (cPanel)
+For shared hosting, add this single cron job in cPanel:
+
+* * * * * cd /home/username/mlc-classroom && /usr/bin/php artisan schedule:run >> /dev/null 2>&1
+
+TESTING COMMANDS LOCALLY
+
+# Test SMS processing
+php artisan sms:process-pending --limit=5
+
+# Test email processing
+php artisan email:process-pending --limit=3
+
+# Test balance check
+php artisan sms:check-balance
+
+# Test cleanup (dry run)
+php artisan logs:cleanup --dry-run
+
+# Test cleanup (actual)
+php artisan logs:cleanup --days=90
+
+# View help for any command
+php artisan sms:process-pending --help

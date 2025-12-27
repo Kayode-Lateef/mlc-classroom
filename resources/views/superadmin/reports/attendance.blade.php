@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Attendance Reports')
 
 @section('content')
     <div class="content-wrap">
@@ -76,25 +77,25 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card alert">
-                            <div class="card-header"><h4><i class="ti-filter"></i> Filters</h4></div>
+                            <div class="card-header mb-3"><h4><i class="ti-filter"></i> Filters</h4></div>
                             <div class="card-body">
                                 <form method="GET">
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Date From</label>
+                                                <label style="font-weight: 500;">Date From</label>
                                                 <input type="date" name="date_from" value="{{ $dateFrom }}" class="form-control">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Date To</label>
+                                                <label style="font-weight: 500;">Date To</label>
                                                 <input type="date" name="date_to" value="{{ $dateTo }}" class="form-control">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Class</label>
+                                                <label style="font-weight: 500;">Class</label>
                                                 <select name="class_id" class="form-control">
                                                     <option value="">All Classes</option>
                                                     @foreach($classes as $class)
@@ -105,7 +106,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Status</label>
+                                                <label style="font-weight: 500;">Status</label>
                                                 <select name="status" class="form-control">
                                                     <option value="">All Status</option>
                                                     <option value="present" {{ request('status') == 'present' ? 'selected' : '' }}>Present</option>
@@ -116,7 +117,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">&nbsp;</label>
+                                                <label style="font-weight: 500;">&nbsp;</label>
                                                 <button type="submit" class="btn btn-primary btn-block"><i class="ti-filter"></i> Apply</button>
                                             </div>
                                         </div>
@@ -131,7 +132,7 @@
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="card alert">
-                            <div class="card-header"><h4><i class="ti-bar-chart"></i> Attendance Trend</h4></div>
+                            <div class="card-header mb-3"><h4><i class="ti-bar-chart"></i> Attendance Trend</h4></div>
                             <div class="card-body">
                                 <canvas id="trendChart" height="80"></canvas>
                             </div>
@@ -139,7 +140,7 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="card alert">
-                            <div class="card-header"><h4><i class="ti-pie-chart"></i> Status Distribution</h4></div>
+                            <div class="card-header mb-3"><h4><i class="ti-pie-chart"></i> Status Distribution</h4></div>
                             <div class="card-body">
                                 <canvas id="pieChart" height="200"></canvas>
                             </div>
@@ -224,26 +225,26 @@
                                     <table class="table table-hover">
                                         <thead>
                                             <tr>
-                                                <th style="font-size: 0.875rem;">Date</th>
-                                                <th style="font-size: 0.875rem;">Student</th>
-                                                <th style="font-size: 0.875rem;">Class</th>
-                                                <th style="font-size: 0.875rem;">Status</th>
-                                                <th style="font-size: 0.875rem;">Marked By</th>
+                                                <th>Date</th>
+                                                <th>Student</th>
+                                                <th>Class</th>
+                                                <th>Status</th>
+                                                <th>Marked By</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($attendanceRecords as $record)
                                             <tr>
-                                                <td style="font-size: 0.9375rem;">{{ $record->date->format('d M Y') }}</td>
-                                                <td style="font-size: 0.9375rem;">{{ $record->student->full_name }}</td>
-                                                <td style="font-size: 0.9375rem;">{{ $record->class->name }}</td>
+                                                <td>{{ $record->date->format('d M Y') }}</td>
+                                                <td>{{ $record->student->full_name }}</td>
+                                                <td>{{ $record->class->name }}</td>
                                                 <td>
                                                     @php
                                                         $badges = ['present' => 'success', 'absent' => 'danger', 'late' => 'warning', 'unauthorized' => 'secondary'];
                                                     @endphp
                                                     <span class="badge badge-{{ $badges[$record->status] ?? 'secondary' }}">{{ ucfirst($record->status) }}</span>
                                                 </td>
-                                                <td style="font-size: 0.9375rem;">{{ $record->markedBy->name ?? 'N/A' }}</td>
+                                                <td>{{ $record->markedBy->name ?? 'N/A' }}</td>
                                             </tr>
                                             @endforeach
                                         </tbody>
@@ -272,7 +273,9 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}}
+<script src="{{ asset('assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
+
 <script>
 const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {

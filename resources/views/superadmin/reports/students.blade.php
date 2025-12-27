@@ -1,17 +1,18 @@
 @extends('layouts.app')
+@section('title', 'Student Reports')
 @section('content')
     <div class="content-wrap">
         <div class="main">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-lg-8">
+                    <div class="col-lg-8 p-r-0 title-margin-right">
                         <div class="page-header">
                             <div class="page-title">
                                 <h1>Student Reports</h1>
                             </div>
                         </div><span>Individual student performance analysis</span>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
                             <div class="page-title">
                                 <ol class="breadcrumb text-right">
@@ -28,7 +29,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-user"></i> Select Student</h4>
                             </div>
                             <div class="card-body">
@@ -36,7 +37,7 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Student</label>
+                                                    style="font-weight: 500;">Student</label>
                                                 <select name="student_id" class="form-control" required>
                                                     <option value="">Choose student...</option>
                                                     @foreach ($students as $student)
@@ -49,13 +50,13 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Date From</label><input
+                                                    style="font-weight: 500;">Date From</label><input
                                                     type="date" name="date_from" value="{{ $dateFrom }}"
                                                     class="form-control"></div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Date To</label><input
+                                                    style="font-weight: 500;">Date To</label><input
                                                     type="date" name="date_to" value="{{ $dateTo }}"
                                                     class="form-control"></div>
                                         </div>
@@ -76,31 +77,30 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header"
-                                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                    <h4 style="color: white; margin: 0;"><i class="ti-user"></i>
+                                <div class="card-header mb-3">
+                                    <h4 style="margin: 0;"><i class="ti-user"></i>
                                         {{ $studentData->full_name }}</h4>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <p style="font-size: 0.875rem; color: #6c757d; margin-bottom: 5px;">Student ID
+                                            <p style="color: #6c757d; margin-bottom: 5px;">Student ID
                                             </p>
-                                            <p style="font-size: 0.9375rem; font-weight: 600;">{{ $studentData->id }}</p>
+                                            <p style="font-weight: 600;">{{ $studentData->id }}</p>
                                         </div>
                                         <div class="col-md-3">
-                                            <p style="font-size: 0.875rem; color: #6c757d; margin-bottom: 5px;">Parent</p>
-                                            <p style="font-size: 0.9375rem; font-weight: 600;">
+                                            <p style="color: #6c757d; margin-bottom: 5px;">Parent</p>
+                                            <p style="font-weight: 600;">
                                                 {{ $studentData->parent->name ?? 'N/A' }}</p>
                                         </div>
                                         <div class="col-md-3">
-                                            <p style="font-size: 0.875rem; color: #6c757d; margin-bottom: 5px;">Enrolled
+                                            <p style="color: #6c757d; margin-bottom: 5px;">Enrolled
                                                 Classes</p>
-                                            <p style="font-size: 0.9375rem; font-weight: 600;">
+                                            <p style="font-weight: 600;">
                                                 {{ $studentData->enrollments->count() }}</p>
                                         </div>
                                         <div class="col-md-3">
-                                            <p style="font-size: 0.875rem; color: #6c757d; margin-bottom: 5px;">Status</p>
+                                            <p style="color: #6c757d; margin-bottom: 5px;">Status</p>
                                             <span class="badge badge-success">{{ ucfirst($studentData->status) }}</span>
                                         </div>
                                     </div>
@@ -163,7 +163,7 @@
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-bar-chart"></i> Attendance Trend (12 Months)</h4>
                                 </div>
                                 <div class="card-body"><canvas id="attendanceChart" height="100"></canvas></div>
@@ -171,7 +171,7 @@
                         </div>
                         <div class="col-lg-6">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-line-chart"></i> Grade Progression</h4>
                                 </div>
                                 <div class="card-body"><canvas id="gradeChart" height="100"></canvas></div>
@@ -183,7 +183,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-download"></i> Export Student Report</h4>
                                 </div>
                                 <div class="card-body">
@@ -248,7 +248,9 @@
 
 @if ($studentData && $charts)
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        {{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}}
+        <script src="{{ asset('assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
+
         <script>
             new Chart(document.getElementById('attendanceChart'), {
                 type: 'line',

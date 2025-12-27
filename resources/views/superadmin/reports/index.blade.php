@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Reports Dashboard')
 
 @push('styles')
 <style>
@@ -13,9 +14,7 @@
     }
 
     .report-shortcut:hover {
-        border-color: #007bff;
         background-color: #f8f9fa;
-        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
@@ -114,7 +113,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-folder"></i> Quick Report Access</h4>
                                 </div>
                                 <div class="card-body">
@@ -123,8 +122,8 @@
                                             <a href="{{ route('superadmin.reports.attendance') }}" style="text-decoration: none; color: inherit;">
                                                 <div class="report-shortcut">
                                                     <i class="ti-calendar" style="color: #007bff;"></i>
-                                                    <h5 style="margin: 10px 0; font-size: 1rem; font-weight: 600;">Attendance Reports</h5>
-                                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">View attendance statistics and trends</p>
+                                                    <h5 style="margin: 10px 0; font-weight: 600;">Attendance Reports</h5>
+                                                    <p style="margin: 0; color: #6c757d;">View attendance statistics and trends</p>
                                                 </div>
                                             </a>
                                         </div>
@@ -132,8 +131,8 @@
                                             <a href="{{ route('superadmin.reports.students') }}" style="text-decoration: none; color: inherit;">
                                                 <div class="report-shortcut">
                                                     <i class="ti-user" style="color: #28a745;"></i>
-                                                    <h5 style="margin: 10px 0; font-size: 1rem; font-weight: 600;">Student Reports</h5>
-                                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">Individual student performance analysis</p>
+                                                    <h5 style="margin: 10px 0; font-weight: 600;">Student Reports</h5>
+                                                    <p style="margin: 0; color: #6c757d;">Individual student performance analysis</p>
                                                 </div>
                                             </a>
                                         </div>
@@ -141,8 +140,8 @@
                                             <a href="{{ route('superadmin.reports.classes') }}" style="text-decoration: none; color: inherit;">
                                                 <div class="report-shortcut">
                                                     <i class="ti-layout-grid2" style="color: #6f42c1;"></i>
-                                                    <h5 style="margin: 10px 0; font-size: 1rem; font-weight: 600;">Class Reports</h5>
-                                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">Class performance and comparisons</p>
+                                                    <h5 style="margin: 10px 0; font-weight: 600;">Class Reports</h5>
+                                                    <p style="margin: 0; color: #6c757d;">Class performance and comparisons</p>
                                                 </div>
                                             </a>
                                         </div>
@@ -150,8 +149,8 @@
                                             <a href="{{ route('superadmin.reports.homework') }}" style="text-decoration: none; color: inherit;">
                                                 <div class="report-shortcut">
                                                     <i class="ti-pencil-alt" style="color: #dc3545;"></i>
-                                                    <h5 style="margin: 10px 0; font-size: 1rem; font-weight: 600;">Homework Reports</h5>
-                                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">Homework completion and grading stats</p>
+                                                    <h5 style="margin: 10px 0; font-weight: 600;">Homework Reports</h5>
+                                                    <p style="margin: 0; color: #6c757d;">Homework completion and grading stats</p>
                                                 </div>
                                             </a>
                                         </div>
@@ -165,7 +164,7 @@
                         <!-- Reports Chart -->
                         <div class="col-lg-8">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-bar-chart"></i> Reports Generated (Last 6 Months)</h4>
                                 </div>
                                 <div class="card-body">
@@ -177,7 +176,7 @@
                         <!-- Recent Reports -->
                         <div class="col-lg-4">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-time"></i> Recent Reports</h4>
                                 </div>
                                 <div class="card-body" style="padding: 0;">
@@ -186,15 +185,15 @@
                                         <div class="recent-report-item">
                                             <div style="display: flex; justify-content: space-between; align-items: start;">
                                                 <div>
-                                                    <h6 style="margin: 0 0 5px 0; font-size: 0.9375rem; font-weight: 600;">{{ $report['type'] }}</h6>
-                                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">
+                                                    <h6 style="margin: 0 0 5px 0; font-weight: 600;">{{ $report['type'] }}</h6>
+                                                    <p style="margin: 0; color: #6c757d;">
                                                         <i class="ti-user"></i> {{ $report['generated_by'] }}
                                                     </p>
-                                                    <p style="margin: 5px 0 0 0; font-size: 0.8125rem; color: #6c757d;">
+                                                    <p style="margin: 5px 0 0 0; color: #6c757d;">
                                                         <i class="ti-time"></i> {{ $report['date']->diffForHumans() }}
                                                     </p>
                                                 </div>
-                                                <span class="badge badge-primary" style="font-size: 0.75rem;">{{ $report['format'] }}</span>
+                                                <span class="badge badge-primary">{{ $report['format'] }}</span>
                                             </div>
                                         </div>
                                         @endforeach
@@ -224,7 +223,9 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}}
+<script src="{{ asset('assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
+
 <script>
 $(document).ready(function() {
     // Reports chart

@@ -1,17 +1,18 @@
 @extends('layouts.app')
+@section('title', 'Homework Reports')
 @section('content')
     <div class="content-wrap">
         <div class="main">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-lg-8">
+                    <div class="col-lg-8 p-r-0 title-margin-right">
                         <div class="page-header">
                             <div class="page-title">
                                 <h1>Homework Reports</h1>
                             </div>
                         </div><span>Homework completion and grading statistics</span>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
                             <div class="page-title">
                                 <ol class="breadcrumb text-right">
@@ -82,19 +83,19 @@
                                     <div class="row">
                                         <div class="col-md-2">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Date From</label><input
+                                                    style="font-weight: 500;">Date From</label><input
                                                     type="date" name="date_from" value="{{ $dateFrom }}"
                                                     class="form-control"></div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Date To</label><input
+                                                    style="font-weight: 500;">Date To</label><input
                                                     type="date" name="date_to" value="{{ $dateTo }}"
                                                     class="form-control"></div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Class</label>
+                                                    style="font-weight: 500;">Class</label>
                                                 <select name="class_id" class="form-control">
                                                     <option value="">All Classes</option>
                                                     @foreach ($classes as $class)
@@ -107,7 +108,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Teacher</label>
+                                                    style="font-weight: 500;">Teacher</label>
                                                 <select name="teacher_id" class="form-control">
                                                     <option value="">All Teachers</option>
                                                     @foreach ($teachers as $teacher)
@@ -133,7 +134,7 @@
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-bar-chart"></i> Completion Trend (Last 7 Weeks)</h4>
                             </div>
                             <div class="card-body"><canvas id="completionChart" height="80"></canvas></div>
@@ -141,7 +142,7 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-pie-chart"></i> Grade Distribution</h4>
                             </div>
                             <div class="card-body"><canvas id="gradeChart" height="200"></canvas></div>
@@ -152,7 +153,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-list"></i> Homework Assignments</h4>
                                 <div class="card-header-right">
                                     <!-- PDF Export -->
@@ -214,19 +215,19 @@
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th style="font-size: 0.875rem;">Assignment</th>
-                                                    <th style="font-size: 0.875rem;">Class</th>
-                                                    <th style="font-size: 0.875rem;">Due Date</th>
-                                                    <th style="font-size: 0.875rem;">Completion</th>
-                                                    <th style="font-size: 0.875rem;">Avg Grade</th>
+                                                    <th>Assignment</th>
+                                                    <th>Class</th>
+                                                    <th>Due Date</th>
+                                                    <th>Completion</th>
+                                                    <th>Avg Grade</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($homeworkAssignments as $hw)
                                                     <tr>
-                                                        <td style="font-size: 0.9375rem;">{{ $hw->title }}</td>
-                                                        <td style="font-size: 0.9375rem;">{{ $hw->class->name }}</td>
-                                                        <td style="font-size: 0.9375rem;">
+                                                        <td>{{ $hw->title }}</td>
+                                                        <td>{{ $hw->class->name }}</td>
+                                                        <td>
                                                             {{ $hw->due_date->format('d M Y') }}</td>
                                                         <td>
                                                             <div class="progress" style="height: 20px;">
@@ -235,7 +236,7 @@
                                                                     {{ $hw->completion_rate }}%</div>
                                                             </div>
                                                         </td>
-                                                        <td style="font-size: 0.9375rem; font-weight: 600;">
+                                                        <td style="font-weight: 600;">
                                                             {{ $hw->average_grade }}</td>
                                                     </tr>
                                                 @endforeach

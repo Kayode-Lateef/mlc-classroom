@@ -1,17 +1,19 @@
 @extends('layouts.app')
+@section('title', 'Class Reports')
+
 @section('content')
     <div class="content-wrap">
         <div class="main">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-lg-8">
+                    <div class="col-lg-8 p-r-0 title-margin-right">
                         <div class="page-header">
                             <div class="page-title">
                                 <h1>Class Reports</h1>
                             </div>
                         </div><span>Class performance and student comparisons</span>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
                             <div class="page-title">
                                 <ol class="breadcrumb text-right">
@@ -27,7 +29,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-filter"></i> Select Class</h4>
                             </div>
                             <div class="card-body">
@@ -35,7 +37,7 @@
                                     <div class="row">
                                         <div class="col-md-5">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Class</label>
+                                                    style="font-weight: 500;">Class</label>
                                                 <select name="class_id" class="form-control" required>
                                                     <option value="">Choose class...</option>
                                                     @foreach ($classes as $class)
@@ -48,13 +50,13 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Date From</label><input
+                                                    style="font-weight: 500;">Date From</label><input
                                                     type="date" name="date_from" value="{{ $dateFrom }}"
                                                     class="form-control"></div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group"><label
-                                                    style="font-size: 0.875rem; font-weight: 500;">Date To</label><input
+                                                    style="font-weight: 500;">Date To</label><input
                                                     type="date" name="date_to" value="{{ $dateTo }}"
                                                     class="form-control"></div>
                                         </div>
@@ -74,24 +76,23 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header"
-                                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                    <h4 style="color: white; margin: 0;">{{ $classData->name }}</h4>
+                                <div class="card-header mb-3">
+                                    <h4 style="margin: 0;">{{ $classData->name }}</h4>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <p style="font-size: 0.875rem; color: #6c757d; margin: 0;">Teacher</p>
-                                            <p style="font-size: 0.9375rem; font-weight: 600;">
+                                            <p style="color: #6c757d; margin: 0;">Teacher</p>
+                                            <p style="font-weight: 600;">
                                                 {{ $classData->teacher->name ?? 'N/A' }}</p>
                                         </div>
                                         <div class="col-md-4">
-                                            <p style="font-size: 0.875rem; color: #6c757d; margin: 0;">Total Students</p>
-                                            <p style="font-size: 0.9375rem; font-weight: 600;">
+                                            <p style="color: #6c757d; margin: 0;">Total Students</p>
+                                            <p style="font-weight: 600;">
                                                 {{ $classData->students->count() }}</p>
                                         </div>
                                         <div class="col-md-4">
-                                            <p style="font-size: 0.875rem; color: #6c757d; margin: 0;">Status</p><span
+                                            <p style="color: #6c757d; margin: 0;">Status</p><span
                                                 class="badge badge-success">Active</span>
                                         </div>
                                     </div>
@@ -149,16 +150,16 @@
                                             <table class="table table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th style="font-size: 0.875rem;">Student</th>
-                                                        <th style="font-size: 0.875rem;">Attendance %</th>
-                                                        <th style="font-size: 0.875rem;">Homework %</th>
-                                                        <th style="font-size: 0.875rem;">Avg Grade</th>
+                                                        <th>Student</th>
+                                                        <th>Attendance %</th>
+                                                        <th>Homework %</th>
+                                                        <th>Avg Grade</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach ($studentStats as $stat)
                                                         <tr>
-                                                            <td style="font-size: 0.9375rem;">
+                                                            <td>
                                                                 {{ $stat['student']->full_name }}</td>
                                                             <td><span
                                                                     class="badge badge-{{ $stat['attendance_rate'] >= 80 ? 'success' : 'warning' }}">{{ $stat['attendance_rate'] }}%</span>
@@ -166,7 +167,7 @@
                                                             <td><span
                                                                     class="badge badge-{{ $stat['homework_rate'] >= 80 ? 'success' : 'warning' }}">{{ $stat['homework_rate'] }}%</span>
                                                             </td>
-                                                            <td style="font-size: 0.9375rem; font-weight: 600;">
+                                                            <td style="font-weight: 600;">
                                                                 {{ $stat['average_grade'] }}</td>
                                                         </tr>
                                                     @endforeach
@@ -183,7 +184,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-download"></i> Export Class Report</h4>
                                 </div>
                                 <div class="card-body">

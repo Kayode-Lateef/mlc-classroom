@@ -14,7 +14,6 @@
 
         .guidelines-box h4 {
             color: #0066cc;
-            font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 10px;
         }
@@ -26,7 +25,6 @@
         }
 
         .guidelines-box li {
-            font-size: 0.8rem;
             color: #004080;
             margin-bottom: 8px;
             padding-left: 20px;
@@ -82,7 +80,6 @@
         }
 
         .performance-legend h4 {
-            font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 12px;
         }
@@ -91,13 +88,11 @@
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            font-size: 0.8rem;
         }
 
         .performance-badge-small {
             padding: 4px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
             margin-right: 8px;
             white-space: nowrap;
         }

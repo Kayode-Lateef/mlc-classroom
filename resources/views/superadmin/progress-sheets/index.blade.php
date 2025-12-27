@@ -13,28 +13,14 @@
         }
 
         .progress-sheet-card {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            background-color: #fff;
             transition: all 0.3s ease;
         }
 
         .progress-sheet-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-
-        .progress-sheet-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
         }
 
         .progress-sheet-title {
-            font-size: 1.1rem;
             font-weight: 600;
             color: #212529;
             margin-bottom: 5px;
@@ -42,7 +28,6 @@
         }
 
         .progress-sheet-meta {
-            font-size: 0.85rem;
             color: #6c757d;
             margin-bottom: 10px;
         }
@@ -61,7 +46,6 @@
         .performance-badge {
             padding: 4px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
             font-weight: 500;
         }
 
@@ -144,8 +128,8 @@
                 @if(session('success'))
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="alert alert-success alert-dismissible fade show">
-                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            <div class="alert alert-success fade in alert-dismissable">
+                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                                 <i class="ti-check"></i> {{ session('success') }}
                             </div>
                         </div>
@@ -155,8 +139,8 @@
                 @if(session('error'))
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="alert alert-danger alert-dismissible fade show">
-                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            <div class="alert alert-danger fade in alert-dismissable">
+                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                                 <i class="ti-alert"></i> {{ session('error') }}
                             </div>
                         </div>
@@ -315,17 +299,17 @@
                 @if($progressSheets->count() > 0)
                     <div class="row">
                         @foreach($progressSheets as $sheet)
-                        <div class="col-lg-4 col-md-6">
-                            <div class="progress-sheet-card">
-                                <div class="progress-sheet-header">
-                                    <div style="flex: 1;">
+                        <div class="col-lg-4 col-md-4 mb-4">
+                            <div class="card progress-sheet-card p-3 h-100 d-flex flex-column justify-content-between">
+                                <div class="card-header mb-3">
+                                    <div>
                                         <h3 class="progress-sheet-title">{{ $sheet->topic }}</h3>
                                         <span class="badge badge-primary">{{ $sheet->class->name }}</span>
                                     </div>
                                 </div>
 
                                 @if($sheet->objective)
-                                <p style="font-size: 0.875rem; color: #6c757d; margin-bottom: 12px; line-height: 1.5;">
+                                <p style="color: #6c757d; margin-bottom: 12px; line-height: 1.5;">
                                     {{ Str::limit($sheet->objective, 100) }}
                                 </p>
                                 @endif
@@ -402,13 +386,12 @@
                         </div>
                         @endforeach
                     </div>
-
                     <!-- Pagination -->
                     @if($progressSheets->hasPages())
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="mt-4">
-                                {{ $progressSheets->appends(request()->query())->links() }}
+                                {{ $progressSheets->appends(request()->query())->links() }} 
                             </div>
                         </div>
                     </div>

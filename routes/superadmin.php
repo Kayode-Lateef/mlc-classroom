@@ -16,7 +16,8 @@ use App\Http\Controllers\SuperAdmin\ProgressSheetController;
 use App\Http\Controllers\SuperAdmin\LearningResourceController;
 use App\Http\Controllers\SuperAdmin\SmsConfigurationController;
 use App\Http\Controllers\SuperAdmin\SmsLogController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SuperAdmin\NotificationController; 
+// use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SuperAdmin\ReportController;
 
 
@@ -89,8 +90,10 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     Route::delete('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
         
     // Homework
+    Route::get('homework/{homework}/download', [HomeworkController::class, 'download'])->name('homework.download');
+    Route::post('homework/submissions/{submission}/grade', [HomeworkController::class, 'gradeSubmission'])->name('homework.submissions.grade');
     Route::resource('homework', HomeworkController::class);
-    
+        
     // Progress Sheets
     Route::get('progress-sheets/get-students', [ProgressSheetController::class, 'getStudents'])->name('progress-sheets.get-students');        
     Route::resource('progress-sheets', ProgressSheetController::class);
@@ -99,6 +102,7 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     // ========== RESOURCES ==========
     
     // Learning Resources
+    Route::get('resources/{resource}/download', [LearningResourceController::class, 'download'])->name('resources.download');
     Route::resource('resources', LearningResourceController::class);
     
     // ========== COMMUNICATION ==========

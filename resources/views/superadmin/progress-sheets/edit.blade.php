@@ -14,7 +14,6 @@
 
         .current-info-box h4 {
             color: #0066cc;
-            font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 12px;
         }
@@ -28,13 +27,11 @@
         }
 
         .current-info-label {
-            font-size: 0.75rem;
             color: #004080;
             margin-bottom: 3px;
         }
 
         .current-info-value {
-            font-size: 0.85rem;
             font-weight: 500;
             color: #0066cc;
         }
@@ -48,7 +45,6 @@
         }
 
         .guidelines-box h4 {
-            font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 10px;
         }
@@ -60,7 +56,6 @@
         }
 
         .guidelines-box li {
-            font-size: 0.8rem;
             color: #6c757d;
             margin-bottom: 8px;
             padding-left: 20px;
@@ -116,7 +111,6 @@
         }
 
         .performance-legend h4 {
-            font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 12px;
         }
@@ -125,13 +119,11 @@
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            font-size: 0.8rem;
         }
 
         .performance-badge-small {
             padding: 4px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
             margin-right: 8px;
             white-space: nowrap;
         }
@@ -284,7 +276,7 @@
 
                             <!-- Student Notes -->
                             <div class="card alert" id="student-notes-card" style="display: none;">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4>
                                         <i class="ti-user"></i> Student Progress Notes
                                         <span class="badge badge-primary" id="student-count"></span>
@@ -523,7 +515,7 @@ $(document).ready(function() {
                             ${avatarHtml}
                         </div>
                         <div style="flex: 1;">
-                            <h5 style="margin: 0 0 10px 0; font-size: 1rem;">
+                            <h5 style="margin: 0 0 10px 0;">
                                 ${student.first_name} ${student.last_name}
                             </h5>
                             
@@ -532,7 +524,7 @@ $(document).ready(function() {
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label style="font-size: 0.85rem;">Performance</label>
+                                        <label>Performance</label>
                                         <select name="student_notes[${index}][performance]" class="form-control form-control-sm">
                                             <option value="" ${performance === '' ? 'selected' : ''}>Not assessed</option>
                                             <option value="excellent" ${performance === 'excellent' ? 'selected' : ''}>✨ Excellent</option>
@@ -545,7 +537,7 @@ $(document).ready(function() {
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label style="font-size: 0.85rem;">Notes</label>
+                                        <label>Notes</label>
                                         <input 
                                             type="text"
                                             name="student_notes[${index}][notes]"

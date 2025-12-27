@@ -5,21 +5,8 @@
 @push('styles')
     <style>
         .sheet-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             padding: 30px;
             border-radius: 8px 8px 0 0;
-        }
-
-        .sheet-header h2 {
-            color: white;
-            margin: 0 0 8px 0;
-            font-size: 1.5rem;
-        }
-
-        .sheet-header p {
-            color: rgba(255,255,255,0.9);
-            margin: 0;
         }
 
         .detail-item {
@@ -27,14 +14,12 @@
         }
 
         .detail-label {
-            font-size: 0.85rem;
             color: #6c757d;
             margin-bottom: 5px;
             font-weight: 500;
         }
 
         .detail-value {
-            font-size: 1rem;
             color: #212529;
         }
 
@@ -51,39 +36,12 @@
             transition: transform 0.2s;
         }
 
-        .performance-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .performance-card.excellent {
-            background-color: #d4edda;
-        }
-
-        .performance-card.good {
-            background-color: #d1ecf1;
-        }
-
-        .performance-card.average {
-            background-color: #fff3cd;
-        }
-
-        .performance-card.struggling {
-            background-color: #fff3cd;
-            border: 1px solid #ff6b6b;
-        }
-
-        .performance-card.absent {
-            background-color: #f8f9fa;
-        }
+    
 
         .performance-number {
             font-size: 2rem;
             font-weight: bold;
             margin-bottom: 5px;
-        }
-
-        .performance-label {
-            font-size: 0.75rem;
         }
 
         .student-note-item {
@@ -178,12 +136,36 @@
                     </div>
                 </div>
 
+                <!-- Success/Error Messages -->
+                @if(session('success'))
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="alert alert-success fade in alert-dismissable">
+                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                <i class="ti-check"></i> {{ session('success') }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="alert alert-danger fade in alert-dismissable">
+                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                <i class="ti-alert"></i> {{ session('error') }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="row">
                     <!-- Main Content -->
+
                     <div class="col-lg-8">
                         <!-- Progress Sheet Details -->
                         <div class="card alert">
-                            <div class="sheet-header">
+                            <div class="card-header">
                                 <h2>{{ $progressSheet->topic }}</h2>
                                 <p>{{ $progressSheet->class->name }} • {{ $progressSheet->class->subject }}</p>
                             </div>
@@ -191,7 +173,7 @@
                             <div class="card-body">
                                 @if($progressSheet->objective)
                                 <div style="margin-bottom: 20px;">
-                                    <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 10px;">
+                                    <h4 style="font-weight: 600; margin-bottom: 10px;">
                                         <i class="ti-target"></i> Lesson Objective
                                     </h4>
                                     <p style="color: #6c757d; line-height: 1.6;">{{ $progressSheet->objective }}</p>
@@ -200,7 +182,7 @@
 
                                 @if($progressSheet->notes)
                                 <div>
-                                    <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 10px;">
+                                    <h4 style="font-weight: 600; margin-bottom: 10px;">
                                         <i class="ti-pencil-alt"></i> General Class Notes
                                     </h4>
                                     <div style="background-color: #f8f9fa; border-radius: 8px; padding: 15px;">
@@ -214,34 +196,64 @@
                         <!-- Performance Summary -->
                         @if($stats['total_students'] > 0)
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-stats-up"></i> Performance Summary</h4>
                             </div>
-                            <div class="card-body">
-                                <div class="performance-summary-grid">
-                                    <div class="performance-card excellent">
-                                        <div class="performance-number" style="color: #155724;">{{ $stats['excellent'] }}</div>
-                                        <div class="performance-label" style="color: #155724;">✨ Excellent</div>
-                                    </div>
 
-                                    <div class="performance-card good">
-                                        <div class="performance-number" style="color: #0c5460;">{{ $stats['good'] }}</div>
-                                        <div class="performance-label" style="color: #0c5460;">✓ Good</div>
+                             <div class="performance-summary-grid">
+                                <div class="">
+                                    <div class="card p-0">
+                                        <div class="stat-widget-three">
+                                            <div class="performance-card bg-success">
+                                                <div class="stat-digit">{{ $stats['excellent'] }}</div>
+                                                <div class="stat-text">Excellent</div>
+                                            </div>
+                                            
+                                        </div>
                                     </div>
-
-                                    <div class="performance-card average">
-                                        <div class="performance-number" style="color: #856404;">{{ $stats['average'] }}</div>
-                                        <div class="performance-label" style="color: #856404;">~ Average</div>
+                                </div>
+                                <div class="">
+                                    <div class="card p-0">
+                                        <div class="stat-widget-three">
+                                            <div class="performance-card bg-primary">
+                                                <div class="stat-digit">{{ $stats['good'] }}</div>
+                                                <div class="stat-text">Good</div>
+                                            </div>
+                                            
+                                        </div>
                                     </div>
-
-                                    <div class="performance-card struggling">
-                                        <div class="performance-number" style="color: #ff6b6b;">{{ $stats['struggling'] }}</div>
-                                        <div class="performance-label" style="color: #ff6b6b;">⚠ Struggling</div>
+                                </div>
+                                <div class="">
+                                    <div class="card p-0">
+                                        <div class="stat-widget-three">
+                                            <div class="performance-card bg-warning">
+                                                <div class="stat-digit">{{ $stats['average'] }}</div>
+                                                <div class="stat-text">Average</div>
+                                            </div>
+                                            
+                                        </div>
                                     </div>
-
-                                    <div class="performance-card absent">
-                                        <div class="performance-number" style="color: #6c757d;">{{ $stats['absent'] }}</div>
-                                        <div class="performance-label" style="color: #6c757d;">✗ Absent</div>
+                                </div>
+                                <div class="">
+                                    <div class="card p-0">
+                                        <div class="stat-widget-three">
+                                            <div class="performance-card bg-danger">
+                                                <div class="stat-digit">{{ $stats['struggling'] }}</div>
+                                                <div class="stat-text">Struggling</div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="">
+                                    <div class="card p-0">
+                                        <div class="stat-widget-three">
+                                            <div class="performance-card bg-pink">
+                                                <div class="stat-digit">{{ $stats['absent'] }}</div>
+                                                <div class="stat-text">Absent</div>
+                                            </div>
+                                            
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -250,7 +262,7 @@
 
                         <!-- Student Progress Notes -->
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-user"></i> Student Progress Notes</h4>
                             </div>
                             <div class="card-body">
@@ -272,7 +284,7 @@
                                             <!-- Student Info -->
                                             <div style="flex: 1;">
                                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                                    <h5 style="margin: 0; font-size: 1rem;">{{ $note->student->full_name }}</h5>
+                                                    <h5 style="margin: 0;">{{ $note->student->full_name }}</h5>
                                                     @if($note->performance)
                                                     @switch($note->performance)
                                                         @case('excellent')
@@ -295,9 +307,9 @@
                                                 </div>
 
                                                 @if($note->notes)
-                                                <p style="font-size: 0.9rem; color: #6c757d; margin: 0;">{{ $note->notes }}</p>
+                                                <p style="color: #6c757d; margin: 0;">{{ $note->notes }}</p>
                                                 @else
-                                                <p style="font-size: 0.9rem; color: #adb5bd; font-style: italic; margin: 0;">No additional notes</p>
+                                                <p style="color: #adb5bd; font-style: italic; margin: 0;">No additional notes</p>
                                                 @endif
                                             </div>
                                         </div>
@@ -316,8 +328,8 @@
                     <!-- Sidebar -->
                     <div class="col-lg-4">
                         <!-- Quick Actions -->
-                        <div class="card alert" style="position: sticky; top: 20px;">
-                            <div class="card-header">
+                        <div class="card alert">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-settings"></i> Actions</h4>
                             </div>
                             <div class="card-body">
@@ -357,7 +369,7 @@
                                         {{ strtoupper(substr($progressSheet->teacher->name, 0, 1)) }}
                                     </div>
                                     <div>
-                                        <div class="detail-value" style="font-size: 0.9rem;">{{ $progressSheet->teacher->name }}</div>
+                                        <div class="detail-value">{{ $progressSheet->teacher->name }}</div>
                                         <small class="text-muted">{{ ucfirst($progressSheet->teacher->role) }}</small>
                                     </div>
                                 </div>

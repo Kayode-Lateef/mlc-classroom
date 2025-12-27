@@ -240,8 +240,8 @@
                     @if(session('success'))
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="alert alert-success alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <div class="alert alert-success fade in alert-dismissable">
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                                     <i class="ti-check"></i> {{ session('success') }}
                                 </div>
                             </div>
@@ -251,8 +251,8 @@
                     @if(session('error'))
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <div class="alert alert-danger fade in alert-dismissable">
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                                     <i class="ti-alert"></i> {{ session('error') }}
                                 </div>
                             </div>

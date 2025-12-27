@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -51,10 +52,25 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
+// Profile Routes (Updated - Replace existing profile routes with these)
+Route::middleware('auth')->prefix('profile')->name('profile.')->group(function () {
+    // View profile
+    Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+    
+    // Update profile information
+    Route::patch('/update', [ProfileController::class, 'updateProfile'])->name('update');
+    
+    // Update password
+    Route::patch('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    
+    // Update notification preferences
+    Route::patch('/notifications', [ProfileController::class, 'updateNotifications'])->name('notifications.update');
+    
+    // Delete profile photo
+    Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
+    
+    // Delete account
+    Route::delete('/destroy', [ProfileController::class, 'destroy'])->name('destroy');
+});
 

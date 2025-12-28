@@ -1,3 +1,17 @@
+<!-- Validation Errors for Account Deletion -->
+@if ($errors->userDeletion->any())
+<div class="alert alert-danger alert-dismissable">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    <strong><i class="ti-alert"></i> Account Deletion Failed!</strong>
+    <p style="margin-top: 10px;">Please correct the following error(s):</p>
+    <ul style="margin-top: 10px; margin-bottom: 0; padding-left: 20px;">
+        @foreach ($errors->userDeletion->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
 <h4 style="margin-bottom: 20px;">
     <i class="ti-shield"></i> Account Security
 </h4>
@@ -12,7 +26,7 @@
         <h5 class="text-danger">
             <i class="ti-alert"></i> Danger Zone
         </h5>
-        <p style="font-size: 0.9375rem; color: #6c757d; margin-bottom: 20px;">
+        <p style="color: #6c757d; margin-bottom: 20px;">
             Once your account is deleted, all of its resources and data will be permanently deleted. 
             Before deleting your account, please download any data or information that you wish to retain.
         </p>
@@ -23,7 +37,7 @@
             @method('DELETE')
 
             <div class="form-group">
-                <label for="password_delete" style="font-size: 0.875rem; font-weight: 500;">
+                <label for="password_delete" style="font-weight: 500;">
                     Confirm Password <span class="text-danger">*</span>
                 </label>
                 <input type="password" 
@@ -43,7 +57,7 @@
             <div class="form-group">
                 <div class="custom-control custom-checkbox">
                     <input type="checkbox" class="custom-control-input" id="confirm-delete" required>
-                    <label class="custom-control-label" for="confirm-delete" style="font-size: 0.9375rem;">
+                    <label class="custom-control-label" for="confirm-delete">
                         I understand that this action is permanent and cannot be undone
                     </label>
                 </div>
@@ -56,10 +70,10 @@
 
         <!-- What gets deleted -->
         <div class="mt-4 pt-4 border-top">
-            <h6 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 10px;">
+            <h6 style="font-weight: 600; margin-bottom: 10px;">
                 What will be deleted:
             </h6>
-            <ul style="font-size: 0.875rem; color: #6c757d;">
+            <ul style="color: #6c757d;">
                 <li>Your profile information and settings</li>
                 <li>Your activity logs and history</li>
                 @if(auth()->user()->isTeacher())
@@ -74,27 +88,3 @@
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-$(document).ready(function() {
-    // Enable delete button only when checkbox is checked
-    $('#confirm-delete').on('change', function() {
-        $('#delete-btn').prop('disabled', !this.checked);
-    });
-    
-    // Confirm before deleting
-    $('#delete-account-form').on('submit', function(e) {
-        if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
-            e.preventDefault();
-            return false;
-        }
-        
-        if (!confirm('This is your last chance. Are you really sure?')) {
-            e.preventDefault();
-            return false;
-        }
-    });
-});
-</script>
-@endpush

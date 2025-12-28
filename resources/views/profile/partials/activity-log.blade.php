@@ -11,16 +11,16 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th style="font-size: 0.875rem;">Action</th>
-                <th style="font-size: 0.875rem;">Description</th>
-                <th style="font-size: 0.875rem;">IP Address</th>
-                <th style="font-size: 0.875rem;">Date & Time</th>
+                <th>Action</th>
+                <th>Description</th>
+                <th>IP Address</th>
+                <th>Date & Time</th>
             </tr>
         </thead>
         <tbody>
             @foreach($recentActivity as $activity)
             <tr>
-                <td style="font-size: 0.9375rem;">
+                <td>
                     @php
                         $actionIcons = [
                             'login' => 'ti-unlock',
@@ -39,11 +39,11 @@
                     @endphp
                     <i class="{{ $icon }}"></i> {{ ucwords(str_replace('_', ' ', $activity->action)) }}
                 </td>
-                <td style="font-size: 0.9375rem;">{{ $activity->description }}</td>
-                <td style="font-size: 0.9375rem;">
+                <td>{{ $activity->description }}</td>
+                <td>
                     <span class="badge badge-secondary">{{ $activity->ip_address }}</span>
                 </td>
-                <td style="font-size: 0.9375rem;">{{ $activity->created_at->format('d M Y, H:i') }}</td>
+                <td>{{ $activity->created_at->format('d M Y, H:i') }}</td>
             </tr>
             @endforeach
         </tbody>

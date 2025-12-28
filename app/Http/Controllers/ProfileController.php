@@ -89,6 +89,12 @@ class ProfileController extends Controller
         $validator = Validator::make($request->all(), [
             'current_password' => ['required', 'current_password'],
             'password' => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'current_password.required' => 'Current password is required.',
+            'current_password.current_password' => 'The current password is incorrect.',
+            'password.required' => 'New password is required.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'password.min' => 'Password must be at least 8 characters.',
         ]);
         
         if ($validator->fails()) {
@@ -192,6 +198,9 @@ class ProfileController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'password' => ['required', 'current_password'],
+        ], [
+            'password.required' => 'Password is required to delete your account.',
+            'password.current_password' => 'The password is incorrect.',
         ]);
         
         if ($validator->fails()) {
@@ -228,7 +237,7 @@ class ProfileController extends Controller
         return redirect('/')
             ->with('success', 'Your account has been deleted successfully.');
     }
-
+    
     /**
      * Get user statistics based on role
      */

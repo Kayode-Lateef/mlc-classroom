@@ -1,4 +1,19 @@
-<form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+<!-- Validation Errors for Profile Info -->
+@if ($errors->any() && $errors->updatePassword->isEmpty() && $errors->userDeletion->isEmpty())
+<div class="alert alert-danger alert-dismissable">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    <strong><i class="ti-alert"></i> Validation Failed!</strong>
+    <p style="margin-top: 10px;">Please correct the following error(s):</p>
+    <ul style="margin-top: 10px; margin-bottom: 0; padding-left: 20px;">
+        @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
+
+<form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" id="profile-update-form">
     @csrf
     @method('PATCH')
 
@@ -10,7 +25,7 @@
         <!-- Profile Photo Section -->
         <div class="col-md-12 mb-4">
             <div class="form-group">
-                <label style="font-size: 0.875rem; font-weight: 500;">Profile Photo</label>
+                <label style="font-weight: 500;">Profile Photo</label>
                 <div class="row">
                     <div class="col-md-3 text-center">
                         @if($user->profile_photo)
@@ -28,13 +43,14 @@
                         @endif
                         
                         @if($user->profile_photo)
-                        <form method="POST" action="{{ route('profile.photo.delete') }}" style="margin-top: 10px;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete your profile photo?')">
-                                <i class="ti-trash"></i> Remove Photo
-                            </button>
-                        </form>
+                        <!-- Changed from nested form to button with data attribute -->
+                        <button type="button" 
+                                class="btn btn-danger btn-sm" 
+                                id="delete-photo-btn"
+                                data-url="{{ route('profile.photo.delete') }}"
+                                style="margin-top: 10px;">
+                            <i class="ti-trash"></i> Remove Photo
+                        </button>
                         @endif
                     </div>
                     <div class="col-md-9">
@@ -52,7 +68,7 @@
                         
                         <!-- Image Preview -->
                         <div id="photo-preview-container" style="margin-top: 15px; display: none;">
-                            <p style="font-size: 0.875rem; font-weight: 500;">Preview:</p>
+                            <p style="font-weight: 500;">Preview:</p>
                             <img id="photo-preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" alt="Photo preview">
                         </div>
                     </div>
@@ -63,7 +79,7 @@
         <!-- Name -->
         <div class="col-md-6">
             <div class="form-group">
-                <label for="name" style="font-size: 0.875rem; font-weight: 500;">
+                <label for="name" style="font-weight: 500;">
                     Full Name <span class="text-danger">*</span>
                 </label>
                 <input type="text" 
@@ -81,7 +97,7 @@
         <!-- Email -->
         <div class="col-md-6">
             <div class="form-group">
-                <label for="email" style="font-size: 0.875rem; font-weight: 500;">
+                <label for="email" style="font-weight: 500;">
                     Email Address <span class="text-danger">*</span>
                 </label>
                 <input type="email" 
@@ -105,7 +121,7 @@
         <!-- Phone -->
         <div class="col-md-6">
             <div class="form-group">
-                <label for="phone" style="font-size: 0.875rem; font-weight: 500;">Phone Number</label>
+                <label for="phone" style="font-weight: 500;">Phone Number</label>
                 <input type="text" 
                        name="phone" 
                        id="phone" 
@@ -121,7 +137,7 @@
         <!-- Role (Read-only) -->
         <div class="col-md-6">
             <div class="form-group">
-                <label style="font-size: 0.875rem; font-weight: 500;">Role</label>
+                <label style="font-weight: 500;">Role</label>
                 <input type="text" 
                        value="{{ ucfirst($user->role) }}" 
                        class="form-control" 
@@ -143,32 +159,3 @@
         </a>
     </div>
 </form>
-
-@push('scripts')
-<script>
-$(document).ready(function() {
-    // Image preview for new photo
-    $('#profile_photo').on('change', function() {
-        const file = this.files[0];
-        if (file) {
-            // Check file size (2MB max)
-            if (file.size > 2048000) {
-                alert('File size must not exceed 2MB');
-                $(this).val('');
-                $('#photo-preview-container').hide();
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                $('#photo-preview').attr('src', e.target.result);
-                $('#photo-preview-container').show();
-            }
-            reader.readAsDataURL(file);
-        } else {
-            $('#photo-preview-container').hide();
-        }
-    });
-});
-</script>
-@endpush

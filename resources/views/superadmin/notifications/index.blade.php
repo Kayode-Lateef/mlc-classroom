@@ -110,7 +110,18 @@
                                         <label>Select Class</label>
                                         <select name="class_id" class="form-control">
                                             <option value="">Choose class...</option>
+                                            @foreach($classes as $class)
+                                                <option value="{{ $class->id }}">
+                                                    {{ $class->name }}
+                                                    @if($class->teacher)
+                                                        (Teacher: {{ $class->teacher->name }})
+                                                    @endif
+                                                </option>
+                                            @endforeach
                                         </select>
+                                        <small class="form-text text-muted">
+                                            <i class="ti-info-alt"></i> Will send notification to all parents of students enrolled in this class
+                                        </small>
                                     </div>
 
                                     <!-- Type -->

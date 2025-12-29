@@ -1,5 +1,4 @@
 <?php
-// FILE: app/Http/Controllers/SuperAdmin/UserManagementController.php
 
 namespace App\Http\Controllers\SuperAdmin;
 
@@ -11,7 +10,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
-use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
@@ -20,13 +18,14 @@ class UserManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with('roles');
+        $query = User::query();
 
         // Filter by role
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
+        // Filter by verification status
         if ($request->filled('verified')) {
             if ($request->verified == '1') {
                 $query->whereNotNull('email_verified_at');
@@ -35,6 +34,7 @@ class UserManagementController extends Controller
             }
         }
 
+        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -73,9 +73,7 @@ class UserManagementController extends Controller
      */
     public function create()
     {
-        $roles = Role::all();
-        
-        return view('superadmin.users.create', compact('roles'));
+        return view('superadmin.users.create');
     }
 
     /**
@@ -89,6 +87,7 @@ class UserManagementController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
             'role' => 'required|in:superadmin,admin,teacher,parent',
             'phone' => 'nullable|string|max:20',
+            'status' => 'required|in:active,inactive',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -111,12 +110,10 @@ class UserManagementController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'phone' => $request->phone,
+            'status' => $request->status,
             'profile_photo' => $profilePhotoPath,
             'email_verified_at' => now(), // Auto-verify for admin-created accounts
         ]);
-
-        // Assign role using Spatie
-        $user->assignRole($request->role);
 
         // Log activity
         ActivityLog::create([
@@ -138,8 +135,6 @@ class UserManagementController extends Controller
      */
     public function show(User $user)
     {
-        $user->load('roles', 'permissions', 'activityLogs');
-
         // Get user statistics based on role
         $userStats = [];
         
@@ -175,9 +170,7 @@ class UserManagementController extends Controller
                 ->with('warning', 'Use your profile page to edit your own account.');
         }
 
-        $roles = Role::all();
-        
-        return view('superadmin.users.edit', compact('user', 'roles'));
+        return view('superadmin.users.edit', compact('user'));
     }
 
     /**
@@ -197,6 +190,7 @@ class UserManagementController extends Controller
             'password' => ['nullable', 'confirmed', Password::min(8)],
             'role' => 'required|in:superadmin,admin,teacher,parent',
             'phone' => 'nullable|string|max:20',
+            'status' => 'required|in:active,inactive',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -212,6 +206,7 @@ class UserManagementController extends Controller
             'email' => $request->email,
             'role' => $request->role,
             'phone' => $request->phone,
+            'status' => $request->status,
         ];
 
         // Update password if provided
@@ -230,11 +225,6 @@ class UserManagementController extends Controller
 
         // Update user
         $user->update($updateData);
-
-        // Update role if changed
-        if ($user->role !== $request->role) {
-            $user->syncRoles([$request->role]);
-        }
 
         // Log activity
         ActivityLog::create([
@@ -294,79 +284,12 @@ class UserManagementController extends Controller
             'user_agent' => request()->userAgent(),
         ]);
 
-        return redirect()->route('superadmin.users.index')
-            ->with('success', 'User deleted successfully!');
-    }
+    return redirect()->route('superadmin.users.index')
+        ->with('success', 'User deleted successfully!');
+}
 
     /**
-     * Assign role to user
-     */
-    public function assignRole(Request $request, User $user)
-    {
-        $validator = Validator::make($request->all(), [
-            'role' => 'required|exists:roles,name',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // Update user role
-        $user->update(['role' => $request->role]);
-        $user->syncRoles([$request->role]);
-
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'assigned_role',
-            'model_type' => 'User',
-            'model_id' => $user->id,
-            'description' => "Assigned role '{$request->role}' to user: {$user->name}",
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Role assigned successfully!'
-        ]);
-    }
-
-    /**
-     * Assign permissions to user
-     */
-    public function assignPermissions(Request $request, User $user)
-    {
-        $validator = Validator::make($request->all(), [
-            'permissions' => 'required|array',
-            'permissions.*' => 'exists:permissions,name',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $user->syncPermissions($request->permissions);
-
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'assigned_permissions',
-            'model_type' => 'User',
-            'model_id' => $user->id,
-            'description' => "Assigned " . count($request->permissions) . " permissions to user: {$user->name}",
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Permissions assigned successfully!'
-        ]);
-    }
-
-    /**
-     * Suspend/Activate user account
+     * Toggle user status (Active/Inactive or Suspend/Activate)
      */
     public function toggleStatus(User $user)
     {
@@ -387,7 +310,7 @@ class UserManagementController extends Controller
             }
         }
 
-        // Toggle status
+        // Toggle status (active <-> inactive/suspended)
         $newStatus = $user->status === 'active' ? 'suspended' : 'active';
         $user->update(['status' => $newStatus]);
 
@@ -397,12 +320,88 @@ class UserManagementController extends Controller
             'action' => 'user_status_changed',
             'model_type' => 'User',
             'model_id' => $user->id,
-            'description' => "User {$newStatus}: {$user->name}",
+            'description' => "User status changed to {$newStatus}: {$user->name}",
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
 
         return redirect()->route('superadmin.users.index')
             ->with('success', "User {$newStatus} successfully!");
+    }
+
+    /**
+     * Assign role to user (AJAX endpoint for users index page)
+     */
+    public function assignRole(Request $request, User $user)
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|in:superadmin,admin,teacher,parent',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Update user role (simple role column, no Spatie)
+        $user->update(['role' => $request->role]);
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'assigned_role',
+            'model_type' => 'User',
+            'model_id' => $user->id,
+            'description' => "Assigned role '{$request->role}' to user: {$user->name}",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Role assigned successfully!'
+        ]);
+    }
+
+    /**
+     * Assign permissions to user (AJAX endpoint - if using Spatie permissions)
+     * Note: This uses Spatie's permission system, separate from the simple role column
+     */
+    public function assignPermissions(Request $request, User $user)
+    {
+        $validator = Validator::make($request->all(), [
+            'permissions' => 'required|array',
+            'permissions.*' => 'string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // This uses Spatie's permission system (separate from role column)
+        // Only use if you have Spatie Permission package installed
+        try {
+            $user->syncPermissions($request->permissions);
+            
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'assigned_permissions',
+                'model_type' => 'User',
+                'model_id' => $user->id,
+                'description' => "Assigned " . count($request->permissions) . " permissions to user: {$user->name}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permissions assigned successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error assigning permissions: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -151,19 +151,19 @@
                                     <div class="row">
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Date From</label>
+                                                <label style="font-weight: 500;">Date From</label>
                                                 <input type="date" name="date_from" value="{{ $dateFrom }}" class="form-control">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Date To</label>
+                                                <label style="font-weight: 500;">Date To</label>
                                                 <input type="date" name="date_to" value="{{ $dateTo }}" class="form-control">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Class</label>
+                                                <label style="font-weight: 500;">Class</label>
                                                 <select name="class_id" class="form-control">
                                                     <option value="">All Classes</option>
                                                     @foreach($classes as $class)
@@ -176,7 +176,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Teacher</label>
+                                                <label style="font-weight: 500;">Teacher</label>
                                                 <select name="teacher_id" class="form-control">
                                                     <option value="">All Teachers</option>
                                                     @foreach($teachers as $teacher)
@@ -189,7 +189,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Status</label>
+                                                <label style="font-weight: 500;">Status</label>
                                                 <select name="status" class="form-control">
                                                     <option value="">All Status</option>
                                                     <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
@@ -200,7 +200,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Search</label>
+                                                <label style="font-weight: 500;">Search</label>
                                                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Title..." class="form-control">
                                             </div>
                                         </div>

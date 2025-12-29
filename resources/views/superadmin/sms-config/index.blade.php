@@ -62,6 +62,14 @@
         border: 1px solid #f5c6cb;
         color: #721c24;
     }
+
+    .provider-info {
+        display: none;
+    }
+
+    .provider-info.active {
+        display: block;
+    }
 </style>
 @endpush
 
@@ -188,7 +196,7 @@
                                     <div>
                                         <strong style="color: #155724;">Balance OK</strong>
                                         <p style="margin: 5px 0 0 0; color: #155724;">
-                                            Your SMS system is active and ready to send messages.
+                                            Your SMS system is active and ready to send messages. Success rate: {{ $stats['success_rate'] }}%
                                         </p>
                                     </div>
                                 </div>
@@ -212,12 +220,15 @@
                                         <div class="form-group">
                                             <label class="required-field">Select Provider</label>
                                             <select name="provider" id="provider" required class="form-control">
+                                                <option value="textlocal" {{ old('provider', $config->provider) == 'textlocal' ? 'selected' : '' }}>TextLocal (Recommended for UK)</option>
+                                                <option value="messagebird" {{ old('provider', $config->provider) == 'messagebird' ? 'selected' : '' }}>MessageBird</option>
                                                 <option value="twilio" {{ old('provider', $config->provider) == 'twilio' ? 'selected' : '' }}>Twilio</option>
                                                 <option value="vonage" {{ old('provider', $config->provider) == 'vonage' ? 'selected' : '' }}>Vonage (Nexmo)</option>
-                                                <option value="messagebird" {{ old('provider', $config->provider) == 'messagebird' ? 'selected' : '' }}>MessageBird</option>
-                                                <option value="textlocal" {{ old('provider', $config->provider) == 'textlocal' ? 'selected' : '' }}>TextLocal</option>
                                                 <option value="bulksms" {{ old('provider', $config->provider) == 'bulksms' ? 'selected' : '' }}>BulkSMS</option>
                                             </select>
+                                            <small class="form-text text-muted">
+                                                <strong>TextLocal</strong> is recommended for UK schools (no SDK required, lowest cost)
+                                            </small>
                                             @error('provider')
                                             <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
                                             @enderror
@@ -245,36 +256,45 @@
                                                 required
                                                 class="form-control"
                                             >
+                                            <small class="form-text text-muted" id="api-key-help">
+                                                Required for all providers
+                                            </small>
                                             @error('api_key')
                                             <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
                                             @enderror
                                         </div>
 
                                         <div class="form-group">
-                                            <label class="required-field">API Secret / Auth Token</label>
+                                            <label id="api-secret-label">API Secret / Auth Token</label>
                                             <input 
                                                 type="password" 
                                                 name="api_secret" 
+                                                id="api_secret"
                                                 value="{{ old('api_secret') }}"
                                                 placeholder="Enter your API secret or auth token"
-                                                required
                                                 class="form-control"
                                             >
+                                            <small class="form-text text-muted" id="api-secret-help">
+                                                Required for Twilio, Vonage, and BulkSMS. Not needed for TextLocal or MessageBird.
+                                            </small>
                                             @error('api_secret')
                                             <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
                                             @enderror
                                         </div>
 
                                         <div class="form-group">
-                                            <label>Sender ID / Phone Number</label>
+                                            <label class="required-field">Sender ID / From Number</label>
                                             <input 
                                                 type="text" 
                                                 name="sender_id" 
                                                 value="{{ old('sender_id', $config->sender_id) }}"
-                                                placeholder="e.g., +447123456789 or YourName"
+                                                placeholder="e.g., MLC CLASS (max 11 chars) or +447123456789"
+                                                required
                                                 class="form-control"
                                             >
-                                            <small class="form-text text-muted">UK phone number or approved sender name</small>
+                                            <small class="form-text text-muted">
+                                                <strong>UK Requirement:</strong> Must be registered sender name (max 11 characters) or verified UK phone number.
+                                            </small>
                                             @error('sender_id')
                                             <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
                                             @enderror
@@ -316,7 +336,7 @@
                                                         required
                                                         class="form-control"
                                                     >
-                                                    <small class="form-text text-muted">Alert when balance is below this</small>
+                                                    <small class="form-text text-muted">Alert when balance is below this (Recommended: £10-50)</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -324,12 +344,13 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label>Daily SMS Limit</label>
+                                                    <label class="required-field">Daily SMS Limit</label>
                                                     <input 
                                                         type="number" 
                                                         name="daily_limit" 
                                                         value="{{ old('daily_limit', $config->daily_limit) }}"
                                                         min="1"
+                                                        required
                                                         class="form-control"
                                                     >
                                                     <small class="form-text text-muted">Remaining today: {{ $stats['daily_remaining'] }}</small>
@@ -338,12 +359,13 @@
 
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label>Monthly SMS Limit</label>
+                                                    <label class="required-field">Monthly SMS Limit</label>
                                                     <input 
                                                         type="number" 
                                                         name="monthly_limit" 
                                                         value="{{ old('monthly_limit', $config->monthly_limit) }}"
                                                         min="1"
+                                                        required
                                                         class="form-control"
                                                     >
                                                     <small class="form-text text-muted">Remaining this month: {{ $stats['monthly_remaining'] }}</small>
@@ -388,7 +410,7 @@
                                             <input 
                                                 type="text" 
                                                 id="test_phone"
-                                                placeholder="+447123456789"
+                                                placeholder="+447123456789 or 07123456789"
                                                 class="form-control"
                                             >
                                         </div>
@@ -400,7 +422,7 @@
                                                 rows="3"
                                                 placeholder="Test message from MLC Classroom"
                                                 class="form-control"
-                                            ></textarea>
+                                            >Test SMS from MLC Classroom. Your SMS is working!</textarea>
                                             <small class="form-text text-muted">Max 160 characters</small>
                                         </div>
 
@@ -418,16 +440,95 @@
                                         <h4><i class="ti-info-alt"></i> Provider Info</h4>
                                     </div>
                                     <div class="card-body">
-                                        <div id="twilio-info" class="provider-info">
+                                        <!-- TextLocal Info -->
+                                        <div id="textlocal-info" class="provider-info {{ $config->provider == 'textlocal' ? 'active' : '' }}">
+                                            <h5 style="font-weight: 600; margin-bottom: 10px;">
+                                                <i class="ti-check-box" style="color: #28a745;"></i> TextLocal (Recommended)
+                                            </h5>
+                                            <p style="margin-bottom: 10px;">UK-based SMS provider, perfect for schools. No SDK required!</p>
+                                            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                                                <li><strong>Cost:</strong> £0.02-0.04 per SMS (cheapest)</li>
+                                                <li><strong>Setup:</strong> 5 minutes (HTTP API)</li>
+                                                <li><strong>Coverage:</strong> Excellent UK delivery</li>
+                                                <li><strong>No SDK required</strong></li>
+                                            </ul>
+                                            <a href="https://www.textlocal.com/" target="_blank" class="btn btn-primary btn-sm">
+                                                <i class="ti-new-window"></i> Sign Up
+                                            </a>
+                                            <a href="https://api.txtlocal.com/docs/" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="ti-book"></i> Docs
+                                            </a>
+                                        </div>
+
+                                        <!-- MessageBird Info -->
+                                        <div id="messagebird-info" class="provider-info {{ $config->provider == 'messagebird' ? 'active' : '' }}">
+                                            <h5 style="font-weight: 600; margin-bottom: 10px;">MessageBird</h5>
+                                            <p style="margin-bottom: 10px;">European SMS provider with global reach.</p>
+                                            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                                                <li><strong>Cost:</strong> £0.03-0.05 per SMS</li>
+                                                <li><strong>Setup:</strong> Requires SDK</li>
+                                                <li><strong>Coverage:</strong> Global + UK</li>
+                                                <li><strong>Delivery rate:</strong> 99%+</li>
+                                            </ul>
+                                            <a href="https://messagebird.com/" target="_blank" class="btn btn-primary btn-sm">
+                                                <i class="ti-new-window"></i> Sign Up
+                                            </a>
+                                            <a href="https://developers.messagebird.com/" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="ti-book"></i> Docs
+                                            </a>
+                                        </div>
+
+                                        <!-- Twilio Info -->
+                                        <div id="twilio-info" class="provider-info {{ $config->provider == 'twilio' ? 'active' : '' }}">
                                             <h5 style="font-weight: 600; margin-bottom: 10px;">Twilio</h5>
                                             <p style="margin-bottom: 10px;">Industry-leading SMS provider with excellent UK coverage.</p>
-                                            <ul style="padding-left: 20px;">
-                                                <li>Cost: ~£0.04 per SMS</li>
-                                                <li>Delivery rate: 99.95%</li>
-                                                <li>UK verified sender IDs supported</li>
+                                            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                                                <li><strong>Cost:</strong> £0.04-0.07 per SMS</li>
+                                                <li><strong>Setup:</strong> Requires SDK</li>
+                                                <li><strong>Delivery rate:</strong> 99.95%</li>
+                                                <li><strong>Support:</strong> 24/7</li>
                                             </ul>
-                                            <a href="https://www.twilio.com/docs" target="_blank" class="btn btn-primary btn-sm mt-2">
-                                                <i class="ti-new-window"></i> Documentation
+                                            <a href="https://www.twilio.com/" target="_blank" class="btn btn-primary btn-sm">
+                                                <i class="ti-new-window"></i> Sign Up
+                                            </a>
+                                            <a href="https://www.twilio.com/docs/sms" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="ti-book"></i> Docs
+                                            </a>
+                                        </div>
+
+                                        <!-- Vonage Info -->
+                                        <div id="vonage-info" class="provider-info {{ $config->provider == 'vonage' ? 'active' : '' }}">
+                                            <h5 style="font-weight: 600; margin-bottom: 10px;">Vonage (Nexmo)</h5>
+                                            <p style="margin-bottom: 10px;">Reliable SMS with good UK pricing.</p>
+                                            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                                                <li><strong>Cost:</strong> £0.04-0.06 per SMS</li>
+                                                <li><strong>Setup:</strong> Requires SDK</li>
+                                                <li><strong>Coverage:</strong> Global + UK</li>
+                                                <li><strong>Delivery reports:</strong> Real-time</li>
+                                            </ul>
+                                            <a href="https://www.vonage.com/" target="_blank" class="btn btn-primary btn-sm">
+                                                <i class="ti-new-window"></i> Sign Up
+                                            </a>
+                                            <a href="https://developer.vonage.com/" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="ti-book"></i> Docs
+                                            </a>
+                                        </div>
+
+                                        <!-- BulkSMS Info -->
+                                        <div id="bulksms-info" class="provider-info {{ $config->provider == 'bulksms' ? 'active' : '' }}">
+                                            <h5 style="font-weight: 600; margin-bottom: 10px;">BulkSMS</h5>
+                                            <p style="margin-bottom: 10px;">Volume SMS provider with competitive pricing.</p>
+                                            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                                                <li><strong>Cost:</strong> £0.03-0.05 per SMS (volume discounts)</li>
+                                                <li><strong>Setup:</strong> HTTP API (no SDK)</li>
+                                                <li><strong>Coverage:</strong> 200+ countries</li>
+                                                <li><strong>Best for:</strong> High volume</li>
+                                            </ul>
+                                            <a href="https://www.bulksms.com/" target="_blank" class="btn btn-primary btn-sm">
+                                                <i class="ti-new-window"></i> Sign Up
+                                            </a>
+                                            <a href="https://www.bulksms.com/developer/" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="ti-book"></i> Docs
                                             </a>
                                         </div>
                                     </div>
@@ -471,6 +572,36 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Provider selection - show/hide appropriate info and update field requirements
+    $('#provider').on('change', function() {
+        const provider = $(this).val();
+        
+        // Hide all provider info
+        $('.provider-info').removeClass('active');
+        
+        // Show selected provider info
+        $(`#${provider}-info`).addClass('active');
+        
+        // Update API Secret requirement based on provider
+        const requiresSecret = ['twilio', 'vonage', 'bulksms'].includes(provider);
+        const $apiSecret = $('#api_secret');
+        const $apiSecretLabel = $('#api-secret-label');
+        const $apiSecretHelp = $('#api-secret-help');
+        
+        if (requiresSecret) {
+            $apiSecret.prop('required', true);
+            $apiSecretLabel.html('API Secret / Auth Token <span style="color: #dc3545;">*</span>');
+            $apiSecretHelp.text('Required for ' + provider.charAt(0).toUpperCase() + provider.slice(1));
+        } else {
+            $apiSecret.prop('required', false);
+            $apiSecretLabel.text('API Secret / Auth Token');
+            $apiSecretHelp.text('Not required for ' + (provider === 'textlocal' ? 'TextLocal' : 'MessageBird'));
+        }
+    });
+    
+    // Trigger on page load
+    $('#provider').trigger('change');
+
     // Test SMS
     $('#test-sms-btn').on('click', function() {
         const phone = $('#test_phone').val();
@@ -479,7 +610,9 @@ $(document).ready(function() {
         const resultDiv = $('#test-result');
 
         if (!phone || !message) {
-            resultDiv.removeClass('success').addClass('error').text('Please enter phone number and message.').show();
+            resultDiv.removeClass('success').addClass('error')
+                .html('<i class="ti-close"></i> Please enter phone number and message.')
+                .show();
             return;
         }
 
@@ -495,12 +628,20 @@ $(document).ready(function() {
                 test_message: message
             },
             success: function(response) {
-                resultDiv.removeClass('error').addClass('success').html('<i class="ti-check"></i> ' + response.message).show();
+                let details = '';
+                if (response.details) {
+                    details = `<br><small>Provider: ${response.details.provider || 'N/A'} | Cost: £${response.details.cost || '0.00'} | Balance: £${response.details.remaining_balance || '0.00'}</small>`;
+                }
+                resultDiv.removeClass('error').addClass('success')
+                    .html('<i class="ti-check"></i> ' + response.message + details)
+                    .show();
                 btn.prop('disabled', false).html('<i class="ti-check"></i> Send Test SMS');
             },
             error: function(xhr) {
                 const message = xhr.responseJSON?.message || 'Test SMS failed. Please check your configuration.';
-                resultDiv.removeClass('success').addClass('error').html('<i class="ti-close"></i> ' + message).show();
+                resultDiv.removeClass('success').addClass('error')
+                    .html('<i class="ti-close"></i> ' + message)
+                    .show();
                 btn.prop('disabled', false).html('<i class="ti-check"></i> Send Test SMS');
             }
         });

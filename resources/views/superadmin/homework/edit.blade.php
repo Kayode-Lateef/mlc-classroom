@@ -84,7 +84,10 @@
                     </div>
                 </div>
 
-                <form action="{{ route('superadmin.homework.update', $homework) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('superadmin.homework.update', $homework) }}" 
+                      method="POST" 
+                      enctype="multipart/form-data"
+                      id="homeworkUpdateForm">
                     @csrf
                     @method('PUT')
 
@@ -225,7 +228,7 @@
                                                 <p style="margin: 5px 0 0 0; font-size: 1rem; color: #6c757d;">PDF, DOC, DOCX, JPG, PNG (MAX. 10MB)</p>
                                             </label>
                                         </div>
-                                        <div id="file-name" style="margin-top: 10px; font-size: 0.875rem; color: #007bff; display: none;">
+                                        <div id="file-name" style="margin-top: 10px; color: #007bff; display: none;">
                                             <i class="ti-file"></i> <span></span>
                                         </div>
                                         @if($homework->file_path)
@@ -325,6 +328,7 @@
                             @endif
                         </div>
                     </div>
+                </form>
 
                     <!-- Form Actions -->
                     <div class="row">
@@ -332,10 +336,16 @@
                             <div class="card alert">
                                 <div class="card-body">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <form action="{{ route('superadmin.homework.destroy', $homework) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this homework? All {{ $homework->submissions->count() }} submissions will be permanently deleted.');" style="margin: 0;">
+                                        <!-- Delete Form -->
+                                        <form action="{{ route('superadmin.homework.destroy', $homework) }}" 
+                                            method="POST" 
+                                            id="deleteForm"
+                                            style="margin: 0;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">
+                                            <button type="button" 
+                                                    class="btn btn-danger"
+                                                    onclick="if(confirm('Are you sure you want to delete this homework? All {{ $homework->submissions->count() }} submissions will be permanently deleted.')) { document.getElementById('deleteForm').submit(); }">
                                                 <i class="ti-trash"></i> Delete Homework
                                             </button>
                                         </form>
@@ -344,7 +354,7 @@
                                             <a href="{{ route('superadmin.homework.show', $homework) }}" class="btn btn-secondary">
                                                 <i class="ti-arrow-left"></i> Cancel
                                             </a>
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="button" class="btn btn-primary" onclick="document.getElementById('homeworkUpdateForm').submit();">
                                                 <i class="ti-check"></i> Update Homework
                                             </button>
                                         </div>
@@ -362,7 +372,6 @@
                             </div>
                         </div>
                     </div>
-                </form>
             </div>
         </div>
     </div>

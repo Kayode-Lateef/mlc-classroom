@@ -108,19 +108,19 @@
                                     <div class="row">
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Date From</label>
+                                                <label style="font-weight: 500;">Date From</label>
                                                 <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Date To</label>
+                                                <label style="font-weight: 500;">Date To</label>
                                                 <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Status</label>
+                                                <label style="font-weight: 500;">Status</label>
                                                 <select name="status" class="form-control">
                                                     <option value="">All Status</option>
                                                     <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
@@ -132,7 +132,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Type</label>
+                                                <label style="font-weight: 500;">Type</label>
                                                 <select name="message_type" class="form-control">
                                                     <option value="">All Types</option>
                                                     <option value="absence" {{ request('message_type') == 'absence' ? 'selected' : '' }}>Absence</option>
@@ -145,7 +145,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Provider</label>
+                                                <label style="font-weight: 500;">Provider</label>
                                                 <select name="provider" class="form-control">
                                                     <option value="">All Providers</option>
                                                     @foreach($providers as $provider)
@@ -158,7 +158,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Search</label>
+                                                <label style="font-weight: 500;">Search</label>
                                                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Phone..." class="form-control">
                                             </div>
                                         </div>

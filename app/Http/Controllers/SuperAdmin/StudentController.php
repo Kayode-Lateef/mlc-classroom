@@ -25,13 +25,23 @@ class StudentController extends Controller
 
         // Search by name or parent
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
+            
             $query->where(function($q) use ($search) {
+                // Direct matches on first or last name
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhereHas('parent', function($query) use ($search) {
-                      $query->where('name', 'like', "%{$search}%");
-                  });
+                ->orWhere('last_name', 'like', "%{$search}%");
+                
+                // Full name search (handles "Minerva Harvey")
+                $q->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+                
+                // Reverse full name search (handles "Harvey Minerva")
+                $q->orWhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$search}%"]);
+                
+                // Search by parent name
+                $q->orWhereHas('parent', function($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                });
             });
         }
 
@@ -87,10 +97,24 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => 'nullable|string|max:20',
+            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[+]?[0-9\s\-\(\)]+$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ], [
+            'first_name.required' => 'First name is required.',
+            'last_name.required' => 'Last name is required.',
+            'date_of_birth.required' => 'Date of birth is required.',
+            'date_of_birth.before' => 'Date of birth must be in the past.',
+            'parent_id.required' => 'Please select a parent/guardian.',
+            'parent_id.exists' => 'Selected parent does not exist.',
+            'enrollment_date.required' => 'Enrollment date is required.',
+            'status.required' => 'Status is required.',
+            'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'profile_photo.image' => 'Profile photo must be an image.',
+            'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
+            'profile_photo.max' => 'Profile photo size must not exceed 2MB.',
+            
+            ]);
 
         // Verify parent role
         $parent = User::find($validated['parent_id']);
@@ -184,9 +208,22 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => 'nullable|string|max:20',
+            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[+]?[0-9\s\-\(\)]+$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ], [
+            'first_name.required' => 'First name is required.',
+            'last_name.required' => 'Last name is required.',
+            'date_of_birth.required' => 'Date of birth is required.',
+            'date_of_birth.before' => 'Date of birth must be in the past.',
+            'parent_id.required' => 'Please select a parent/guardian.',
+            'parent_id.exists' => 'Selected parent does not exist.',
+            'enrollment_date.required' => 'Enrollment date is required.',
+            'status.required' => 'Status is required.',
+            'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'profile_photo.image' => 'Profile photo must be an image.',
+            'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
+            'profile_photo.max' => 'Profile photo must not be greater than 2MB.',
         ]);
 
         // Verify parent role
@@ -227,7 +264,7 @@ class StudentController extends Controller
     public function destroy(Student $student)
     {
         // Check if student has enrollments
-        if ($student->classEnrollments()->count() > 0) {
+        if ($student->enrollments()->count() > 0) {
             return back()->with('error', 'Cannot delete student with active class enrollments!');
         }
 

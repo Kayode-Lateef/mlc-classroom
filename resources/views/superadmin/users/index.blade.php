@@ -110,7 +110,7 @@
                     @if(session('success'))
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable">
+                                <div class="alert alert-success fade in alert-dismissable text-white">
                                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                                     <i class="ti-check"></i> {{ session('success') }}
                                 </div>
@@ -121,7 +121,7 @@
                     @if(session('error'))
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
+                                <div class="alert alert-danger fade in alert-dismissable text-white">
                                     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                                     <i class="ti-alert"></i> {{ session('error') }}
                                 </div>
@@ -314,26 +314,6 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    @if(session('success'))
-                                        <div class="alert alert-success alert-dismissible fade show">
-                                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                            <i class="ti-check"></i> {{ session('success') }}
-                                        </div>
-                                    @endif
-
-                                    @if(session('error'))
-                                        <div class="alert alert-danger alert-dismissible fade show">
-                                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                            <i class="ti-alert"></i> {{ session('error') }}
-                                        </div>
-                                    @endif
-
-                                    @if(session('warning'))
-                                        <div class="alert alert-warning alert-dismissible fade show">
-                                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                            <i class="ti-info"></i> {{ session('warning') }}
-                                        </div>
-                                    @endif
 
                                     @if($users->count() > 0)
                                     <div class="table-responsive">
@@ -461,17 +441,19 @@
                                                                     <span class="badge badge-secondary badge-sm">Current User</span>
                                                                 @endif
                                                                 
-                                                                <!-- DELETE BUTTON - Also using onsubmit -->
+                                                                <!-- DELETE BUTTON -->
                                                                 <form action="{{ route('superadmin.users.destroy', $user) }}" 
                                                                     method="POST" 
                                                                     style="display: inline-block;"
-                                                                    onsubmit="return confirm('Are you sure you want to delete {{ $user->name }}? This action cannot be undone.');">
+                                                                    id="deleteForm_{{ $user->id }}"
+                                                                    onsubmit="return handleDelete(event, '{{ addslashes($user->name) }}');">
                                                                     @csrf
                                                                     @method('DELETE')
                                                                     <button type="submit" class="btn btn-sm btn-danger" title="Delete">
                                                                         <i class="ti-trash"></i>
                                                                     </button>
                                                                 </form>
+
                                                             @else
                                                                 <span class="badge badge-secondary badge-sm">Current User</span>
                                                             @endif
@@ -518,15 +500,32 @@
 
 @push('scripts')
 <script>
-function handleSuspend(userId, userName, isVerified) {
-    var action = isVerified ? 'suspend' : 'activate';
+function handleDelete(event, userName) {
+    event.preventDefault(); // Stop the form from submitting immediately
+    
+    console.log('Delete clicked for:', userName);
+    
+    if (confirm('Are you sure you want to delete ' + userName + '? This action cannot be undone.')) {
+        console.log('Delete confirmed, submitting form');
+        event.target.submit(); // Submit the form if confirmed
+        return true;
+    } else {
+        console.log('Delete cancelled');
+        return false;
+    }
+}
+
+function handleSuspend(userId, userName, isActive) {
+    var action = isActive ? 'suspend' : 'activate';
+    
+    console.log('Suspend/Activate clicked:', userId, userName, action);
     
     if (!confirm('Are you sure you want to ' + action + ' ' + userName + '?')) {
+        console.log('Action cancelled');
         return false;
     }
     
-    console.log('Suspending user:', userId);
-    console.log('Action:', action);
+    console.log('Action confirmed, submitting form');
     
     var form = document.getElementById('suspendForm_' + userId);
     
@@ -538,12 +537,20 @@ function handleSuspend(userId, userName, isVerified) {
     
     console.log('Submitting form to:', form.action);
     form.submit();
+    return true;
 }
 
 // jQuery initialization
 $(document).ready(function() {
     console.log('User management initialized');
+    console.log('handleDelete available:', typeof handleDelete === 'function');
     console.log('handleSuspend available:', typeof handleSuspend === 'function');
+    
+    // Make sure delete forms work
+    $('form[id^="deleteForm_"]').on('submit', function(e) {
+        console.log('Form submit event triggered');
+        // Let the onsubmit handler do its job
+    });
     
     $('#userFilterForm').off('submit').on('submit', function() {
         console.log('Filter form submitting...');

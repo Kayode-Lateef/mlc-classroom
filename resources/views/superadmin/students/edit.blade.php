@@ -46,6 +46,16 @@
             font-weight: 500;
         }
 
+        /* Force error messages to display */
+        .invalid-feedback {
+            display: block !important;
+            color: #dc3545 !important;
+        }
+        
+        .is-invalid {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5 !important;
+        }
     </style>
 @endpush
 
@@ -76,12 +86,29 @@
                     </div>
                 </div>
 
+                <!-- Error Messages Summary -->
+                @if($errors->any())
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="alert alert-danger alert-dismissible fade in">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <h5><i class="ti-alert"></i> Validation Errors</h5>
+                            <ul style="margin-bottom: 0;">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <div id="main-content">
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-body">
-                                    <form method="POST" action="{{ route('superadmin.students.update', $student) }}" enctype="multipart/form-data">
+                                    <form method="POST" action="{{ route('superadmin.students.update', $student) }}" enctype="multipart/form-data" id="studentEditForm">
                                         @csrf
                                         @method('PUT')
 
@@ -100,6 +127,7 @@
                                                             value="{{ old('first_name', $student->first_name) }}" 
                                                             placeholder="e.g. John"
                                                             required
+                                                            maxlength="255"
                                                             class="form-control @error('first_name') is-invalid @enderror"
                                                         >
                                                         @error('first_name')
@@ -119,6 +147,7 @@
                                                             value="{{ old('last_name', $student->last_name) }}" 
                                                             placeholder="e.g. Smith"
                                                             required
+                                                            maxlength="255"
                                                             class="form-control @error('last_name') is-invalid @enderror"
                                                         >
                                                         @error('last_name')
@@ -241,6 +270,7 @@
                                                             id="emergency_contact" 
                                                             value="{{ old('emergency_contact', $student->emergency_contact) }}"
                                                             placeholder="e.g. Jane Doe"
+                                                            maxlength="255"
                                                             class="form-control @error('emergency_contact') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
@@ -262,6 +292,8 @@
                                                             id="emergency_phone" 
                                                             value="{{ old('emergency_phone', $student->emergency_phone) }}"
                                                             placeholder="+234 800 000 0000"
+                                                            maxlength="20"
+                                                            pattern="[+]?[0-9\s\-\(\)]+"
                                                             class="form-control @error('emergency_phone') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
@@ -322,7 +354,7 @@
                                                         type="file" 
                                                         name="profile_photo" 
                                                         id="profile_photo" 
-                                                        accept="image/*"
+                                                        accept="image/jpeg,image/png,image/jpg,image/gif"
                                                         class="form-control-file @error('profile_photo') is-invalid @enderror"
                                                     >
                                                     <small class="form-text text-muted">
@@ -347,7 +379,7 @@
                                                     <ul class="mb-0 mt-2">
                                                         <li>Student ID: {{ $student->id }}</li>
                                                         <li>Enrolled: {{ $student->enrollment_date->format('d M Y') }} ({{ $student->enrollment_date->diffForHumans() }})</li>
-                                                        <li>Classes Enrolled: {{ $student->classes->count() }}</li>
+                                                        <li>Classes Enrolled: {{ $student->enrollments->count() }}</li>
                                                         <li>Last Updated: {{ $student->updated_at->format('d M Y, H:i') }}</li>
                                                     </ul>
                                                 </div>
@@ -359,7 +391,7 @@
                                             <a href="{{ route('superadmin.students.show', $student) }}" class="btn btn-secondary">
                                                 <i class="ti-close"></i> Cancel
                                             </a>
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn btn-primary" id="submitBtn">
                                                 <i class="ti-check"></i> Update Student
                                             </button>
                                         </div>
@@ -386,10 +418,31 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Image preview for new photo
+            const originalStatus = '{{ $student->status }}';
+            
+            // ========================================
+            // IMAGE PREVIEW AND VALIDATION
+            // ========================================
             $('#profile_photo').on('change', function() {
                 const file = this.files[0];
                 if (file) {
+                    // Check file size (2MB = 2097152 bytes)
+                    if (file.size > 2097152) {
+                        alert('File size must not exceed 2MB');
+                        $(this).val('');
+                        $('#photo-preview').hide();
+                        return;
+                    }
+                    
+                    // Check file type
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Only JPG, PNG, and GIF images are allowed');
+                        $(this).val('');
+                        $('#photo-preview').hide();
+                        return;
+                    }
+                    
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         $('#photo-preview').attr('src', e.target.result).show();
@@ -400,31 +453,151 @@
                 }
             });
 
-            // Auto-format phone number (optional)
-            $('#emergency_phone').on('blur', function() {
-                let value = $(this).val().trim();
-                // Simple formatting example - you can customize this
-                if (value && !value.startsWith('+')) {
-                    if (value.startsWith('0')) {
-                        $(this).val('+234' + value.substring(1));
-                    }
-                }
-            });
-
+            // ========================================
+            // DATE VALIDATION
+            // ========================================
             // Set max date for date of birth (must be in the past)
             const today = new Date().toISOString().split('T')[0];
             $('#date_of_birth').attr('max', today);
+            
+            // Validate date of birth on change
+            $('#date_of_birth').on('change', function() {
+                const selectedDate = new Date($(this).val());
+                const todayDate = new Date(today);
+                
+                if (selectedDate >= todayDate) {
+                    alert('Date of birth must be in the past');
+                    $(this).val('{{ $student->date_of_birth->format('Y-m-d') }}');
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
 
-            // Status change warning
+            // ========================================
+            // PHONE NUMBER VALIDATION
+            // ========================================
+            $('#emergency_phone').on('input', function() {
+                let value = $(this).val();
+                // Remove any characters that aren't numbers, +, -, (, ), or spaces
+                value = value.replace(/[^0-9+\-\(\)\s]/g, '');
+                $(this).val(value);
+            });
+
+            // ========================================
+            // NAME VALIDATION (LETTERS ONLY)
+            // ========================================
+            $('#first_name, #last_name').on('input', function() {
+                let value = $(this).val();
+                // Allow only letters and spaces
+                value = value.replace(/[^a-zA-Z\s]/g, '');
+                $(this).val(value);
+            });
+
+            // ========================================
+            // PARENT SELECTION VALIDATION
+            // ========================================
+            $('#parent_id').on('change', function() {
+                if ($(this).val() === '') {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // ========================================
+            // STATUS CHANGE WARNING
+            // ========================================
             $('#status').on('change', function() {
                 const newStatus = $(this).val();
-                const originalStatus = '{{ $student->status }}';
                 
                 if (newStatus !== originalStatus && (newStatus === 'graduated' || newStatus === 'withdrawn')) {
                     if (!confirm('Are you sure you want to change the status to ' + newStatus + '? This may affect the student\'s class enrollments.')) {
                         $(this).val(originalStatus);
                     }
                 }
+            });
+
+            // ========================================
+            // FORM SUBMISSION VALIDATION
+            // ========================================
+            $('#studentEditForm').on('submit', function(e) {
+                let isValid = true;
+                let errors = [];
+
+                // Validate First Name
+                if ($('#first_name').val().trim() === '') {
+                    isValid = false;
+                    errors.push('First name is required');
+                    $('#first_name').addClass('is-invalid');
+                } else {
+                    $('#first_name').removeClass('is-invalid');
+                }
+
+                // Validate Last Name
+                if ($('#last_name').val().trim() === '') {
+                    isValid = false;
+                    errors.push('Last name is required');
+                    $('#last_name').addClass('is-invalid');
+                } else {
+                    $('#last_name').removeClass('is-invalid');
+                }
+
+                // Validate Date of Birth
+                if ($('#date_of_birth').val() === '') {
+                    isValid = false;
+                    errors.push('Date of birth is required');
+                    $('#date_of_birth').addClass('is-invalid');
+                } else {
+                    const selectedDate = new Date($('#date_of_birth').val());
+                    const todayDate = new Date(today);
+                    
+                    if (selectedDate >= todayDate) {
+                        isValid = false;
+                        errors.push('Date of birth must be in the past');
+                        $('#date_of_birth').addClass('is-invalid');
+                    } else {
+                        $('#date_of_birth').removeClass('is-invalid');
+                    }
+                }
+
+                // Validate Parent Selection
+                if ($('#parent_id').val() === '') {
+                    isValid = false;
+                    errors.push('Please select a parent/guardian');
+                    $('#parent_id').addClass('is-invalid');
+                } else {
+                    $('#parent_id').removeClass('is-invalid');
+                }
+
+                // Validate Enrollment Date
+                if ($('#enrollment_date').val() === '') {
+                    isValid = false;
+                    errors.push('Enrollment date is required');
+                    $('#enrollment_date').addClass('is-invalid');
+                } else {
+                    $('#enrollment_date').removeClass('is-invalid');
+                }
+
+                // If not valid, prevent submission and show errors
+                if (!isValid) {
+                    e.preventDefault();
+                    
+                    // Scroll to top to show errors
+                    $('html, body').animate({
+                        scrollTop: 0
+                    }, 500);
+                    
+                    // Show alert with errors
+                    alert('Please fix the following errors:\n\n' + errors.join('\n'));
+                    
+                    return false;
+                }
+
+                // Disable submit button to prevent double submission
+                $('#submitBtn').prop('disabled', true).html('<i class="ti-reload"></i> Updating...');
+                
+                return true;
             });
         });
     </script>

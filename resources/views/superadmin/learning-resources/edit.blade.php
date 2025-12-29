@@ -58,7 +58,11 @@
                     </div>
                 </div>
 
-                <form action="{{ route('superadmin.resources.update', $resource) }}" method="POST" enctype="multipart/form-data">
+                <!-- MAIN UPDATE FORM STARTS HERE -->
+                <form action="{{ route('superadmin.resources.update', $resource) }}" 
+                      method="POST" 
+                      enctype="multipart/form-data"
+                      id="resourceUpdateForm">
                     @csrf
                     @method('PUT')
 
@@ -126,10 +130,10 @@
                                         <div class="current-file-box">
                                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                                 <div style="display: flex; align-items: center;">
-                                                    <i class="ti-file" style="font-size: 1.5rem; color: #007bff; margin-right: 12px;"></i>
+                                                    <i class="ti-file" style="color: #007bff; margin-right: 12px;"></i>
                                                     <div>
-                                                        <p style="margin: 0; font-weight: 600; color: #007bff; font-size: 0.875rem;">Current File:</p>
-                                                        <p style="margin: 0; font-size: 0.875rem; color: #495057; word-break: break-all;">
+                                                        <p style="margin: 0; font-weight: 600; color: #007bff;">Current File:</p>
+                                                        <p style="margin: 0; color: #495057; word-break: break-all;">
                                                             {{ filter_var($resource->file_path, FILTER_VALIDATE_URL) ? $resource->file_path : basename($resource->file_path) }}
                                                         </p>
                                                     </div>
@@ -150,7 +154,7 @@
                                                 <p style="margin: 5px 0 0 0; font-size: 0.75rem; color: #6c757d;">PDF, DOC, DOCX, JPG, PNG, GIF (MAX. 10MB)</p>
                                             </label>
                                         </div>
-                                        <div id="file-name" style="margin-top: 10px; font-size: 0.875rem; color: #007bff; display: none;">
+                                        <div id="file-name" style="margin-top: 10px; color: #007bff; display: none;">
                                             <i class="ti-file"></i> <span></span>
                                         </div>
                                         <small class="form-text text-muted">Leave empty to keep current file. Max file size: 10MB</small>
@@ -290,44 +294,51 @@
                             </div>
                         </div>
                     </div>
+                </form>
+                <!-- MAIN UPDATE FORM ENDS HERE -->
 
-                    <!-- Form Actions -->
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="card alert">
-                                <div class="card-body">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <form action="{{ route('superadmin.resources.destroy', $resource) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this resource? This action cannot be undone.');" style="margin: 0;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class="ti-trash"></i> Delete Resource
-                                            </button>
-                                        </form>
+                <!-- Form Actions (OUTSIDE the update form) -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card alert">
+                            <div class="card-body">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <!-- Delete Form -->
+                                    <form action="{{ route('superadmin.resources.destroy', $resource) }}" 
+                                          method="POST" 
+                                          id="deleteResourceForm"
+                                          style="margin: 0;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" 
+                                                class="btn btn-danger"
+                                                onclick="if(confirm('Are you sure you want to delete this resource? This action cannot be undone.')) { document.getElementById('deleteResourceForm').submit(); }">
+                                            <i class="ti-trash"></i> Delete Resource
+                                        </button>
+                                    </form>
 
-                                        <div style="display: flex; gap: 10px;">
-                                            <a href="{{ route('superadmin.resources.index') }}" class="btn btn-secondary">
-                                                <i class="ti-arrow-left"></i> Cancel
-                                            </a>
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="ti-check"></i> Update Resource
-                                            </button>
-                                        </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <a href="{{ route('superadmin.resources.index') }}" class="btn btn-secondary">
+                                            <i class="ti-arrow-left"></i> Cancel
+                                        </a>
+                                        <button type="button" class="btn btn-primary" onclick="document.getElementById('resourceUpdateForm').submit();">
+                                            <i class="ti-check"></i> Update Resource
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Footer -->
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="footer">
-                                <p>MLC Classroom - Edit Resource</p>
-                            </div>
+                <!-- Footer -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="footer">
+                            <p>MLC Classroom - Edit Resource</p>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -337,15 +348,30 @@
 <script>
 function toggleFields() {
     const type = document.getElementById('resource_type').value;
+    const fileInput = document.getElementById('file-input');
     
     // Hide all fields
     document.getElementById('file-field').style.display = 'none';
     document.getElementById('video-field').style.display = 'none';
     document.getElementById('link-field').style.display = 'none';
     
-    // Show relevant field
-    if (type === 'pdf' || type === 'document' || type === 'image') {
+    // Reset file input
+    fileInput.value = '';
+    $('#file-name').hide();
+    
+    // Show relevant field and set appropriate accept attribute
+    if (type === 'pdf') {
         document.getElementById('file-field').style.display = 'block';
+        fileInput.setAttribute('accept', '.pdf,application/pdf');
+        updateFileUploadText('PDF (MAX. 10MB)');
+    } else if (type === 'document') {
+        document.getElementById('file-field').style.display = 'block';
+        fileInput.setAttribute('accept', '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        updateFileUploadText('DOC, DOCX (MAX. 10MB)');
+    } else if (type === 'image') {
+        document.getElementById('file-field').style.display = 'block';
+        fileInput.setAttribute('accept', '.jpg,.jpeg,.png,.gif,image/jpeg,image/png,image/gif');
+        updateFileUploadText('JPG, PNG, GIF (MAX. 10MB)');
     } else if (type === 'video') {
         document.getElementById('video-field').style.display = 'block';
     } else if (type === 'link') {
@@ -353,19 +379,111 @@ function toggleFields() {
     }
 }
 
+function updateFileUploadText(text) {
+    $('.file-upload-box p:last-child').text(text);
+}
+
 $(document).ready(function() {
     // Initialize on page load
     toggleFields();
     
-    // File input change handler
+    // File input change handler with validation
     $('#file-input').on('change', function() {
         const file = this.files[0];
+        const resourceType = $('#resource_type').val();
+        
         if (file) {
+            // File size validation (10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                alert('File size exceeds 10MB. Please choose a smaller file.');
+                $(this).val('');
+                $('#file-name').hide();
+                return;
+            }
+            
+            // File type validation
+            let validType = false;
+            const fileName = file.name.toLowerCase();
+            
+            if (resourceType === 'pdf') {
+                validType = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+                if (!validType) {
+                    alert('Please upload a PDF file only.');
+                }
+            } else if (resourceType === 'document') {
+                validType = file.type === 'application/msword' || 
+                           file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                           fileName.endsWith('.doc') || fileName.endsWith('.docx');
+                if (!validType) {
+                    alert('Please upload a Word document (.doc or .docx) only.');
+                }
+            } else if (resourceType === 'image') {
+                validType = file.type.startsWith('image/') && 
+                           (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || 
+                            fileName.endsWith('.png') || fileName.endsWith('.gif'));
+                if (!validType) {
+                    alert('Please upload an image file (JPG, PNG, or GIF) only.');
+                }
+            }
+            
+            if (!validType) {
+                $(this).val('');
+                $('#file-name').hide();
+                return;
+            }
+            
+            // Show file name
             $('#file-name span').text(file.name);
             $('#file-name').show();
         } else {
             $('#file-name').hide();
         }
+    });
+    
+    // Form validation before submit
+    $('#resourceForm').on('submit', function(e) {
+        const resourceType = $('#resource_type').val();
+        
+        if (!resourceType) {
+            e.preventDefault();
+            alert('Please select a resource type.');
+            return false;
+        }
+        
+        // Check if file is required
+        // if ((resourceType === 'pdf' || resourceType === 'document' || resourceType === 'image')) {
+        //     const fileInput = document.getElementById('file-input');
+        //     if (!fileInput.files || fileInput.files.length === 0) {
+        //         e.preventDefault();
+        //         alert('Please upload a file for the selected resource type.');
+        //         return false;
+        //     }
+        // }
+        
+        // Check if video URL is provided
+        if (resourceType === 'video') {
+            const videoUrl = $('input[name="video_url"]').val();
+            if (!videoUrl || videoUrl.trim() === '') {
+                e.preventDefault();
+                alert('Please provide a video URL.');
+                $('input[name="video_url"]').focus();
+                return false;
+            }
+        }
+        
+        // Check if external link is provided
+        if (resourceType === 'link') {
+            const externalLink = $('input[name="external_link"]').val();
+            if (!externalLink || externalLink.trim() === '') {
+                e.preventDefault();
+                alert('Please provide an external link.');
+                $('input[name="external_link"]').focus();
+                return false;
+            }
+        }
+        
+        return true;
     });
 });
 </script>

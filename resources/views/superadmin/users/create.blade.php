@@ -34,6 +34,21 @@
             margin-top: 10px;
             display: none;
         }
+
+        /* Password toggle styling */
+        .toggle-password:hover {
+            color: #495057 !important;
+        }
+
+        .toggle-password:focus {
+            outline: none;
+        }
+
+        /* Force error messages to display */
+        .invalid-feedback {
+            display: block !important;
+            color: #dc3545 !important;
+        }
     </style>
 @endpush
 
@@ -45,16 +60,15 @@
                 <div class="row">
                     <div class="col-lg-8 p-r-0 title-margin-right">
                         <div class="page-header">
-                            <div class="page-title">
-                                <h1>Add New User</h1>
-                            </div>
+                            <div class="page-title"><h1>Add New User</h1></div>
                         </div>
-                        <span>Fill out the form below to create a new user account</span>
+                        <span>Create a new user account</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
                             <div class="page-title">
                                 <ol class="breadcrumb text-right">
+                                    <li><a href="{{ route('superadmin.dashboard') }}">Dashboard</a></li>
                                     <li><a href="{{ route('superadmin.users.index') }}">Users</a></li>
                                     <li class="active">Add User</li>
                                 </ol>
@@ -63,56 +77,54 @@
                     </div>
                 </div>
 
-                <div id="main-content">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="card alert">
-                                <div class="card-body">
-                                    <form method="POST" action="{{ route('superadmin.users.store') }}" enctype="multipart/form-data">
-                                        @csrf
+                <!-- Error Messages -->
+                @if($errors->any())
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            <h5><i class="ti-alert"></i> Validation Errors</h5>
+                            <ul style="margin-bottom: 0;">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
-                                        <!-- Role Selection (Important) -->
-                                        <div class="form-section">
-                                            <div class="form-group">
-                                                <label for="role" class="required-field"><strong>User Role</strong></label>
-                                                <select 
-                                                    name="role" 
-                                                    id="role" 
-                                                    required
-                                                    class="form-control @error('role') is-invalid @enderror"
-                                                >
-                                                    <option value="">Select a role</option>
-                                                    <option value="superadmin" {{ old('role') === 'superadmin' ? 'selected' : '' }}>Super Admin</option>
-                                                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-                                                    <option value="teacher" {{ old('role') === 'teacher' ? 'selected' : '' }}>Teacher</option>
-                                                    <option value="parent" {{ old('role') === 'parent' ? 'selected' : '' }}>Parent</option>
-                                                </select>
-                                                <small class="form-text text-info">
-                                                    <i class="ti-info-alt"></i> Choose the appropriate role for this user
-                                                </small>
-                                                @error('role')
-                                                <span class="invalid-feedback d-block">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
+                <!-- Create Form -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card alert">
+                            <div class="card-header mb-3">
+                                <h4><i class="ti-user"></i> User Information</h4>
+                            </div>
+                            <div class="card-body mt">
+                                <form method="POST" action="{{ route('superadmin.users.store') }}" enctype="multipart/form-data">
+                                    @csrf
 
-                                        <!-- Basic Information -->
+                                    <div class="form-section">
+                                        <!-- Basic Information Section -->                                     
+                                        <h4 style="margin-bottom: 20px; margin-top: 20px; padding-bottom: 10px; border-bottom: 2px solid #007bff;">
+                                            <i class="ti-id-badge"></i> Basic Information
+                                        </h4>
                                         <div class="row">
-                                            <!-- Full Name -->
-                                            <div class="col-md-12">
+                                            <!-- Name -->
+                                            <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="name" class="required-field">Full Name</label>
-                                                    <input 
-                                                        type="text" 
+                                                    <label for="name" style="font-weight: 500;">
+                                                        Full Name <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" 
                                                         name="name" 
                                                         id="name" 
-                                                        value="{{ old('name') }}" 
-                                                        placeholder="e.g. John Smith"
-                                                        required
+                                                        value="{{ old('name') }}"
                                                         class="form-control @error('name') is-invalid @enderror"
-                                                    >
+                                                        required>
                                                     @error('name')
-                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                        <span class="invalid-feedback">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -120,18 +132,17 @@
                                             <!-- Email -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="email" class="required-field">Email Address</label>
-                                                    <input 
-                                                        type="email" 
+                                                    <label for="email" style="font-weight: 500;">
+                                                        Email Address <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="email" 
                                                         name="email" 
                                                         id="email" 
-                                                        value="{{ old('email') }}" 
-                                                        placeholder="user@example.com"
-                                                        required
+                                                        value="{{ old('email') }}"
                                                         class="form-control @error('email') is-invalid @enderror"
-                                                    >
+                                                        required>
                                                     @error('email')
-                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                        <span class="invalid-feedback">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -139,40 +150,114 @@
                                             <!-- Phone -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="phone">Phone Number</label>
-                                                    <input 
-                                                        type="text" 
+                                                    <label for="phone" style="font-weight: 500;">Phone Number</label>
+                                                    <input type="text" 
                                                         name="phone" 
                                                         id="phone" 
-                                                        value="{{ old('phone') }}" 
-                                                        placeholder="+234 800 000 0000"
+                                                        value="{{ old('phone') }}"
                                                         class="form-control @error('phone') is-invalid @enderror"
-                                                    >
-                                                    <small class="form-text text-muted">
-                                                        <i class="ti-mobile"></i> Required for SMS notifications
-                                                    </small>
+                                                        placeholder="+44 1234 567890">
                                                     @error('phone')
-                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                        <span class="invalid-feedback">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                             </div>
 
+                                            <!-- Role -->
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="role" style="font-weight: 500;">
+                                                        Role <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select name="role" 
+                                                            id="role" 
+                                                            class="form-control @error('role') is-invalid @enderror"
+                                                            required>
+                                                        <option value="">Select Role</option>
+                                                        <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
+                                                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                                        <option value="teacher" {{ old('role') == 'teacher' ? 'selected' : '' }}>Teacher</option>
+                                                        <option value="parent" {{ old('role') == 'parent' ? 'selected' : '' }}>Parent</option>
+                                                    </select>
+                                                    @error('role')
+                                                        <span class="invalid-feedback">{{ $message }}</span>
+                                                    @enderror
+                                                </div>
+                                            </div>
+
+                                            <!-- Status -->
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="status" style="font-weight: 500;">
+                                                        Status <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select name="status" 
+                                                            id="status" 
+                                                            class="form-control @error('status') is-invalid @enderror"
+                                                            required>
+                                                        <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>Active</option>
+                                                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                                    </select>
+                                                    @error('status')
+                                                        <span class="invalid-feedback">{{ $message }}</span>
+                                                    @enderror
+                                                </div>
+                                            </div>
+
+                                            <!-- Profile Photo -->
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="profile_photo" style="font-weight: 500;">Profile Photo</label>
+                                                    <input type="file" 
+                                                        name="profile_photo" 
+                                                        id="profile_photo" 
+                                                        accept="image/*"
+                                                        class="form-control-file @error('profile_photo') is-invalid @enderror">
+                                                    <small class="form-text text-muted">
+                                                        <i class="ti-image"></i> Max size: 2MB. Formats: JPG, PNG, GIF
+                                                    </small>
+                                                    @error('profile_photo')
+                                                        <span class="invalid-feedback d-block">{{ $message }}</span>
+                                                    @enderror
+                                                    
+                                                    <!-- Image Preview -->
+                                                    <img id="photo-preview" class="img-thumbnail mt-2" style="display: none; max-width: 200px;" alt="Photo preview">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row form-section">
+
+                                        <!-- Password Section -->
+                                            <h4 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">
+                                                <i class="ti-lock"></i> Account Security
+                                            </h4>
+                                        <div class="row">
+
                                             <!-- Password -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="password" class="required-field">Password</label>
-                                                    <input 
-                                                        type="password" 
-                                                        name="password" 
-                                                        id="password" 
-                                                        required
-                                                        class="form-control @error('password') is-invalid @enderror"
-                                                    >
+                                                    <label for="password" style="font-weight: 500;">
+                                                        Password <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div style="position: relative;">
+                                                        <input type="password" 
+                                                            name="password" 
+                                                            id="password" 
+                                                            class="form-control @error('password') is-invalid @enderror"
+                                                            minlength="8"
+                                                            required
+                                                            style="padding-right: 40px;">
+                                                        <button type="button" class="toggle-password" data-target="password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #6c757d; cursor: pointer; padding: 5px 10px;">
+                                                            <i class="fa fa-eye"></i>
+                                                        </button>
+                                                    </div>
                                                     <small class="form-text text-muted">
-                                                        <i class="ti-lock"></i> Minimum 8 characters
+                                                        <i class="ti-info-alt"></i> Minimum 8 characters
                                                     </small>
                                                     @error('password')
-                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                        <span class="invalid-feedback d-block">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -180,88 +265,57 @@
                                             <!-- Confirm Password -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="password_confirmation" class="required-field">Confirm Password</label>
-                                                    <input 
-                                                        type="password" 
-                                                        name="password_confirmation" 
-                                                        id="password_confirmation" 
-                                                        required
-                                                        class="form-control"
-                                                    >
-                                                </div>
-                                            </div>
-
-                                            <!-- Profile Photo -->
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="profile_photo">Profile Photo</label>
-                                                    <input 
-                                                        type="file" 
-                                                        name="profile_photo" 
-                                                        id="profile_photo" 
-                                                        accept="image/*"
-                                                        class="form-control-file @error('profile_photo') is-invalid @enderror"
-                                                    >
+                                                    <label for="password_confirmation" style="font-weight: 500;">
+                                                        Confirm Password <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div style="position: relative;">
+                                                        <input type="password" 
+                                                            name="password_confirmation" 
+                                                            id="password_confirmation" 
+                                                            class="form-control"
+                                                            minlength="8"
+                                                            required
+                                                            style="padding-right: 40px;">
+                                                        <button type="button" class="toggle-password" data-target="password_confirmation" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #6c757d; cursor: pointer; padding: 5px 10px;">
+                                                            <i class="fa fa-eye"></i>
+                                                        </button>
+                                                    </div>
                                                     <small class="form-text text-muted">
-                                                        <i class="ti-image"></i> Max size: 2MB. Formats: JPG, PNG, GIF
+                                                        <i class="ti-info-alt"></i> Re-enter password to confirm
                                                     </small>
-                                                    @error('profile_photo')
-                                                    <span class="invalid-feedback d-block">{{ $message }}</span>
-                                                    @enderror
-                                                    
-                                                    <!-- Image Preview -->
-                                                    <img id="photo-preview" class="profile-photo-preview img-thumbnail" alt="Photo preview">
                                                 </div>
                                             </div>
+
                                         </div>
 
-                                        <!-- Email Verification Checkbox -->
-                                        <div class="form-group">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input 
-                                                        type="checkbox" 
-                                                        name="email_verified" 
-                                                        value="1"
-                                                        {{ old('email_verified') ? 'checked' : '' }}
-                                                    >
-                                                    Mark email as verified (user won't need to verify)
-                                                </label>
+                                        <!-- Note -->
+                                        <div class="col-md-12">
+                                            <div class="alert alert-info">
+                                                <i class="ti-info-alt"></i> <strong>Note:</strong> The user will be automatically verified and can log in immediately. They can change their password after first login.
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <!-- Info Box -->
-                                        <div class="info-box">
-                                            <div class="d-flex">
-                                                <i class="ti-info-alt mr-3"></i>
-                                                <div>
-                                                    <strong>Password Information</strong>
-                                                    <p class="mb-0">The user will receive login credentials via email. They can change their password after first login.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Buttons -->
-                                        <div class="form-group mt-4 pt-3 border-top text-right">
-                                            <a href="{{ route('superadmin.users.index') }}" class="btn btn-secondary">
-                                                <i class="ti-close"></i> Cancel
-                                            </a>
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="ti-check"></i> Add User
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
+                                    <!-- Buttons -->
+                                    <div class="form-group mt-4 pt-3 border-top text-right">
+                                        <a href="{{ route('superadmin.users.index') }}" class="btn btn-secondary">
+                                            <i class="ti-close"></i> Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="ti-check"></i> Add User
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Footer -->
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="footer">
-                                <p>MLC Classroom - Add User</p>
-                            </div>
+                <!-- Footer -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="footer">
+                            <p>MLC Classroom - Add User</p>
                         </div>
                     </div>
                 </div>
@@ -271,37 +325,97 @@
 @endsection
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            // Image preview
-            $('#profile_photo').on('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#photo-preview').attr('src', e.target.result).show();
-                    }
-                    reader.readAsDataURL(file);
-                } else {
-                    $('#photo-preview').hide();
-                }
-            });
+<script>
+$(document).ready(function() {
+    // ========================================
+    // PASSWORD TOGGLE FUNCTIONALITY
+    // ========================================
+    $(document).on('click', '.toggle-password', function() {
+        const targetId = $(this).data('target');
+        const passwordInput = $('#' + targetId);
+        const icon = $(this).find('i');
+        
+        if (passwordInput.attr('type') === 'password') {
+            passwordInput.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            passwordInput.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
 
-            // Password confirmation validation
-            $('#password_confirmation').on('keyup', function() {
-                const password = $('#password').val();
-                const confirmPassword = $(this).val();
-                
-                if (confirmPassword && password !== confirmPassword) {
-                    $(this).addClass('is-invalid');
-                    if (!$(this).next('.invalid-feedback').length) {
-                        $(this).after('<span class="invalid-feedback d-block">Passwords do not match</span>');
-                    }
-                } else {
-                    $(this).removeClass('is-invalid');
-                    $(this).next('.invalid-feedback').remove();
-                }
-            });
-        });
-    </script>
+    // ========================================
+    // IMAGE PREVIEW
+    // ========================================
+    $('#profile_photo').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            // Check file size (2MB = 2048KB = 2097152 bytes)
+            if (file.size > 2097152) {
+                alert('File size must not exceed 2MB');
+                $(this).val('');
+                $('#photo-preview').hide();
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#photo-preview').attr('src', e.target.result).show();
+            }
+            reader.readAsDataURL(file);
+        } else {
+            $('#photo-preview').hide();
+        }
+    });
+
+    // ========================================
+    // PASSWORD CONFIRMATION VALIDATION
+    // ========================================
+    $('#password_confirmation').on('keyup', function() {
+        const password = $('#password').val();
+        const confirmPassword = $(this).val();
+        
+        if (confirmPassword && password !== confirmPassword) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<span class="invalid-feedback d-block">Passwords do not match</span>');
+            }
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).siblings('.invalid-feedback').remove();
+        }
+    });
+    
+    // Also check when password field changes
+    $('#password').on('keyup', function() {
+        const password = $(this).val();
+        const confirmPassword = $('#password_confirmation').val();
+        
+        if (confirmPassword && password !== confirmPassword) {
+            $('#password_confirmation').addClass('is-invalid');
+            if (!$('#password_confirmation').next('.invalid-feedback').length) {
+                $('#password_confirmation').after('<span class="invalid-feedback d-block">Passwords do not match</span>');
+            }
+        } else {
+            $('#password_confirmation').removeClass('is-invalid');
+            $('#password_confirmation').siblings('.invalid-feedback').remove();
+        }
+    });
+    
+    // ========================================
+    // FORM SUBMISSION VALIDATION
+    // ========================================
+    $('form').on('submit', function(e) {
+        const password = $('#password').val();
+        const confirmPassword = $('#password_confirmation').val();
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match. Please check and try again.');
+            $('#password_confirmation').focus();
+            return false;
+        }
+    });
+});
+</script>
 @endpush

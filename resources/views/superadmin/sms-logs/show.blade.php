@@ -85,7 +85,7 @@
                                         <h2 style="margin-bottom: 10px;">
                                             SMS to {{ $smsLog->user ? $smsLog->user->name : 'Unknown' }}
                                         </h2>
-                                        <span class="badge {{ $statusClass }}" style=font-size: 0.875rem; padding: 6px 12px;">
+                                        <span class="badge {{ $statusClass }}" style="padding: 6px 12px;">
                                             {{ ucfirst($smsLog->status) }}
                                         </span>
                                     </div>
@@ -213,24 +213,24 @@
                             </div>
                             <div class="card-body">
                                 <div style="margin-bottom: 15px;">
-                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">Created</p>
-                                    <p style="margin: 0; font-size: 0.9375rem; font-weight: 600;">{{ $smsLog->created_at->format('d M Y, H:i') }}</p>
-                                    <p style="margin: 0; font-size: 0.75rem; color: #6c757d;">{{ $smsLog->created_at->diffForHumans() }}</p>
+                                    <p style="margin: 0; color: #6c757d;">Created</p>
+                                    <p style="margin: 0; font-weight: 600;">{{ $smsLog->created_at->format('d M Y, H:i') }}</p>
+                                    <p style="margin: 0; color: #6c757d;">{{ $smsLog->created_at->diffForHumans() }}</p>
                                 </div>
 
                                 @if($smsLog->sent_at)
                                 <div style="margin-bottom: 15px;">
-                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">Sent</p>
-                                    <p style="margin: 0; font-size: 0.9375rem; font-weight: 600;">{{ $smsLog->sent_at->format('d M Y, H:i') }}</p>
-                                    <p style="margin: 0; font-size: 0.75rem; color: #6c757d;">{{ $smsLog->sent_at->diffForHumans() }}</p>
+                                    <p style="margin: 0; color: #6c757d;">Sent</p>
+                                    <p style="margin: 0; font-weight: 600;">{{ $smsLog->sent_at->format('d M Y, H:i') }}</p>
+                                    <p style="margin: 0; color: #6c757d;">{{ $smsLog->sent_at->diffForHumans() }}</p>
                                 </div>
                                 @endif
 
                                 @if($smsLog->delivered_at)
                                 <div>
-                                    <p style="margin: 0; font-size: 0.875rem; color: #6c757d;">Delivered</p>
-                                    <p style="margin: 0; font-size: 0.9375rem; font-weight: 600;">{{ $smsLog->delivered_at->format('d M Y, H:i') }}</p>
-                                    <p style="margin: 0; font-size: 0.75rem; color: #6c757d;">{{ $smsLog->delivered_at->diffForHumans() }}</p>
+                                    <p style="margin: 0; color: #6c757d;">Delivered</p>
+                                    <p style="margin: 0; font-weight: 600;">{{ $smsLog->delivered_at->format('d M Y, H:i') }}</p>
+                                    <p style="margin: 0; color: #6c757d;">{{ $smsLog->delivered_at->diffForHumans() }}</p>
                                 </div>
                                 @endif
                             </div>

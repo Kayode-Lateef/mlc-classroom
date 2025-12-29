@@ -1,0 +1,93 @@
+# === APPLICATION ===
+APP_NAME="MLC Classroom Management"
+APP_ENV=local
+APP_KEY=base64:XXra3lMz6og0Ow7tljGdpaM1LIXnGgzGxOSx1Lzzoek=
+APP_DEBUG=true
+APP_TIMEZONE=Europe/London
+APP_URL=http://localhost:8000
+
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+
+BCRYPT_ROUNDS=12
+
+# === LOGGING ===
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+# === DATABASE ===
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=mlc-portal
+DB_USERNAME=root
+DB_PASSWORD=
+
+# === SESSION & CACHE ===
+SESSION_DRIVER=database
+SESSION_LIFETIME=240
+SESSION_ENCRYPT=true
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+
+# === MAIL (Development) ===
+# MAIL_MAILER=log
+# OR use Mailtrap for testing
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_actual_mailtrap_username
+MAIL_PASSWORD=your_actual_mailtrap_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@maidstonelearning.co.uk
+MAIL_FROM_NAME="MLC Classroom"
+
+# === SMS (Development - Sandbox) ===
+SMS_PROVIDER=twilio
+SMS_USERNAME=sandbox
+SMS_API_KEY=your_sandbox_api_key
+SMS_SENDER_ID=MLC_TEST
+SMS_SANDBOX=true
+SMS_DAILY_LIMIT=100
+SMS_LOW_BALANCE_THRESHOLD=50
+
+# === FILE UPLOADS ===
+FILESYSTEM_DISK=local
+MAX_UPLOAD_SIZE=10240
+ALLOWED_FILE_TYPES=pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif
+
+# === ACADEMIC SETTINGS ===
+ACADEMIC_YEAR_START=09-01
+ACADEMIC_YEAR_END=08-31
+ATTENDANCE_MARK_WINDOW=60
+AUTO_MARK_ABSENT=true
+
+# === NOTIFICATIONS ===
+NOTIFY_PARENT_ON_ABSENCE=true
+NOTIFY_PARENT_ON_HOMEWORK=true
+NOTIFY_TEACHER_ON_SUBMISSION=true
+
+# === SYSTEM ===
+STUDENT_ID_PREFIX=MLC
+ENFORCE_EMAIL_VERIFICATION=false
+PASSWORD_RESET_TIMEOUT=60
+MULTI_CENTER_MODE=false
+DEFAULT_CENTER_ID=1
+
+# === REDIS (Optional - Commented out for local) ===
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# === AWS (Optional - For production file storage) ===
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+
+# === VITE ===
+VITE_APP_NAME="${APP_NAME}"

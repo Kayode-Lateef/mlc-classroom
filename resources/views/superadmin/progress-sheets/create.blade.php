@@ -67,7 +67,7 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1rem;
+           
             background-color: #007bff;
             color: white;
         }
@@ -243,7 +243,7 @@
 
                             <!-- Student Notes -->
                             <div class="card alert" id="student-notes-card" style="display: none;">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-user"></i> Student Progress Notes</h4>
                                 </div>
                                 <div class="card-body" id="students-container">
@@ -406,7 +406,7 @@ $(document).ready(function() {
                             ${avatarHtml}
                         </div>
                         <div style="flex: 1;">
-                            <h5 style="margin: 0 0 10px 0; font-size: 1rem;">
+                            <h5 style="margin: 0 0 10px 0;">
                                 ${student.first_name} ${student.last_name}
                             </h5>
                             
@@ -415,7 +415,7 @@ $(document).ready(function() {
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label style="font-size: 0.85rem;">Performance</label>
+                                        <label>Performance</label>
                                         <select name="student_notes[${index}][performance]" class="form-control form-control-sm">
                                             <option value="">Not assessed</option>
                                             <option value="excellent">✨ Excellent</option>
@@ -428,7 +428,7 @@ $(document).ready(function() {
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label style="font-size: 0.85rem;">Notes</label>
+                                        <label>Notes</label>
                                         <input 
                                             type="text"
                                             name="student_notes[${index}][notes]"

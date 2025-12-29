@@ -49,7 +49,6 @@
     }
 
     .empty-state i {
-        font-size: 4rem;
         color: #cbd5e0;
         margin-bottom: 20px;
     }
@@ -173,13 +172,13 @@
                                     <div class="row">
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Search</label>
+                                                <label style="font-weight: 500;">Search</label>
                                                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Title..." class="form-control">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Type</label>
+                                                <label style="font-weight: 500;">Type</label>
                                                 <select name="resource_type" class="form-control">
                                                     <option value="">All Types</option>
                                                     <option value="pdf" {{ request('resource_type') == 'pdf' ? 'selected' : '' }}>PDF</option>
@@ -192,7 +191,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Subject</label>
+                                                <label style="font-weight: 500;">Subject</label>
                                                 <select name="subject" class="form-control">
                                                     <option value="">All Subjects</option>
                                                     @foreach($subjects as $subject)
@@ -205,7 +204,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Class</label>
+                                                <label style="font-weight: 500;">Class</label>
                                                 <select name="class_id" class="form-control">
                                                     <option value="">All Classes</option>
                                                     @foreach($classes as $class)
@@ -218,7 +217,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label style="font-size: 0.875rem; font-weight: 500;">Uploaded By</label>
+                                                <label style="font-weight: 500;">Uploaded By</label>
                                                 <select name="uploaded_by" class="form-control">
                                                     <option value="">All Teachers</option>
                                                     @foreach($teachers as $teacher)

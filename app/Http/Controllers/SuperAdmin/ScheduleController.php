@@ -7,6 +7,7 @@ use App\Models\Schedule;
 use App\Models\ClassModel;
 use App\Models\User;
 use App\Models\ActivityLog;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -208,6 +209,10 @@ class ScheduleController extends Controller
                 ->with('error', 'Schedule conflict detected: ' . $conflict);
         }
 
+        // FIX: Store old values as formatted strings (not Carbon objects)
+        $oldTime = $schedule->start_time->format('H:i');
+        $oldDay = $schedule->day_of_week;
+
         // Update schedule with proper time format
         $schedule->update([
             'class_id' => $request->class_id,
@@ -216,6 +221,41 @@ class ScheduleController extends Controller
             'end_time' => Carbon::createFromFormat('H:i', $request->end_time)->format('H:i:s'),
             'recurring' => $request->has('recurring') ? true : false,
         ]);
+
+        // FIX: Compare formatted strings and format in messages
+        if ($oldTime !== $schedule->start_time->format('H:i') || $oldDay !== $schedule->day_of_week) {
+            // NOTIFY ALL PARENTS IN CLASS
+            NotificationHelper::notifyClassParents(
+                $schedule->class,
+                'Schedule Change',
+                "Schedule updated for {$schedule->class->name}: {$schedule->day_of_week} at " . $schedule->start_time->format('H:i'),
+                'schedule_change',
+                [
+                    'schedule_id' => $schedule->id,
+                    'old_time' => $oldTime,
+                    'new_time' => $schedule->start_time->format('H:i'),
+                    'old_day' => $oldDay,
+                    'new_day' => $schedule->day_of_week,
+                    'class_name' => $schedule->class->name,
+                    'url' => null  // Parents don't have schedule detail page
+                ]
+            );
+            
+            // NOTIFY TEACHER IF EXISTS
+            if ($schedule->class->teacher) {
+                NotificationHelper::notifyTeacher(
+                    $schedule->class->teacher,
+                    'Your Class Schedule Changed',
+                    "Schedule for {$schedule->class->name} changed to {$schedule->day_of_week} at " . $schedule->start_time->format('H:i'),
+                    'schedule_change',
+                    [
+                        'schedule_id' => $schedule->id,
+                        'class_name' => $schedule->class->name,
+                        'url' => route('teacher.classes.show', $schedule->class_id)
+                    ]
+                );
+            }
+        }
 
         // Log activity
         ActivityLog::create([
@@ -229,7 +269,7 @@ class ScheduleController extends Controller
         ]);
 
         return redirect()->route('superadmin.schedules.index')
-            ->with('success', 'Schedule updated successfully!');
+            ->with('success', 'Schedule updated and notifications sent!');
     }
 
     /**

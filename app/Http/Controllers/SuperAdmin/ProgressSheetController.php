@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Student;
 use App\Models\Schedule;
 use App\Models\ActivityLog;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -121,6 +122,8 @@ class ProgressSheetController extends Controller
                 'teacher_id' => auth()->id(),
             ]);
 
+            $studentsWithNotes = []; // Track students who have notes
+
             // Create student notes
             if ($request->has('student_notes')) {
                 foreach ($request->student_notes as $noteData) {
@@ -131,6 +134,9 @@ class ProgressSheetController extends Controller
                             'performance' => $noteData['performance'] ?? null,
                             'notes' => $noteData['notes'] ?? null,
                         ]);
+                        
+                        // Track students with notes for notifications
+                        $studentsWithNotes[] = $noteData['student_id'];
                     }
                 }
             }
@@ -148,6 +154,11 @@ class ProgressSheetController extends Controller
 
             DB::commit();
 
+            // Send notifications to parents (After successful commit)
+            if (!empty($studentsWithNotes)) {
+                $this->notifyParentsOfProgressSheet($progressSheet, $studentsWithNotes);
+            }
+
             return redirect()->route('superadmin.progress-sheets.index')
                 ->with('success', 'Progress sheet created successfully!');
 
@@ -158,6 +169,60 @@ class ProgressSheetController extends Controller
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Failed to create progress sheet. Please try again.');
+        }
+    }
+
+    /**
+     * ✅ HELPER METHOD: Notify parents of students with progress notes
+     */
+    private function notifyParentsOfProgressSheet(ProgressSheet $progressSheet, array $studentIds)
+    {
+        try {
+            $class = $progressSheet->class;
+            $students = Student::with('parent')
+                ->whereIn('id', $studentIds)
+                ->get();
+
+            foreach ($students as $student) {
+                // Only notify if student has a parent
+                if (!$student->parent) {
+                    \Log::warning("Student {$student->id} has no parent assigned for progress sheet notification");
+                    continue;
+                }
+
+                // Get the student's specific note
+                $studentNote = ProgressNote::where('progress_sheet_id', $progressSheet->id)
+                    ->where('student_id', $student->id)
+                    ->first();
+
+                // Build notification message
+                $message = "Progress notes for {$student->first_name} in {$class->name} are available.";
+                if ($studentNote && $studentNote->performance) {
+                    $message .= " Performance: " . ucfirst($studentNote->performance);
+                }
+
+                NotificationHelper::notifyStudentParent(
+                    $student,
+                    'Progress Notes Available',
+                    $message,
+                    'progress_report',
+                    [
+                        'progress_sheet_id' => $progressSheet->id,
+                        'class_name' => $class->name,
+                        'class_id' => $class->id,
+                        'topic' => $progressSheet->topic,
+                        'date' => $progressSheet->date,
+                        'performance' => $studentNote->performance ?? null,
+                        'url' => route('parent.progress.show', $student->id)
+                    ]
+                );
+            }
+
+            \Log::info("Progress sheet notifications sent for " . count($studentIds) . " students");
+
+        } catch (\Exception $e) {
+            // Don't fail the request if notifications fail
+            \Log::error('Failed to send progress sheet notifications: ' . $e->getMessage());
         }
     }
 
@@ -390,4 +455,29 @@ class ProgressSheetController extends Controller
             'this_month' => ProgressSheet::whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])->count(),
         ];
     }
+
+    /**
+     * Publish a progress sheet and notify the parent
+     */
+    public function publish(ProgressSheet $progressSheet)
+    {
+        $progressSheet->update(['status' => 'published']);
+        
+        // NOTIFY PARENT
+        NotificationHelper::notifyStudentParent(
+            $progressSheet->student,
+            'Progress Report Available',
+            "Progress report for {$progressSheet->student->first_name} is now available ({$progressSheet->term})",
+            'progress_report',
+            [
+                'progress_sheet_id' => $progressSheet->id,
+                'term' => $progressSheet->term,
+                'class_name' => $progressSheet->class->name ?? 'N/A',
+                'url' => route('parent.progress.show', $progressSheet->student_id)
+            ]
+        );
+        
+        return back()->with('success', 'Progress report published and parent notified!');
+    }
+
 }

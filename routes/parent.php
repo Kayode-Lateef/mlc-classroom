@@ -31,6 +31,7 @@ use App\Http\Controllers\Parent\ResourceController;
     Route::get('homework/{homework}', [HomeworkController::class, 'show'])->name('homework.show');
     Route::post('homework/{homework}/submit', [HomeworkController::class, 'submit'])->name('homework.submit');
     
+    
     // Progress Reports (View only for parent's children)
     Route::get('progress', [ProgressController::class, 'index'])->name('progress.index');
     Route::get('progress/{student}', [ProgressController::class, 'show'])->name('progress.show');

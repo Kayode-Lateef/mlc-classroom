@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Helpers\NotificationHelper;
 
 class HomeworkController extends Controller
 {
@@ -157,6 +158,20 @@ class HomeworkController extends Controller
                 ]);
             }
 
+            // Notify all parents in the class about the new homework
+            NotificationHelper::notifyClassParents(
+                $homework->class,
+                'New Homework Assigned',
+                "New homework '{$homework->title}' assigned. Due: {$homework->due_date->format('d M Y')}",
+                'homework',
+                [
+                    'homework_id' => $homework->id,
+                    'subject' => $homework->title,
+                    'due_date' => $homework->due_date->format('Y-m-d'),
+                    'class_name' => $homework->class->name,
+                    'url' => route('parent.homework.show', $homework->id)
+                ]
+            );
             // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
@@ -171,7 +186,7 @@ class HomeworkController extends Controller
             DB::commit();
 
             return redirect()->route('superadmin.homework.index')
-                ->with('success', 'Homework assignment created successfully!');
+                ->with('success', 'Homework assigned and parents notified!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -374,6 +389,21 @@ class HomeworkController extends Controller
                 'graded_at' => now(),
             ]);
 
+           // NOTIFY PARENT
+            NotificationHelper::notifyStudentParent(
+                $submission->student,
+                'Homework Graded',
+                "Homework '{$submission->homeworkAssignment->title}' has been graded. Grade: {$request->grade}",
+                'homework_graded',
+                [
+                    'homework_id' => $submission->homework_assignment_id,
+                    'submission_id' => $submission->id,
+                    'grade' => $request->grade,
+                    'class_name' => $submission->homeworkAssignment->class->name,
+                    'url' => route('parent.homework.show', $submission->homeworkAssignment->id)
+                ]
+            );
+
             // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
@@ -386,7 +416,7 @@ class HomeworkController extends Controller
             ]);
 
             return redirect()->back()
-                ->with('success', 'Homework graded successfully!');
+                ->with('success', 'Homework graded and parent notified!');
 
         } catch (\Exception $e) {
             \Log::error('Homework grading failed: ' . $e->getMessage());

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\ClassModel;
+use App\Helpers\NotificationHelper;
 use App\Models\Schedule;
 use App\Models\User;
 use App\Models\ActivityLog;
@@ -165,6 +166,7 @@ class AttendanceController extends Controller
         }
 
         $markedCount = 0;
+        $absentStudents = []; // Track absent students for notifications
 
         DB::beginTransaction();
         try {
@@ -179,6 +181,11 @@ class AttendanceController extends Controller
                     'notes' => $request->notes[$studentId] ?? null,
                 ]);
                 $markedCount++;
+
+                // Track absent students
+                if ($status === 'absent') {
+                    $absentStudents[] = $studentId;
+                }
             }
 
             // Log activity
@@ -195,11 +202,18 @@ class AttendanceController extends Controller
 
             DB::commit();
 
+            // SEND NOTIFICATIONS TO PARENTS OF ABSENT STUDENTS (After successful commit)
+            if (!empty($absentStudents)) {
+                $this->notifyAbsentStudents($absentStudents, $request->date, $class);
+            }
+
             return redirect()->route('superadmin.attendance.index')
                 ->with('success', "Attendance marked successfully for {$markedCount} students!");
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Attendance marking failed: ' . $e->getMessage());
+            
             return back()->with('error', 'Failed to mark attendance. Please try again.')
                 ->withInput();
         }
@@ -632,6 +646,12 @@ class AttendanceController extends Controller
 
             DB::commit();
 
+            // SEND NOTIFICATIONS TO PARENTS IF MARKING ABSENT (After successful commit)
+            if ($request->status === 'absent') {
+                $class = ClassModel::find($request->class_id);
+                $this->notifyAbsentStudents($request->student_ids, $request->date, $class);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => "Bulk marked {$markedCount} students as " . ucfirst($request->status),
@@ -639,12 +659,55 @@ class AttendanceController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Bulk attendance marking failed: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to bulk mark attendance.',
             ], 500);
         }
     }
+
+
+    /**
+     * HELPER METHOD: Notify parents of absent students
+     */
+    private function notifyAbsentStudents(array $studentIds, $date, ClassModel $class)
+    {
+        try {
+            $students = Student::with('parent')
+                ->whereIn('id', $studentIds)
+                ->get();
+
+            foreach ($students as $student) {
+                // Only notify if student has a parent
+                if (!$student->parent) {
+                    \Log::warning("Student {$student->id} has no parent assigned for absence notification");
+                    continue;
+                }
+
+                NotificationHelper::notifyStudentParent(
+                    $student,
+                    'Student Absence',
+                    "{$student->first_name} was marked absent on " . date('d M Y', strtotime($date)),
+                    'absence',
+                    [
+                        'date' => $date,
+                        'class_name' => $class->name,
+                        'class_id' => $class->id,
+                        'url' => route('parent.attendance.show', $student->id)
+                    ]
+                );
+            }
+
+            \Log::info("Absence notifications sent for " . count($studentIds) . " students");
+
+        } catch (\Exception $e) {
+            // Don't fail the request if notifications fail
+            \Log::error('Failed to send absence notifications: ' . $e->getMessage());
+        }
+    }
+
 
     /**
      * Export attendance data

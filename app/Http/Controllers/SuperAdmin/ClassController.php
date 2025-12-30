@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Student;
 use App\Models\ActivityLog;
 use App\Models\ClassEnrollment;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 
 class ClassController extends Controller
@@ -282,6 +283,31 @@ class ClassController extends Controller
         ]);
 
         $student = Student::find($validated['student_id']);
+        // Check class capacity after enrollment
+        $enrollmentCount = $class->enrollments()->where('status', 'active')->count();
+        
+        // Check if class is at 90% capacity
+        if ($enrollmentCount >= ($class->capacity * 0.9)) {
+            $message = $enrollmentCount >= $class->capacity 
+                ? "Class {$class->name} is now at full capacity ({$enrollmentCount}/{$class->capacity})"
+                : "Class {$class->name} is at {$enrollmentCount}/{$class->capacity} capacity (90%+ full)";
+            
+            // USE HELPER FUNCTION
+            NotificationHelper::notifySuperAdmins(
+                'Class Capacity Alert',
+                $message,
+                'schedule_change',
+                [
+                    'class_id' => $class->id,
+                    'class_name' => $class->name,
+                    'current_enrollment' => $enrollmentCount,
+                    'capacity' => $class->capacity,
+                    'percentage' => round(($enrollmentCount / $class->capacity) * 100),
+                    'url' => route('superadmin.classes.show', $class->id) 
+                ]
+            );
+        }
+    
 
         // Log activity
         ActivityLog::create([
@@ -296,6 +322,7 @@ class ClassController extends Controller
 
         return back()->with('success', 'Student enrolled successfully!');
     }
+
 
     /**
      * Remove student from class

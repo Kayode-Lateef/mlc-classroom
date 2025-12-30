@@ -42,6 +42,7 @@ class UserController extends Controller
         // Get role statistics (excluding superadmin)
         $stats = [
             'total' => User::whereIn('role', ['admin', 'teacher', 'parent'])->count(),
+            'superadmins' => User::where('role', 'superadmin')->count(),
             'admins' => User::where('role', 'admin')->count(),
             'teachers' => User::where('role', 'teacher')->count(),
             'parents' => User::where('role', 'parent')->count(),
@@ -268,5 +269,46 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully!');
+    }
+
+    /**
+     * Toggle user status (Active/Inactive or Suspend/Activate)
+     */
+    public function toggleStatus(User $user)
+    {
+        // Prevent suspending yourself
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'You cannot suspend your own account.');
+        }
+
+        // Prevent suspending the last superadmin
+        if ($user->role === 'superadmin') {
+            $superadminCount = User::where('role', 'superadmin')
+                ->where('status', 'active')
+                ->count();
+            if ($superadminCount <= 1) {
+                return redirect()->route('admin.users.index')
+                    ->with('error', 'Cannot suspend the last active superadmin account.');
+            }
+        }
+
+        // Toggle status (active <-> inactive/suspended)
+        $newStatus = $user->status === 'active' ? 'suspended' : 'active';
+        $user->update(['status' => $newStatus]);
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'user_status_changed',
+            'model_type' => 'User',
+            'model_id' => $user->id,
+            'description' => "User status changed to {$newStatus}: {$user->name}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return redirect()->route('superadmin.users.index')
+            ->with('success', "User {$newStatus} successfully!");
     }
 }

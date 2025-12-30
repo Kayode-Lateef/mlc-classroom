@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SuperAdmin\NotificationBellController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -74,3 +75,25 @@ Route::middleware('auth')->prefix('profile')->name('profile.')->group(function (
     Route::delete('/destroy', [ProfileController::class, 'destroy'])->name('destroy');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Notification Bell API Routes (All Authenticated Users)
+|--------------------------------------------------------------------------
+| These routes handle AJAX requests for the notification bell in the navbar
+*/
+Route::middleware(['auth'])->prefix('notifications')->group(function () {
+    // Get unread notifications for bell
+    Route::get('/unread', [NotificationBellController::class, 'getUnread'])->name('notifications.unread');
+    
+    // Get unread count
+    Route::get('/count', [NotificationBellController::class, 'getCount'])->name('notifications.count');
+    
+    // Mark single notification as read
+    Route::post('/{id}/read', [NotificationBellController::class, 'markAsRead'])->name('notifications.mark-read');
+    
+    // Mark all notifications as read
+    Route::post('/mark-all-read', [NotificationBellController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    
+    // Get all notifications (paginated)
+    Route::get('/all', [NotificationBellController::class, 'getAll'])->name('notifications.all');
+});

@@ -1,0 +1,465 @@
+@extends('layouts.app')
+
+@section('title', 'Edit User')
+
+@push('styles')
+    <style>
+        .form-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .info-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-box i {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+
+        .profile-photo-preview {
+            max-width: 150px;
+            max-height: 150px;
+            margin-top: 10px;
+        }
+
+        .current-photo-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .current-photo {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+
+        .role-display-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .role-locked-notice {
+            background-color: #e7f3ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Password toggle styling */
+        .toggle-password:hover {
+            color: #495057 !important;
+        }
+
+        .toggle-password:focus {
+            outline: none;
+        }
+
+        /* Force error messages to display */
+        .invalid-feedback {
+            display: block !important;
+            color: #dc3545 !important;
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div class="content-wrap">
+        <div class="main">
+            <div class="container-fluid">
+                <!-- Page Header -->
+                <div class="row">
+                    <div class="col-lg-8 p-r-0 title-margin-right">
+                        <div class="page-header">
+                            <div class="page-title"><h1>Edit User</h1></div>
+                        </div>
+                        <span>Update user account information</span>
+                    </div>
+                    <div class="col-lg-4 p-l-0 title-margin-left">
+                        <div class="page-header">
+                            <div class="page-title">
+                                <ol class="breadcrumb text-right">
+                                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                                    <li><a href="{{ route('admin.users.index') }}">Users</a></li>
+                                    <li class="active">Edit User</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Messages -->
+                @if($errors->any())
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            <h5><i class="ti-alert"></i> Validation Errors</h5>
+                            <ul style="margin-bottom: 0;">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Edit Form -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card alert">
+                            <div class="card-header mb-3">
+                                <h4 class="card-title">
+                                    <i class="ti-user"></i> Edit User: {{ $user->name }}
+                                    <span class="badge badge-light" style="margin-left: 10px;">{{ ucfirst($user->role) }}</span>
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ route('admin.users.update', $user) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <div class="row">
+                                        <!-- Current Profile Photo -->
+                                        @if($user->profile_photo)
+                                        <div class="col-md-12 mb-3">
+                                            <div class="form-group">
+                                                <label style="font-weight: 500;">Current Profile Photo</label>
+                                                <div>
+                                                    <img src="{{ Storage::url($user->profile_photo) }}" 
+                                                         alt="{{ $user->name }}" 
+                                                         class="img-thumbnail"
+                                                         style="max-width: 150px; max-height: 150px; object-fit: cover;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        <!-- Basic Information Section -->
+                                        <div class="col-md-12">
+                                            <h4 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #007bff;">
+                                                <i class="ti-id-badge"></i> Basic Information
+                                            </h4>
+                                        </div>
+
+                                        <!-- Name -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="name" style="font-weight: 500;">
+                                                    Full Name <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" 
+                                                       name="name" 
+                                                       id="name" 
+                                                       value="{{ old('name', $user->name) }}"
+                                                       class="form-control @error('name') is-invalid @enderror"
+                                                       required>
+                                                @error('name')
+                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Email -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email" style="font-weight: 500;">
+                                                    Email Address <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="email" 
+                                                       name="email" 
+                                                       id="email" 
+                                                       value="{{ old('email', $user->email) }}"
+                                                       class="form-control @error('email') is-invalid @enderror"
+                                                       required>
+                                                @error('email')
+                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Phone -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="phone" style="font-weight: 500;">Phone Number</label>
+                                                <input type="text" 
+                                                       name="phone" 
+                                                       id="phone" 
+                                                       value="{{ old('phone', $user->phone) }}"
+                                                       class="form-control @error('phone') is-invalid @enderror"
+                                                       placeholder="+44 1234 567890">
+                                                @error('phone')
+                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Role -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="role" style="font-weight: 500;">
+                                                    Role <span class="text-danger">*</span>
+                                                </label>
+                                                <select name="role" 
+                                                        id="role" 
+                                                        class="form-control @error('role') is-invalid @enderror"
+                                                        required>
+                                                    <option value="">Select Role</option>
+                                                    <option value="superadmin" {{ old('role', $user->role) == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
+                                                    <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                                                    <option value="teacher" {{ old('role', $user->role) == 'teacher' ? 'selected' : '' }}>Teacher</option>
+                                                    <option value="parent" {{ old('role', $user->role) == 'parent' ? 'selected' : '' }}>Parent</option>
+                                                </select>
+                                                @error('role')
+                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Status -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="status" style="font-weight: 500;">
+                                                    Status <span class="text-danger">*</span>
+                                                </label>
+                                                <select name="status" 
+                                                        id="status" 
+                                                        class="form-control @error('status') is-invalid @enderror"
+                                                        required>
+                                                    <option value="active" {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>Active</option>
+                                                    <option value="suspended" {{ old('status', $user->status) == 'suspended' ? 'selected' : '' }}>Suspended</option>
+                                                </select>
+                                                @error('status')
+                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Change Profile Photo -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="profile_photo" style="font-weight: 500;">
+                                                    {{ $user->profile_photo ? 'Change Profile Photo' : 'Profile Photo' }}
+                                                </label>
+                                                <input type="file" 
+                                                       name="profile_photo" 
+                                                       id="profile_photo" 
+                                                       accept="image/*"
+                                                       class="form-control-file @error('profile_photo') is-invalid @enderror">
+                                                <small class="form-text text-muted">
+                                                    <i class="ti-image"></i> Max size: 2MB. Formats: JPG, PNG, GIF
+                                                </small>
+                                                @error('profile_photo')
+                                                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                                                @enderror
+                                                
+                                                <!-- Image Preview -->
+                                                <img id="photo-preview" class="img-thumbnail mt-2" style="display: none; max-width: 200px;" alt="Photo preview">
+                                            </div>
+                                        </div>
+
+                                        <!-- Change Password Section -->
+                                        <div class="col-md-12 mt-3 mb-2">
+                                            <h4 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #007bff;">
+                                                <i class="ti-lock"></i> Change Password (Optional)
+                                            </h4>
+                                            <p class="text-muted">Leave blank if you don't want to change the password</p>
+                                        </div>
+
+                                        <!-- New Password -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="password" style="font-weight: 500;">New Password</label>
+                                                <div style="position: relative;">
+                                                    <input type="password" 
+                                                        name="password" 
+                                                        id="password" 
+                                                        class="form-control @error('password') is-invalid @enderror"
+                                                        minlength="8"
+                                                        style="padding-right: 40px;">
+                                                    <button type="button" class="toggle-password" data-target="password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #6c757d; cursor: pointer; padding: 5px 10px;">
+                                                        <i class="fa fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <small class="form-text text-muted">
+                                                    <i class="ti-info-alt"></i> Minimum 8 characters
+                                                </small>
+                                                @error('password')
+                                                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Confirm Password -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="password_confirmation" style="font-weight: 500;">Confirm New Password</label>
+                                                <div style="position: relative;">
+                                                    <input type="password" 
+                                                        name="password_confirmation" 
+                                                        id="password_confirmation" 
+                                                        class="form-control"
+                                                        minlength="8"
+                                                        style="padding-right: 40px;">
+                                                    <button type="button" class="toggle-password" data-target="password_confirmation" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #6c757d; cursor: pointer; padding: 5px 10px;">
+                                                        <i class="fa fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <small class="form-text text-muted">
+                                                    <i class="ti-info-alt"></i> Re-enter password to confirm
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <!-- Buttons -->
+                                    <div class="form-group mt-4 pt-3 border-top text-right">
+                                        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                                            <i class="ti-close"></i> Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="ti-check"></i> Update User
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="footer">
+                            <p>MLC Classroom - Edit User</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // ========================================
+    // PASSWORD TOGGLE FUNCTIONALITY
+    // ========================================
+    $(document).on('click', '.toggle-password', function() {
+        const targetId = $(this).data('target');
+        const passwordInput = $('#' + targetId);
+        const icon = $(this).find('i');
+        
+        if (passwordInput.attr('type') === 'password') {
+            passwordInput.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            passwordInput.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+
+    // ========================================
+    // IMAGE PREVIEW
+    // ========================================
+    $('#profile_photo').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            // Check file size (2MB = 2097152 bytes)
+            if (file.size > 2097152) {
+                alert('File size must not exceed 2MB');
+                $(this).val('');
+                $('#photo-preview').hide();
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#photo-preview').attr('src', e.target.result).show();
+            }
+            reader.readAsDataURL(file);
+        } else {
+            $('#photo-preview').hide();
+        }
+    });
+
+    // ========================================
+    // PASSWORD CONFIRMATION VALIDATION
+    // ========================================
+    $('#password_confirmation').on('keyup', function() {
+        const password = $('#password').val();
+        const confirmPassword = $(this).val();
+        
+        // Only validate if password field has value
+        if (password && confirmPassword && password !== confirmPassword) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<span class="invalid-feedback d-block">Passwords do not match</span>');
+            }
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).siblings('.invalid-feedback').remove();
+        }
+    });
+    
+    // Also check when password field changes
+    $('#password').on('keyup', function() {
+        const password = $(this).val();
+        const confirmPassword = $('#password_confirmation').val();
+        
+        if (password && confirmPassword && password !== confirmPassword) {
+            $('#password_confirmation').addClass('is-invalid');
+            if (!$('#password_confirmation').next('.invalid-feedback').length) {
+                $('#password_confirmation').after('<span class="invalid-feedback d-block">Passwords do not match</span>');
+            }
+        } else {
+            $('#password_confirmation').removeClass('is-invalid');
+            $('#password_confirmation').siblings('.invalid-feedback').remove();
+        }
+    });
+    
+    // ========================================
+    // FORM SUBMISSION VALIDATION
+    // ========================================
+    $('form').on('submit', function(e) {
+        const password = $('#password').val();
+        const confirmPassword = $('#password_confirmation').val();
+        
+        // Only validate if password is being changed
+        if (password && password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match. Please check and try again.');
+            $('#password_confirmation').focus();
+            return false;
+        }
+    });
+});
+</script>
+@endpush

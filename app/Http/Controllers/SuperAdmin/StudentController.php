@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\GeneralNotification;
 
 class StudentController extends Controller
 {
@@ -128,6 +129,24 @@ class StudentController extends Controller
         }
 
         $student = Student::create($validated);
+
+        // Notify all superadmins
+        $superadmins = User::where('role', 'superadmin')->get();
+        
+        foreach ($superadmins as $admin) {
+            $admin->notify(new GeneralNotification([
+                'type' => 'general',
+                'title' => 'New Student Enrolled',
+                'message' => "{$student->full_name} has been enrolled by {$student->parent->name}",
+                'sent_by' => auth()->user()->name,
+                'sent_at' => now()->format('d M Y, H:i'),
+                'data' => [
+                    'student_id' => $student->id,
+                    'parent_id' => $student->parent_id,
+                    'url' => route('superadmin.students.show', $student->id)
+                ]
+            ]));
+        }
 
         // Log activity
         ActivityLog::create([

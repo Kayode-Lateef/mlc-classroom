@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
@@ -24,25 +25,33 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        // Get classes for class selection
-        $classes = ClassModel::with('teacher')->orderBy('name')->get();
+        try {
+            // Get classes for class selection
+            $classes = ClassModel::with('teacher')->orderBy('name')->get();
 
-        // Get recent notifications (last 50)
-        $recentNotifications = DatabaseNotification::orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get();
+            // Get recent notifications (last 50)
+            $recentNotifications = DatabaseNotification::orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get();
 
-        // Statistics
-        $stats = [
-            'today_notifications' => DatabaseNotification::whereDate('created_at', today())->count(),
-            'week_notifications' => DatabaseNotification::whereDate('created_at', '>=', now()->subWeek())->count(),
-            'month_notifications' => DatabaseNotification::whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->count(),
-            'unread_notifications' => DatabaseNotification::whereNull('read_at')->count(),
-        ];
+            // Statistics
+            $stats = [
+                'today_notifications' => DatabaseNotification::whereDate('created_at', today())->count(),
+                'week_notifications' => DatabaseNotification::whereDate('created_at', '>=', now()->subWeek())->count(),
+                'month_notifications' => DatabaseNotification::whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->count(),
+                'unread_notifications' => DatabaseNotification::whereNull('read_at')->count(),
+            ];
 
-        return view('superadmin.notifications.index', compact('classes', 'recentNotifications', 'stats'));
+            return view('superadmin.notifications.index', compact('classes', 'recentNotifications', 'stats'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error loading notifications page: ' . $e->getMessage());
+            
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Failed to load notifications page. Please try again.');
+        }
     }
 
     /**
@@ -50,22 +59,40 @@ class NotificationController extends Controller
      */
     public function send(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Validate input
+        $rules = [
             'recipient_type' => 'required|in:all_parents,all_teachers,class,individual',
-            'class_id' => 'required_if:recipient_type,class|exists:classes,id',
-            'user_id' => 'required_if:recipient_type,individual|exists:users,id',
             'notification_type' => 'required|in:general,emergency,homework,progress_report,schedule_change,absence',
             'channels' => 'required|array|min:1',
             'channels.*' => 'in:email,sms,in_app',
             'title' => 'required|string|max:255',
             'message' => 'required|string|max:1000',
+        ];
+
+        // Only require class_id if recipient_type is 'class'
+        if ($request->recipient_type === 'class') {
+            $rules['class_id'] = 'required|exists:classes,id';
+        }
+
+        // Only require user_id if recipient_type is 'individual'
+        if ($request->recipient_type === 'individual') {
+            $rules['user_id'] = 'required|exists:users,id';
+        }
+
+        $validator = Validator::make($request->all(), $rules, [
+            // Custom error messages
+            'channels.required' => 'Please select at least one notification channel',
+            'channels.min' => 'Please select at least one notification channel',
+            'recipient_type.required' => 'Please select who to send the notification to',
+            'class_id.required' => 'Please select a class when sending to specific class parents',
+            'title.required' => 'Please enter a notification title',
+            'message.required' => 'Please enter a notification message',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Please fix the errors below.');
+                ->withInput();
         }
 
         try {
@@ -75,7 +102,7 @@ class NotificationController extends Controller
             if ($recipients->isEmpty()) {
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'No recipients found for selected criteria.');
+                    ->with('error', 'No recipients found for the selected criteria. Please check your selection and try again.');
             }
 
             $channels = $request->channels;
@@ -114,7 +141,7 @@ class NotificationController extends Controller
                     $sentCount++;
 
                 } catch (\Exception $e) {
-                    \Log::error("Failed to send notification to user {$recipient->id}: " . $e->getMessage());
+                    Log::error("Failed to send notification to user {$recipient->id}: " . $e->getMessage());
                     $failedCount++;
                 }
             }
@@ -130,20 +157,22 @@ class NotificationController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
+            // Build success message
             $message = "Notification sent successfully to {$sentCount} recipient(s)";
             if ($failedCount > 0) {
-                $message .= ". {$failedCount} failed.";
+                $message .= ". Warning: {$failedCount} failed to send.";
             }
 
             return redirect()->route('superadmin.notifications.index')
                 ->with('success', $message);
 
         } catch (\Exception $e) {
-            \Log::error('Notification sending failed: ' . $e->getMessage());
+            Log::error('Notification sending failed: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Failed to send notifications. Please try again.');
+                ->with('error', 'Failed to send notifications. Error: ' . $e->getMessage());
         }
     }
 
@@ -217,7 +246,7 @@ class NotificationController extends Controller
     protected function sendEmail($recipient, $data)
     {
         try {
-            Mail::send('emails.notification', $data, function($message) use ($recipient, $data) {
+            Mail::send('emails.general-notification', $data, function($message) use ($recipient, $data) {
                 $message->to($recipient->email, $recipient->name)
                     ->subject($data['title']);
             });
@@ -225,7 +254,7 @@ class NotificationController extends Controller
             return true;
 
         } catch (\Exception $e) {
-            \Log::error("Email sending failed for user {$recipient->id}: " . $e->getMessage());
+            Log::error("Email sending failed for user {$recipient->id}: " . $e->getMessage());
             throw $e;
         }
     }
@@ -240,13 +269,13 @@ class NotificationController extends Controller
             $config = SmsConfiguration::first();
 
             if (!$config || !$config->is_active) {
-                \Log::warning('SMS system not configured or inactive');
+                Log::warning('SMS system not configured or inactive');
                 return false;
             }
 
             // Check if user has phone number
             if (!$recipient->phone) {
-                \Log::warning("User {$recipient->id} has no phone number");
+                Log::warning("User {$recipient->id} has no phone number");
                 return false;
             }
 
@@ -283,14 +312,15 @@ class NotificationController extends Controller
 
             // Deduct from balance if successful
             if ($result['success']) {
-                $config->deductBalance(0.04);
+                $config->decrement('credit_balance', 0.04);
             }
 
             return $result['success'];
 
         } catch (\Exception $e) {
-            \Log::error("SMS sending failed for user {$recipient->id}: " . $e->getMessage());
-            throw $e;
+            Log::error("SMS sending failed for user {$recipient->id}: " . $e->getMessage());
+            // Don't throw - allow other channels to continue
+            return false;
         }
     }
 
@@ -413,7 +443,7 @@ class NotificationController extends Controller
             return true;
 
         } catch (\Exception $e) {
-            \Log::error("In-app notification failed for user {$recipient->id}: " . $e->getMessage());
+            Log::error("In-app notification failed for user {$recipient->id}: " . $e->getMessage());
             throw $e;
         }
     }

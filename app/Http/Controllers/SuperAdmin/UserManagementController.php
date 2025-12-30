@@ -5,11 +5,13 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\ActivityLog;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+
 
 class UserManagementController extends Controller
 {
@@ -94,26 +96,27 @@ class UserManagementController extends Controller
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Please fix the errors below.');
         }
 
-        // Handle profile photo upload
-        $profilePhotoPath = null;
-        if ($request->hasFile('profile_photo')) {
-            $profilePhotoPath = $request->file('profile_photo')->store('profile_photos', 'public');
-        }
-
-        // Create user
-        $user = User::create([
+        // Prepare user data
+        $userData = [
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'phone' => $request->phone,
             'status' => $request->status,
-            'profile_photo' => $profilePhotoPath,
-            'email_verified_at' => now(), // Auto-verify for admin-created accounts
-        ]);
+        ];
+
+        // Handle profile photo upload
+        if ($request->hasFile('profile_photo')) {
+            $userData['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
+        }
+
+        // Create user
+        $user = User::create($userData);
 
         // Log activity
         ActivityLog::create([
@@ -125,6 +128,14 @@ class UserManagementController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
+
+        // NOTIFY THE NEW USER
+        $this->notifyNewUser($user, $request->password);
+
+        // NOTIFY SUPERADMINS (if not creating a superadmin)
+        if ($user->role !== 'superadmin') {
+            $this->notifySuperAdminsAboutNewUser($user);
+        }
 
         return redirect()->route('superadmin.users.index')
             ->with('success', 'User created successfully!');
@@ -289,7 +300,7 @@ class UserManagementController extends Controller
 }
 
     /**
-     * Toggle user status (Active/Inactive or Suspend/Activate)
+     * Toggle user status (Active/Suspended)
      */
     public function toggleStatus(User $user)
     {
@@ -310,7 +321,10 @@ class UserManagementController extends Controller
             }
         }
 
-        // Toggle status (active <-> inactive/suspended)
+        // Store old status
+        $oldStatus = $user->status;
+
+        // Toggle status (active <-> suspended)
         $newStatus = $user->status === 'active' ? 'suspended' : 'active';
         $user->update(['status' => $newStatus]);
 
@@ -325,8 +339,154 @@ class UserManagementController extends Controller
             'user_agent' => request()->userAgent(),
         ]);
 
+        // NOTIFY THE USER ABOUT STATUS CHANGE
+        $this->notifyUserStatusChange($user, $oldStatus, $newStatus);
+
+        // NOTIFY SUPERADMINS (except the one who made the change)
+        $this->notifySuperAdminsAboutStatusChange($user, $oldStatus, $newStatus);
+
         return redirect()->route('superadmin.users.index')
             ->with('success', "User {$newStatus} successfully!");
+    }
+
+
+    /**
+     *  HELPER: Notify new user with their credentials
+     */
+    private function notifyNewUser(User $user, $temporaryPassword)
+    {
+        try {
+            $message = "Your account has been created successfully. ";
+            $message .= "Role: " . ucfirst($user->role) . ". ";
+            $message .= "Please login and change your password.";
+
+            NotificationHelper::notifyUser(
+                $user,
+                'Account Created',
+                $message,
+                'general',
+                [
+                    'role' => $user->role,
+                    'created_by' => auth()->user()->name,
+                    'temporary_password' => $temporaryPassword,  // Include for reference
+                    'url' => route('login')
+                ]
+            );
+
+            \Log::info("New user notification sent to: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to notify new user {$user->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * HELPER: Notify superadmins about new user creation
+     */
+    private function notifySuperAdminsAboutNewUser(User $user)
+    {
+        try {
+            NotificationHelper::notifySuperAdmins(
+                'New User Created',
+                "New {$user->role} account created for {$user->name} by " . auth()->user()->name,
+                'general',
+                [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'user_role' => $user->role,
+                    'created_by' => auth()->user()->name,
+                    'url' => route('superadmin.users.show', $user->id)
+                ]
+            );
+
+            \Log::info("SuperAdmins notified about new user: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to notify superadmins about new user {$user->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * HELPER: Notify user about their account status change
+     */
+    private function notifyUserStatusChange(User $user, $oldStatus, $newStatus)
+    {
+        try {
+            if ($newStatus === 'suspended') {
+                $title = 'Account Suspended';
+                $message = "Your account has been suspended by " . auth()->user()->name . ". ";
+                $message .= "Please contact administration for more information.";
+                $type = 'emergency';
+            } else {
+                $title = 'Account Activated';
+                $message = "Your account has been reactivated by " . auth()->user()->name . ". ";
+                $message .= "You can now access the system.";
+                $type = 'general';
+            }
+
+            NotificationHelper::notifyUser(
+                $user,
+                $title,
+                $message,
+                $type,
+                [
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'changed_by' => auth()->user()->name,
+                    'url' => route('login')
+                ]
+            );
+
+            \Log::info("Status change notification sent to user: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to notify user {$user->id} about status change: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * HELPER: Notify superadmins about user status changes
+     */
+    private function notifySuperAdminsAboutStatusChange(User $user, $oldStatus, $newStatus)
+    {
+        try {
+            // Don't notify the admin who made the change
+            $otherSuperAdmins = User::where('role', 'superadmin')
+                ->where('status', 'active')
+                ->where('id', '!=', auth()->id())
+                ->get();
+
+            if ($otherSuperAdmins->isEmpty()) {
+                return;
+            }
+
+            $action = $newStatus === 'suspended' ? 'suspended' : 'activated';
+            $message = "{$user->name} ({$user->role}) has been {$action} by " . auth()->user()->name;
+
+            foreach ($otherSuperAdmins as $admin) {
+                NotificationHelper::notifyUser(
+                    $admin,
+                    "User Account " . ucfirst($action),
+                    $message,
+                    'general',
+                    [
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'user_role' => $user->role,
+                        'old_status' => $oldStatus,
+                        'new_status' => $newStatus,
+                        'changed_by' => auth()->user()->name,
+                        'url' => route('superadmin.users.show', $user->id)
+                    ]
+                );
+            }
+
+            \Log::info("Other superadmins notified about status change for user: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to notify superadmins about status change for user {$user->id}: " . $e->getMessage());
+        }
     }
 
     /**
@@ -404,4 +564,6 @@ class UserManagementController extends Controller
             ], 500);
         }
     }
+
+
 }

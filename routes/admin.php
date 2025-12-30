@@ -33,6 +33,7 @@ Route::middleware(['auth', 'role:admin', 'check.status'])->group(function () {
     // ========== USER MANAGEMENT ==========
     
     // Users (Cannot manage superadmins)
+    Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggleStatus');
     Route::resource('users', UserController::class);
     
     // ========== ACADEMIC MANAGEMENT ==========

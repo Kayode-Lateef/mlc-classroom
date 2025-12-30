@@ -98,7 +98,7 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[+]?[0-9\s\-\(\)]+$/'],
+            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
@@ -110,12 +110,13 @@ class StudentController extends Controller
             'parent_id.exists' => 'Selected parent does not exist.',
             'enrollment_date.required' => 'Enrollment date is required.',
             'status.required' => 'Status is required.',
+            'status.in' => 'Invalid status selected.',
             'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'emergency_phone.max' => 'Emergency phone number must not exceed 20 characters.',
             'profile_photo.image' => 'Profile photo must be an image.',
             'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
             'profile_photo.max' => 'Profile photo size must not exceed 2MB.',
-            
-            ]);
+        ]);
 
         // Verify parent role
         $parent = User::find($validated['parent_id']);
@@ -227,10 +228,10 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[+]?[0-9\s\-\(\)]+$/'],
+            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ], [
+        ], [
             'first_name.required' => 'First name is required.',
             'last_name.required' => 'Last name is required.',
             'date_of_birth.required' => 'Date of birth is required.',
@@ -239,10 +240,12 @@ class StudentController extends Controller
             'parent_id.exists' => 'Selected parent does not exist.',
             'enrollment_date.required' => 'Enrollment date is required.',
             'status.required' => 'Status is required.',
+            'status.in' => 'Invalid status selected.',
             'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'emergency_phone.max' => 'Emergency phone number must not exceed 20 characters.',
             'profile_photo.image' => 'Profile photo must be an image.',
             'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
-            'profile_photo.max' => 'Profile photo must not be greater than 2MB.',
+            'profile_photo.max' => 'Profile photo size must not exceed 2MB.',
         ]);
 
         // Verify parent role

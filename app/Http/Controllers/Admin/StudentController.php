@@ -23,15 +23,25 @@ class StudentController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Search by name or parent
+        // Search by name or parent (Enhanced search like SuperAdmin)
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
+            
             $query->where(function($q) use ($search) {
+                // Direct matches on first or last name
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhereHas('parent', function($query) use ($search) {
-                      $query->where('name', 'like', "%{$search}%");
-                  });
+                ->orWhere('last_name', 'like', "%{$search}%");
+                
+                // Full name search (handles "Minerva Harvey")
+                $q->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+                
+                // Reverse full name search (handles "Harvey Minerva")
+                $q->orWhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$search}%"]);
+                
+                // Search by parent name
+                $q->orWhereHas('parent', function($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                });
             });
         }
 
@@ -40,7 +50,17 @@ class StudentController extends Controller
             $query->where('parent_id', $request->parent_id);
         }
 
-        $students = $query->orderBy('first_name')->paginate(20);
+        // Filter by enrollment year
+        if ($request->filled('enrollment_year')) {
+            $query->whereYear('enrollment_date', $request->enrollment_year);
+        }
+
+        // Sort
+        $sortBy = $request->get('sort_by', 'first_name');
+        $sortOrder = $request->get('sort_order', 'asc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $students = $query->paginate(20);
         $parents = User::where('role', 'parent')->orderBy('name')->get();
 
         // Statistics
@@ -48,6 +68,8 @@ class StudentController extends Controller
             'total' => Student::count(),
             'active' => Student::where('status', 'active')->count(),
             'inactive' => Student::where('status', 'inactive')->count(),
+            'graduated' => Student::where('status', 'graduated')->count(),
+            'withdrawn' => Student::where('status', 'withdrawn')->count(),
         ];
 
         return view('admin.students.index', compact('students', 'parents', 'stats'));
@@ -67,6 +89,24 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
+        // Custom validation messages
+        $messages = [
+            'first_name.required' => 'First name is required.',
+            'last_name.required' => 'Last name is required.',
+            'date_of_birth.required' => 'Date of birth is required.',
+            'date_of_birth.before' => 'Date of birth must be in the past.',
+            'parent_id.required' => 'Please select a parent/guardian.',
+            'parent_id.exists' => 'Selected parent does not exist.',
+            'enrollment_date.required' => 'Enrollment date is required.',
+            'status.required' => 'Status is required.',
+            'status.in' => 'Invalid status selected.',
+            'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'emergency_phone.max' => 'Emergency phone number must not exceed 20 characters.',
+            'profile_photo.image' => 'Profile photo must be an image.',
+            'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
+            'profile_photo.max' => 'Profile photo size must not exceed 2MB.',
+        ];
+
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -75,10 +115,10 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => 'nullable|string|max:20',
+            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ], $messages);
 
         // Verify parent role
         $parent = User::find($validated['parent_id']);
@@ -117,7 +157,7 @@ class StudentController extends Controller
             'parent',
             'enrollments.class.teacher',
             'attendance' => function($query) {
-                $query->orderBy('date', 'desc')->limit(20);
+                $query->orderBy('date', 'desc')->limit(30);
             },
             'homeworkSubmissions.homeworkAssignment',
             'progressNotes.progressSheet'
@@ -126,18 +166,24 @@ class StudentController extends Controller
         // Calculate statistics
         $totalAttendance = $student->attendance()->count();
         $presentCount = $student->attendance()->where('status', 'present')->count();
+        $lateCount = $student->attendance()->where('status', 'late')->count();
+        $absentCount = $student->attendance()->where('status', 'absent')->count();
         $attendanceRate = $totalAttendance > 0 ? round(($presentCount / $totalAttendance) * 100, 2) : 0;
 
         // Homework statistics
         $totalHomework = $student->homeworkSubmissions()->count();
         $submittedHomework = $student->homeworkSubmissions()->where('status', 'submitted')->count();
+        $gradedHomework = $student->homeworkSubmissions()->whereNotNull('grade')->count();
 
         $stats = [
             'attendance_rate' => $attendanceRate,
             'total_attendance' => $totalAttendance,
             'present' => $presentCount,
+            'late' => $lateCount,
+            'absent' => $absentCount,
             'total_homework' => $totalHomework,
             'submitted_homework' => $submittedHomework,
+            'graded_homework' => $gradedHomework,
             'enrolled_classes' => $student->enrollments()->where('status', 'active')->count(),
         ];
 
@@ -158,6 +204,24 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        // Custom validation messages
+        $messages = [
+            'first_name.required' => 'First name is required.',
+            'last_name.required' => 'Last name is required.',
+            'date_of_birth.required' => 'Date of birth is required.',
+            'date_of_birth.before' => 'Date of birth must be in the past.',
+            'parent_id.required' => 'Please select a parent/guardian.',
+            'parent_id.exists' => 'Selected parent does not exist.',
+            'enrollment_date.required' => 'Enrollment date is required.',
+            'status.required' => 'Status is required.',
+            'status.in' => 'Invalid status selected.',
+            'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'emergency_phone.max' => 'Emergency phone number must not exceed 20 characters.',
+            'profile_photo.image' => 'Profile photo must be an image.',
+            'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
+            'profile_photo.max' => 'Profile photo size must not exceed 2MB.',
+        ];
+
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -166,10 +230,10 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => 'nullable|string|max:20',
+            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ], $messages);
 
         // Verify parent role
         $parent = User::find($validated['parent_id']);
@@ -209,7 +273,7 @@ class StudentController extends Controller
     public function destroy(Student $student)
     {
         // Check if student has enrollments
-        if ($student->classEnrollments()->count() > 0) {
+        if ($student->enrollments()->count() > 0) {
             return back()->with('error', 'Cannot delete student with active class enrollments!');
         }
 

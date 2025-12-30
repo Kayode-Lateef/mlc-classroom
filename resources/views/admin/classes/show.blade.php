@@ -146,6 +146,29 @@
                 </div>
 
                 <div id="main-content">
+
+                    <!-- Success/Error Messages -->
+                    @if(session('success'))
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="alert alert-success fade in alert-dismissable text-white">
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                    <i class="ti-check"></i> {{ session('success') }}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="alert alert-danger fade in alert-dismissable text-white">
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                    <i class="ti-alert"></i> {{ session('error') }}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     <!-- Action Buttons -->
                     <div class="row">
                         <div class="col-lg-12">

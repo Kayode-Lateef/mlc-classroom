@@ -120,7 +120,6 @@
         }
 
         .empty-state i {
-            font-size: 5rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }

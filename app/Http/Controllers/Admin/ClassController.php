@@ -24,12 +24,17 @@ class ClassController extends Controller
             $query->where('subject', $request->subject);
         }
 
+        // Filter by level
+        if ($request->filled('level')) {
+            $query->where('level', $request->level);
+        }
+
         // Filter by teacher
         if ($request->filled('teacher_id')) {
             $query->where('teacher_id', $request->teacher_id);
         }
 
-        // Search by name
+        // Search by name or room
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -39,18 +44,26 @@ class ClassController extends Controller
             });
         }
 
-        $classes = $query->orderBy('name')->paginate(20);
+        // Sort
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $classes = $query->paginate(20);
         $teachers = User::where('role', 'teacher')->orderBy('name')->get();
         $subjects = ClassModel::distinct()->pluck('subject');
+        $levels = ClassModel::distinct()->whereNotNull('level')->pluck('level');
 
         // Statistics
         $stats = [
             'total' => ClassModel::count(),
             'with_teacher' => ClassModel::whereNotNull('teacher_id')->count(),
+            'without_teacher' => ClassModel::whereNull('teacher_id')->count(),
+            'total_capacity' => ClassModel::sum('capacity'),
             'total_enrolled' => ClassEnrollment::where('status', 'active')->count(),
         ];
 
-        return view('admin.classes.index', compact('classes', 'teachers', 'subjects', 'stats'));
+        return view('admin.classes.index', compact('classes', 'teachers', 'subjects', 'levels', 'stats'));
     }
 
     /**
@@ -67,6 +80,21 @@ class ClassController extends Controller
      */
     public function store(Request $request)
     {
+        // Custom validation messages
+        $messages = [
+            'name.required' => 'Class name is required.',
+            'name.max' => 'Class name must not exceed 255 characters.',
+            'subject.required' => 'Subject is required.',
+            'subject.max' => 'Subject must not exceed 100 characters.',
+            'level.max' => 'Level must not exceed 100 characters.',
+            'room_number.max' => 'Room number must not exceed 50 characters.',
+            'teacher_id.exists' => 'Selected teacher does not exist.',
+            'capacity.required' => 'Class capacity is required.',
+            'capacity.integer' => 'Capacity must be a number.',
+            'capacity.min' => 'Capacity must be at least 1 student.',
+            'capacity.max' => 'Capacity cannot exceed 100 students.',
+        ];
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'subject' => 'required|string|max:100',
@@ -75,7 +103,7 @@ class ClassController extends Controller
             'teacher_id' => 'nullable|exists:users,id',
             'capacity' => 'required|integer|min:1|max:100',
             'description' => 'nullable|string',
-        ]);
+        ], $messages);
 
         // Verify teacher role if provided
         if (isset($validated['teacher_id'])) {
@@ -114,18 +142,35 @@ class ClassController extends Controller
                 $query->where('status', 'active')->with('student');
             },
             'attendance' => function($query) {
-                $query->orderBy('date', 'desc')->limit(20);
+                $query->orderBy('date', 'desc')->limit(30);
+            },
+            'homeworkAssignments' => function($query) {
+                $query->orderBy('due_date', 'desc')->limit(10);
             }
         ]);
 
         // Calculate statistics
         $totalEnrolled = $class->enrollments()->where('status', 'active')->count();
         $availableSeats = $class->capacity - $totalEnrolled;
-        
+        $utilizationRate = $class->capacity > 0 ? round(($totalEnrolled / $class->capacity) * 100, 2) : 0;
+
+        // Attendance statistics
+        $totalAttendance = $class->attendance()->count();
+        $presentCount = $class->attendance()->where('status', 'present')->count();
+        $attendanceRate = $totalAttendance > 0 ? round(($presentCount / $totalAttendance) * 100, 2) : 0;
+
+        // Homework statistics
+        $totalHomework = $class->homeworkAssignments()->count();
+        $pendingHomework = $class->homeworkAssignments()->where('due_date', '>', now())->count();
+
         $stats = [
             'enrolled' => $totalEnrolled,
             'capacity' => $class->capacity,
             'available_seats' => $availableSeats,
+            'utilization_rate' => $utilizationRate,
+            'attendance_rate' => $attendanceRate,
+            'total_homework' => $totalHomework,
+            'pending_homework' => $pendingHomework,
         ];
 
         // Get unenrolled active students for enrollment
@@ -152,6 +197,21 @@ class ClassController extends Controller
      */
     public function update(Request $request, ClassModel $class)
     {
+        // Custom validation messages
+        $messages = [
+            'name.required' => 'Class name is required.',
+            'name.max' => 'Class name must not exceed 255 characters.',
+            'subject.required' => 'Subject is required.',
+            'subject.max' => 'Subject must not exceed 100 characters.',
+            'level.max' => 'Level must not exceed 100 characters.',
+            'room_number.max' => 'Room number must not exceed 50 characters.',
+            'teacher_id.exists' => 'Selected teacher does not exist.',
+            'capacity.required' => 'Class capacity is required.',
+            'capacity.integer' => 'Capacity must be a number.',
+            'capacity.min' => 'Capacity must be at least 1 student.',
+            'capacity.max' => 'Capacity cannot exceed 100 students.',
+        ];
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'subject' => 'required|string|max:100',
@@ -160,7 +220,7 @@ class ClassController extends Controller
             'teacher_id' => 'nullable|exists:users,id',
             'capacity' => 'required|integer|min:1|max:100',
             'description' => 'nullable|string',
-        ]);
+        ], $messages);
 
         // Verify teacher role if provided
         if (isset($validated['teacher_id'])) {
@@ -229,10 +289,18 @@ class ClassController extends Controller
      */
     public function enrollStudent(Request $request, ClassModel $class)
     {
+        // Custom validation messages
+        $messages = [
+            'student_id.required' => 'Please select a student to enroll.',
+            'student_id.exists' => 'Selected student does not exist.',
+            'enrollment_date.required' => 'Enrollment date is required.',
+            'enrollment_date.date' => 'Please enter a valid enrollment date.',
+        ];
+
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'enrollment_date' => 'required|date',
-        ]);
+        ], $messages);
 
         // Check if class is full
         $currentEnrollment = $class->enrollments()->where('status', 'active')->count();
@@ -273,10 +341,10 @@ class ClassController extends Controller
      */
     public function unenrollStudent(ClassModel $class, Student $student)
     {
-        $enrollment = $class->enrollments()->where('student_id', $student->id)->first();
+        $enrollment = $class->enrollments()->where('student_id', $student->id)->where('status', 'active')->first();
         
         if (!$enrollment) {
-            return back()->with('error', 'Student is not enrolled in this class!');
+            return back()->with('error', 'Student is not actively enrolled in this class!');
         }
 
         $enrollment->update(['status' => 'dropped']);

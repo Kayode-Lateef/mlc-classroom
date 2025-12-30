@@ -8,23 +8,39 @@ use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of users
+     * Admin can only see admin, teacher, and parent roles (NOT superadmin)
      */
     public function index(Request $request)
     {
         $query = User::query();
 
-        // Filter by role (exclude superadmin from admin view)
+        // CRITICAL: Exclude superadmins from admin view
+        $query->whereIn('role', ['admin', 'teacher', 'parent']);
+
+        // Filter by role
         if ($request->filled('role')) {
             $query->where('role', $request->role);
-        } else {
-            // Admin cannot see superadmins
-            $query->whereIn('role', ['admin', 'teacher', 'parent']);
+        }
+
+        // Filter by verification status
+        if ($request->filled('verified')) {
+            if ($request->verified == '1') {
+                $query->whereNotNull('email_verified_at');
+            } elseif ($request->verified == '0') {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         // Search by name, email, or phone
@@ -37,12 +53,16 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->orderBy('created_at', 'desc')->paginate(20);
+        // Sort
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $users = $query->paginate(20);
 
         // Get role statistics (excluding superadmin)
         $stats = [
             'total' => User::whereIn('role', ['admin', 'teacher', 'parent'])->count(),
-            'superadmins' => User::where('role', 'superadmin')->count(),
             'admins' => User::where('role', 'admin')->count(),
             'teachers' => User::where('role', 'teacher')->count(),
             'parents' => User::where('role', 'parent')->count(),
@@ -53,6 +73,7 @@ class UserController extends Controller
 
     /**
      * Show the form for creating a new user
+     * Admin can create: admin, teacher, parent (NOT superadmin)
      */
     public function create()
     {
@@ -61,30 +82,65 @@ class UserController extends Controller
 
     /**
      * Store a newly created user
+     * Admin can create: admin, teacher, parent (NOT superadmin)
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // Custom validation messages
+        $messages = [
+            'name.required' => 'User name is required.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'This email address is already registered.',
+            'password.required' => 'Password is required.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'role.required' => 'Please select a user role.',
+            'role.in' => 'Invalid user role selected.',
+            'phone.regex' => 'Please enter a valid phone number (e.g., +44 1234 567890 or 07123456789).',
+            'phone.max' => 'Phone number must not exceed 20 characters.',
+            'status.required' => 'Please select account status.',
+            'status.in' => 'Invalid status selected.',
+            'profile_photo.image' => 'Profile photo must be an image file.',
+            'profile_photo.mimes' => 'Profile photo must be a JPEG, PNG, JPG, or GIF file.',
+            'profile_photo.max' => 'Profile photo must not exceed 2MB.',
+        ];
+
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,teacher,parent', // Cannot create superadmin
-            'phone' => 'nullable|string|max:20',
+            'password' => ['required', 'confirmed', Password::min(8)],
+            'role' => 'required|in:admin,teacher,parent', // CANNOT create superadmin
+            'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
+            'status' => 'required|in:active,inactive',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ], $messages);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Please fix the validation errors below.');
+        }
+
+        // Prepare user data
+        $userData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'phone' => $request->phone,
+            'status' => $request->status,
+            'email_verified_at' => now(), // Auto-verify admin-created accounts
+        ];
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
-            $validated['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
+            $userData['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
         }
 
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['email_verified_at'] = now(); // Auto-verify admin-created accounts
-
-        $user = User::create($validated);
-
-        // Assign role using Spatie
-        $user->assignRole($validated['role']);
+        // Create user
+        $user = User::create($userData);
 
         // Log activity
         ActivityLog::create([
@@ -103,15 +159,14 @@ class UserController extends Controller
 
     /**
      * Display the specified user
+     * Admin cannot view superadmin users
      */
     public function show(User $user)
     {
-        // Admin cannot view superadmin users
+        // CRITICAL: Admin cannot view superadmin users
         if ($user->isSuperAdmin()) {
             abort(403, 'Unauthorized access.');
         }
-
-        $user->load(['children', 'teachingClasses', 'activityLogs']);
 
         // Get user statistics based on role
         $userStats = [];
@@ -128,15 +183,22 @@ class UserController extends Controller
             ];
         }
 
-        return view('admin.users.show', compact('user', 'userStats'));
+        // Recent activity
+        $recentActivity = ActivityLog::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('admin.users.show', compact('user', 'userStats', 'recentActivity'));
     }
 
     /**
      * Show the form for editing the specified user
+     * Admin cannot edit superadmin users
      */
     public function edit(User $user)
     {
-        // Admin cannot edit superadmin users
+        // CRITICAL: Admin cannot edit superadmin users
         if ($user->isSuperAdmin()) {
             abort(403, 'Unauthorized access.');
         }
@@ -152,10 +214,11 @@ class UserController extends Controller
 
     /**
      * Update the specified user
+     * Admin cannot edit superadmin users
      */
     public function update(Request $request, User $user)
     {
-        // Admin cannot edit superadmin users
+        // CRITICAL: Admin cannot edit superadmin users
         if ($user->isSuperAdmin()) {
             abort(403, 'Unauthorized access.');
         }
@@ -166,14 +229,55 @@ class UserController extends Controller
                 ->with('error', 'You cannot edit your own account from here. Use your profile page.');
         }
 
-        $validated = $request->validate([
+        // Custom validation messages
+        $messages = [
+            'name.required' => 'User name is required.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'This email address is already registered.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'role.required' => 'Please select a user role.',
+            'role.in' => 'Invalid user role selected.',
+            'phone.regex' => 'Please enter a valid phone number (e.g., +44 1234 567890 or 07123456789).',
+            'phone.max' => 'Phone number must not exceed 20 characters.',
+            'status.required' => 'Please select account status.',
+            'status.in' => 'Invalid status selected.',
+            'profile_photo.image' => 'Profile photo must be an image file.',
+            'profile_photo.mimes' => 'Profile photo must be a JPEG, PNG, JPG, or GIF file.',
+            'profile_photo.max' => 'Profile photo must not exceed 2MB.',
+        ];
+
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,teacher,parent', // Cannot assign superadmin
-            'phone' => 'nullable|string|max:20',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => ['nullable', 'confirmed', Password::min(8)],
+            'role' => 'required|in:admin,teacher,parent', // CANNOT assign superadmin
+            'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
+            'status' => 'required|in:active,inactive',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ], $messages);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Please fix the validation errors below.');
+        }
+
+        // Prepare update data
+        $updateData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+            'phone' => $request->phone,
+            'status' => $request->status,
+        ];
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
@@ -181,22 +285,11 @@ class UserController extends Controller
             if ($user->profile_photo) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
-            $validated['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
+            $updateData['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
         }
 
-        // Only update password if provided
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        $user->update($validated);
-
-        // Update role if changed
-        if ($user->role !== $validated['role']) {
-            $user->syncRoles([$validated['role']]);
-        }
+        // Update user
+        $user->update($updateData);
 
         // Log activity
         ActivityLog::create([
@@ -215,34 +308,39 @@ class UserController extends Controller
 
     /**
      * Remove the specified user
+     * Admin cannot delete superadmin users
      */
     public function destroy(User $user)
     {
-        // Admin cannot delete superadmin users
+        // CRITICAL: Admin cannot delete superadmin users
         if ($user->isSuperAdmin()) {
             abort(403, 'Unauthorized access.');
         }
 
         // Prevent deleting yourself
         if ($user->id === auth()->id()) {
-            return back()->with('error', 'You cannot delete your own account!');
+            return redirect()->route('admin.users.index')
+                ->with('error', 'You cannot delete your own account.');
         }
 
         // Prevent deleting the last admin
         if ($user->isAdmin()) {
             $adminCount = User::where('role', 'admin')->count();
             if ($adminCount <= 1) {
-                return back()->with('error', 'Cannot delete the last admin account!');
+                return redirect()->route('admin.users.index')
+                    ->with('error', 'Cannot delete the last admin account.');
             }
         }
 
         // Check if user has dependent records
         if ($user->isParent() && $user->children()->count() > 0) {
-            return back()->with('error', 'Cannot delete parent with active students!');
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Cannot delete parent with active students. Please reassign or remove students first.');
         }
 
         if ($user->isTeacher() && $user->teachingClasses()->count() > 0) {
-            return back()->with('error', 'Cannot delete teacher with assigned classes!');
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Cannot delete teacher with assigned classes. Please reassign or remove classes first.');
         }
 
         $userName = $user->name;
@@ -254,6 +352,7 @@ class UserController extends Controller
             Storage::disk('public')->delete($user->profile_photo);
         }
 
+        // Delete user
         $user->delete();
 
         // Log activity
@@ -272,43 +371,56 @@ class UserController extends Controller
     }
 
     /**
-     * Toggle user status (Active/Inactive or Suspend/Activate)
+     * Toggle user status (Active/Inactive)
+     * Admin cannot toggle superadmin status
      */
     public function toggleStatus(User $user)
     {
+        // CRITICAL: Admin cannot toggle superadmin status
+        if ($user->isSuperAdmin()) {
+            abort(403, 'Unauthorized access.');
+        }
+
         // Prevent suspending yourself
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'You cannot suspend your own account.');
         }
 
-        // Prevent suspending the last superadmin
-        if ($user->role === 'superadmin') {
-            $superadminCount = User::where('role', 'superadmin')
+        // Prevent suspending the last admin
+        if ($user->isAdmin()) {
+            $activeAdminCount = User::where('role', 'admin')
                 ->where('status', 'active')
                 ->count();
-            if ($superadminCount <= 1) {
+            if ($activeAdminCount <= 1 && $user->status === 'active') {
                 return redirect()->route('admin.users.index')
-                    ->with('error', 'Cannot suspend the last active superadmin account.');
+                    ->with('error', 'Cannot suspend the last active admin account.');
             }
         }
 
-        // Toggle status (active <-> inactive/suspended)
-        $newStatus = $user->status === 'active' ? 'suspended' : 'active';
+        // Store old status
+        $oldStatus = $user->status;
+
+        // Toggle status (active <-> inactive)
+        $newStatus = $user->status === 'active' ? 'inactive' : 'active';
         $user->update(['status' => $newStatus]);
 
         // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
-            'action' => 'user_status_changed',
+            'action' => 'toggled_user_status',
             'model_type' => 'User',
             'model_id' => $user->id,
-            'description' => "User status changed to {$newStatus}: {$user->name}",
+            'description' => "Changed user status from {$oldStatus} to {$newStatus}: {$user->name}",
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
 
-        return redirect()->route('superadmin.users.index')
-            ->with('success', "User {$newStatus} successfully!");
+        $message = $newStatus === 'active' 
+            ? 'User activated successfully!' 
+            : 'User deactivated successfully!';
+
+        return redirect()->route('admin.users.index')
+            ->with('success', $message);
     }
 }

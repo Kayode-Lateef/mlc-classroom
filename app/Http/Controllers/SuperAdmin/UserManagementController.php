@@ -83,15 +83,33 @@ class UserManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'name.required' => 'User name is required.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'This email address is already registered.',
+            'password.required' => 'Password is required.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'role.required' => 'Please select a user role.',
+            'role.in' => 'Invalid user role selected.',
+            'phone.regex' => 'Please enter a valid phone number (e.g., +44 1234 567890 or 07123456789).',
+            'phone.max' => 'Phone number must not exceed 20 characters.',
+            'status.required' => 'Please select account status.',
+            'status.in' => 'Invalid status selected.',
+            'profile_photo.image' => 'Profile photo must be an image file.',
+            'profile_photo.mimes' => 'Profile photo must be a JPEG, PNG, JPG, or GIF file.',
+            'profile_photo.max' => 'Profile photo must not exceed 2MB.',
+        ];
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', Password::min(8)],
             'role' => 'required|in:superadmin,admin,teacher,parent',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
             'status' => 'required|in:active,inactive',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ], $messages);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -195,15 +213,33 @@ class UserManagementController extends Controller
                 ->with('error', 'You cannot edit your own account from here. Use your profile page.');
         }
 
+        $messages = [
+            'name.required' => 'User name is required.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'This email address is already registered.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'role.required' => 'Please select a user role.',
+            'role.in' => 'Invalid user role selected.',
+            'phone.regex' => 'Please enter a valid phone number (e.g., +44 1234 567890 or 07123456789).',
+            'phone.max' => 'Phone number must not exceed 20 characters.',
+            'status.required' => 'Please select account status.',
+            'status.in' => 'Invalid status selected.',
+            'profile_photo.image' => 'Profile photo must be an image file.',
+            'profile_photo.mimes' => 'Profile photo must be a JPEG, PNG, JPG, or GIF file.',
+            'profile_photo.max' => 'Profile photo must not exceed 2MB.',
+        ];
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
             'role' => 'required|in:superadmin,admin,teacher,parent',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
             'status' => 'required|in:active,inactive',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ], $messages);
 
         if ($validator->fails()) {
             return redirect()->back()

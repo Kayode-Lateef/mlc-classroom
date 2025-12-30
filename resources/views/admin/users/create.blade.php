@@ -49,6 +49,28 @@
             display: block !important;
             color: #dc3545 !important;
         }
+
+        /* Phone validation styling */
+        .phone-valid {
+            border-color: #28a745 !important;
+        }
+
+        .phone-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .phone-feedback {
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+
+        .phone-feedback.valid {
+            color: #28a745;
+        }
+
+        .phone-feedback.invalid {
+            color: #dc3545;
+        }
     </style>
 @endpush
 
@@ -102,7 +124,7 @@
                                 <h4><i class="ti-user"></i> User Information</h4>
                             </div>
                             <div class="card-body mt">
-                                <form method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
+                                <form method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data" id="createUserForm">
                                     @csrf
 
                                     <div class="form-section">
@@ -156,7 +178,12 @@
                                                         id="phone" 
                                                         value="{{ old('phone') }}"
                                                         class="form-control @error('phone') is-invalid @enderror"
-                                                        placeholder="+44 1234 567890">
+                                                        placeholder="+44 1234 567890"
+                                                        maxlength="20">
+                                                    <small class="form-text text-muted">
+                                                        <i class="ti-info-alt"></i> UK Format: +44 1234 567890 or 07123456789
+                                                    </small>
+                                                    <div id="phone-feedback" class="phone-feedback" style="display: none;"></div>
                                                     @error('phone')
                                                         <span class="invalid-feedback">{{ $message }}</span>
                                                     @enderror
@@ -174,11 +201,13 @@
                                                             class="form-control @error('role') is-invalid @enderror"
                                                             required>
                                                         <option value="">Select Role</option>
-                                                        <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
                                                         <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                                                         <option value="teacher" {{ old('role') == 'teacher' ? 'selected' : '' }}>Teacher</option>
                                                         <option value="parent" {{ old('role') == 'parent' ? 'selected' : '' }}>Parent</option>
                                                     </select>
+                                                    <small class="form-text text-muted">
+                                                        <i class="ti-info-alt"></i> Cannot create SuperAdmin accounts
+                                                    </small>
                                                     @error('role')
                                                         <span class="invalid-feedback">{{ $message }}</span>
                                                     @enderror
@@ -211,7 +240,7 @@
                                                     <input type="file" 
                                                         name="profile_photo" 
                                                         id="profile_photo" 
-                                                        accept="image/*"
+                                                        accept="image/jpeg,image/png,image/jpg,image/gif"
                                                         class="form-control-file @error('profile_photo') is-invalid @enderror">
                                                     <small class="form-text text-muted">
                                                         <i class="ti-image"></i> Max size: 2MB. Formats: JPG, PNG, GIF
@@ -227,14 +256,12 @@
                                         </div>
                                     </div>
 
-                                    <div class="row form-section">
-
+                                    <div class="form-section">
                                         <!-- Password Section -->
-                                            <h4 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">
-                                                <i class="ti-lock"></i> Account Security
-                                            </h4>
+                                        <h4 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">
+                                            <i class="ti-lock"></i> Account Security
+                                        </h4>
                                         <div class="row">
-
                                             <!-- Password -->
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -286,12 +313,11 @@
                                                 </div>
                                             </div>
 
-                                        </div>
-
-                                        <!-- Note -->
-                                        <div class="col-md-12">
-                                            <div class="alert alert-info">
-                                                <i class="ti-info-alt"></i> <strong>Note:</strong> The user will be automatically verified and can log in immediately. They can change their password after first login.
+                                            <!-- Note -->
+                                            <div class="col-md-12">
+                                                <div class="alert alert-info">
+                                                    <i class="ti-info-alt"></i> <strong>Note:</strong> The user will be automatically verified and can log in immediately. They can change their password after first login.
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -301,7 +327,7 @@
                                         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
                                             <i class="ti-close"></i> Cancel
                                         </a>
-                                        <button type="submit" class="btn btn-primary">
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">
                                             <i class="ti-check"></i> Add User
                                         </button>
                                     </div>
@@ -328,6 +354,40 @@
 <script>
 $(document).ready(function() {
     // ========================================
+    // PHONE NUMBER VALIDATION
+    // ========================================
+    const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
+    
+    $('#phone').on('input', function() {
+        let phoneValue = $(this).val().trim();
+        const feedback = $('#phone-feedback');
+        
+        if (phoneValue === '') {
+            // Empty is allowed (nullable field)
+            $(this).removeClass('phone-invalid phone-valid');
+            feedback.hide();
+            return;
+        }
+        
+        // Remove any letters or special characters except +, -, (, ), space, and dot
+        phoneValue = phoneValue.replace(/[^0-9\+\-\(\)\s\.]/g, '');
+        $(this).val(phoneValue);
+        
+        // Validate format
+        if (phoneRegex.test(phoneValue)) {
+            $(this).removeClass('phone-invalid is-invalid').addClass('phone-valid');
+            feedback.removeClass('invalid').addClass('valid')
+                .html('<i class="ti-check"></i> Valid phone number format')
+                .show();
+        } else {
+            $(this).removeClass('phone-valid').addClass('phone-invalid is-invalid');
+            feedback.removeClass('valid').addClass('invalid')
+                .html('<i class="ti-close"></i> Invalid format. Use: +44 1234 567890 or 07123456789')
+                .show();
+        }
+    });
+
+    // ========================================
     // PASSWORD TOGGLE FUNCTIONALITY
     // ========================================
     $(document).on('click', '.toggle-password', function() {
@@ -350,9 +410,18 @@ $(document).ready(function() {
     $('#profile_photo').on('change', function() {
         const file = this.files[0];
         if (file) {
-            // Check file size (2MB = 2048KB = 2097152 bytes)
+            // Check file size (2MB = 2097152 bytes)
             if (file.size > 2097152) {
                 alert('File size must not exceed 2MB');
+                $(this).val('');
+                $('#photo-preview').hide();
+                return;
+            }
+            
+            // Check file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Invalid file type. Please upload JPG, PNG, or GIF only.');
                 $(this).val('');
                 $('#photo-preview').hide();
                 return;
@@ -405,16 +474,31 @@ $(document).ready(function() {
     // ========================================
     // FORM SUBMISSION VALIDATION
     // ========================================
-    $('form').on('submit', function(e) {
+    $('#createUserForm').on('submit', function(e) {
         const password = $('#password').val();
         const confirmPassword = $('#password_confirmation').val();
+        const phone = $('#phone').val().trim();
         
+        // Validate password match
         if (password !== confirmPassword) {
             e.preventDefault();
             alert('Passwords do not match. Please check and try again.');
             $('#password_confirmation').focus();
             return false;
         }
+        
+        // Validate phone format if provided
+        if (phone && !phoneRegex.test(phone)) {
+            e.preventDefault();
+            alert('Please enter a valid phone number format (e.g., +44 1234 567890 or 07123456789)');
+            $('#phone').focus().addClass('is-invalid');
+            return false;
+        }
+        
+        // Disable submit button to prevent double submission
+        $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Creating User...');
+        
+        return true;
     });
 });
 </script>

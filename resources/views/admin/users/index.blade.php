@@ -144,20 +144,8 @@
                                 </div>
                             </div>
                         </div>
+                     
                         <div class="col-lg-3">
-                            <div class="card p-0">
-                                <div class="stat-widget-three">
-                                    <div class="stat-icon bg-danger">
-                                        <i class="ti-crown"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-digit">{{ $stats['superadmins'] }}</div>
-                                        <div class="stat-text">Super Admins</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
                                     <div class="stat-icon bg-success">
@@ -170,7 +158,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-3">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
                                     <div class="stat-icon bg-info">
@@ -183,7 +171,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-3">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
                                     <div class="stat-icon bg-warning">

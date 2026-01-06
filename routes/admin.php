@@ -69,8 +69,10 @@ Route::middleware(['auth', 'role:admin', 'check.status'])->group(function () {
     // ========== RESOURCES ==========
     
     // Learning Resources
+    Route::get('resources/{resource}/download', [LearningResourceController::class, 'download'])
+        ->name('resources.download');
     Route::resource('resources', LearningResourceController::class);
-    
+        
     // ========== COMMUNICATION ==========
     
     // Notifications

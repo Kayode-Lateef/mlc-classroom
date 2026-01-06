@@ -62,8 +62,10 @@ Route::middleware(['auth', 'role:admin', 'check.status'])->group(function () {
     Route::resource('homework', HomeworkController::class);
     
     // Progress Sheets
+    Route::get('progress-sheets/get-students', [ProgressSheetController::class, 'getStudents'])
+        ->name('progress-sheets.get-students');
     Route::resource('progress-sheets', ProgressSheetController::class);
-    
+        
     // ========== RESOURCES ==========
     
     // Learning Resources

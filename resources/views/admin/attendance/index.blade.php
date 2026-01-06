@@ -85,15 +85,11 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="quick-actions">
-                                <a href="{{ route('admin.attendance.daily') }}" class="btn btn-primary">
-                                    <i class="ti-calendar"></i> Daily Dashboard
-                                </a>
+                               
                                 <a href="{{ route('admin.attendance.create') }}" class="btn btn-success">
                                     <i class="ti-plus"></i> Mark Attendance
                                 </a>
-                                <a href="{{ route('admin.attendance.reports') }}" class="btn btn-info">
-                                    <i class="ti-bar-chart"></i> View Reports
-                                </a>
+                               
                             </div>
                         </div>
                     </div>

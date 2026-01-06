@@ -456,28 +456,5 @@ class ProgressSheetController extends Controller
         ];
     }
 
-    /**
-     * Publish a progress sheet and notify the parent
-     */
-    public function publish(ProgressSheet $progressSheet)
-    {
-        $progressSheet->update(['status' => 'published']);
-        
-        // NOTIFY PARENT
-        NotificationHelper::notifyStudentParent(
-            $progressSheet->student,
-            'Progress Report Available',
-            "Progress report for {$progressSheet->student->first_name} is now available ({$progressSheet->term})",
-            'progress_report',
-            [
-                'progress_sheet_id' => $progressSheet->id,
-                'term' => $progressSheet->term,
-                'class_name' => $progressSheet->class->name ?? 'N/A',
-                'url' => route('parent.progress.show', $progressSheet->student_id)
-            ]
-        );
-        
-        return back()->with('success', 'Progress report published and parent notified!');
-    }
 
 }

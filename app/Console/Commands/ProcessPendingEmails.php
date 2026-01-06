@@ -3,96 +3,105 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\NotificationService;
 use App\Models\PendingEmail;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class ProcessPendingEmails extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
     protected $signature = 'email:process-pending 
-                            {--limit=5 : Number of emails to process per run}
-                            {--force : Force processing even if mail is not configured}';
+                            {--limit=10 : Number of emails to process per run}
+                            {--force : Force processing even if none are scheduled}';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
-    protected $description = 'Process pending email messages queued for sending';
+    protected $description = 'Process pending emails queued for sending';
 
     /**
      * Execute the console command.
      */
-    public function handle(NotificationService $notificationService)
+    public function handle()
     {
-        $this->info('Starting email processing...');
+        $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->info('  MLC Email Processing Started');
+        $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->newLine();
         
         $limit = (int) $this->option('limit');
         
         // Get pending emails
-        $pending = PendingEmail::where('status', 'pending')
-            ->where('scheduled_at', '<=', now())
-            ->where('attempts', '<', 3)
-            ->limit($limit)
-            ->get();
+        $pending = PendingEmail::pending()->limit($limit)->get();
         
         if ($pending->isEmpty()) {
-            $this->info('No pending emails to process.');
+            $this->info('✓ No pending emails to process.');
+            $this->newLine();
             return 0;
         }
         
-        $this->info("Found {$pending->count()} pending email(s).");
+        $this->info("Found {$pending->count()} pending email(s)");
+        $this->newLine();
         
         $sent = 0;
         $failed = 0;
         
-        // Process each email
+        // Progress bar
+        $bar = $this->output->createProgressBar($pending->count());
+        $bar->start();
+        
         foreach ($pending as $email) {
-            $this->line("Processing email #{$email->id} to {$email->email}...");
-            
             try {
+                // Decode JSON data if it's a string
+                $data = is_string($email->data) ? json_decode($email->data, true) : $email->data;
+                $data = $data ?? [];
+                
                 Mail::send('emails.notification', [
-                    'subject' => $email->subject,
-                    'message' => $email->body,
-                    'data' => [],
-                ], function ($message) use ($email) {
-                    $message->to($email->email)
-                           ->subject($email->subject);
+                    'title' => $email->subject,
+                    'content' => $email->body,
+                    'url' => $data['url'] ?? null,
+                    'data' => $data,
+                    'type' => $data['type'] ?? 'general',
+                ], function ($mail) use ($email) {
+                    $mail->to($email->email)
+                         ->subject($email->subject);
                 });
                 
-                $email->update(['status' => 'sent']);
-                $this->info("  ✓ Email sent successfully");
+                $email->markAsSent();
                 $sent++;
                 
             } catch (\Exception $e) {
-                $email->increment('attempts');
+                $errorMessage = $e->getMessage();
+                $email->incrementAttempts($errorMessage);
                 
                 if ($email->attempts >= 3) {
-                    $email->update(['status' => 'failed']);
-                    $this->error("  ✗ Email failed after 3 attempts: {$e->getMessage()}");
                     $failed++;
-                } else {
-                    $this->warn("  ⚠ Email failed (Attempt {$email->attempts}/3): {$e->getMessage()}");
                 }
                 
-                Log::error('Email send error: ' . $e->getMessage());
+                Log::error("Email send error for #{$email->id}: " . $errorMessage);
             }
+            
+            $bar->advance();
         }
         
-        // Summary
-        $this->newLine();
-        $this->info('=== Email Processing Summary ===');
-        $this->info("Processed: {$pending->count()}");
-        $this->info("Sent: {$sent}");
-        $this->info("Failed: {$failed}");
+        $bar->finish();
+        $this->newLine(2);
         
-        Log::info("Email processing completed: {$sent} sent, {$failed} failed");
+        // Summary
+        $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->info('  Processing Summary');
+        $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->table(
+            ['Status', 'Count'],
+            [
+                ['✓ Sent Successfully', $sent],
+                ['✗ Failed', $failed],
+                ['⏳ Remaining Pending', $pending->count() - $sent - $failed],
+            ]
+        );
+        $this->newLine();
         
         return 0;
     }

@@ -885,11 +885,22 @@ div.dt-button:active:not(.disabled) {
     font-weight: 600
 }
 
+.logo .logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-right: 10px;
+}
+
 .sidebar-hide .logo {
     width: 0
 }
 
 .sidebar-hide .logo span {
+    display: none
+}
+
+.sidebar-hide .logo .logo-img {
     display: none
 }
 

@@ -21,6 +21,8 @@
     <link href="{{ asset('assets/css/lib/owl.theme.default.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/css/lib/weather-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/css/lib/menubar/sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/toastr/toastr.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/lib/sweetalert/sweetalert.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/lib/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/lib/unix.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
@@ -77,6 +79,61 @@
     <script src="{{ asset('assets/js/lib/sparklinechart/sparkline.init.js') }}"></script>
     <script src="{{ asset('assets/js/lib/owl-carousel/owl.carousel.min.js') }}"></script>
     <script src="{{ asset('assets/js/lib/owl-carousel/owl.carousel-init.js') }}"></script>
+
+    <script src="{{ asset('assets/js/lib/toastr/toastr.min.js') }}"></script>
+
+    <script>
+        // Configure Toastr defaults
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": true,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut",
+            "tapToDismiss": false
+        };
+
+        // Handle Laravel session flash messages
+        $(document).ready(function() {
+            @if(session('success'))
+                toastr.success("{{ session('success') }}");
+            @endif
+
+            @if(session('error'))
+                toastr.error("{{ session('error') }}");
+            @endif
+
+            @if(session('warning'))
+                toastr.warning("{{ session('warning') }}");
+            @endif
+
+            @if(session('info'))
+                toastr.info("{{ session('info') }}");
+            @endif
+
+            @if($errors->any())
+                @foreach($errors->all() as $error)
+                    toastr.error("{{ $error }}");
+                @endforeach
+            @endif
+        });
+    </script>
+    <!-- scripit init-->
+    {{-- <script src="{{ asset('assets/js/lib/toastr/toastr.init.js') }}"></script> --}}
+    
+    <script src="{{ asset('assets/js/lib/sweetalert/sweetalert.min.js') }}"></script>
+    <!-- scripit init-->
+    <script src="{{ asset('assets/js/lib/sweetalert/sweetalert.init.js') }}"></script>
     
     <!-- Custom scripts (before page-specific scripts) -->
     <script src="{{ asset('assets/js/scripts.js') }}"></script>

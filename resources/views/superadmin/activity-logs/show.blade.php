@@ -15,7 +15,6 @@
         .action-badge-large {
             padding: 8px 20px;
             border-radius: 20px;
-            font-size: 1rem;
             font-weight: 500;
         }
 
@@ -55,7 +54,6 @@
         }
 
         .info-value {
-            font-size: 1.2rem;
             font-weight: 600;
             color: #212529;
         }
@@ -83,7 +81,6 @@
         .role-badge {
             padding: 6px 16px;
             border-radius: 20px;
-            font-size: 1rem;
             font-weight: 500;
             display: inline-block;
         }
@@ -119,7 +116,6 @@
         .technical-detail-box i {
             color: #6c757d;
             margin-right: 10px;
-            font-size: 1.2rem;
         }
 
         .user-agent-box {
@@ -127,7 +123,6 @@
             background-color: #f8f9fa;
             border-radius: 6px;
             font-family: monospace;
-            font-size: 1rem;
             color: #495057;
             word-break: break-all;
         }
@@ -150,7 +145,6 @@
         .action-badge-small {
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 1rem;
             font-weight: 500;
             white-space: nowrap;
         }
@@ -161,7 +155,6 @@
         }
 
         .empty-state-small i {
-            font-size: 3rem;
             color: #cbd5e0;
             margin-bottom: 15px;
         }
@@ -226,7 +219,7 @@
                             <div class="detail-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                                     <div>
-                                        <h2 style="font-size: 1.75rem; font-weight: bold; margin-bottom: 10px;">
+                                        <h2 style="font-weight: bold; margin-bottom: 10px;">
                                             {{ ucwords(str_replace('_', ' ', $activityLog->action)) }}
                                         </h2>
                                         <p class="text-muted">{{ $activityLog->description }}</p>
@@ -278,7 +271,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="detail-card">
-                                <h3 style="font-size: 1.6rem; font-weight: 600; margin-bottom: 20px;">
+                                <h3 style="font-weight: 600; margin-bottom: 20px;">
                                     <i class="ti-user"></i> User Information
                                 </h3>
                                 
@@ -345,7 +338,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="detail-card">
-                                <h3 style="font-size: 1.6rem; font-weight: 600; margin-bottom: 20px;">
+                                <h3 style="font-weight: 600; margin-bottom: 20px;">
                                     <i class="ti-settings"></i> Technical Details
                                 </h3>
                                 
@@ -403,7 +396,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="detail-card">
-                                <h3 style="font-size: 1.6rem; font-weight: 600; margin-bottom: 20px;">
+                                <h3 style="font-weight: 600; margin-bottom: 20px;">
                                     <i class="ti-link"></i> Related Activity (Same {{ class_basename($activityLog->model_type) }})
                                 </h3>
                                 
@@ -438,7 +431,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="detail-card">
-                                <h3 style="font-size: 1.6rem; font-weight: 600; margin-bottom: 20px;">
+                                <h3 style="font-weight: 600; margin-bottom: 20px;">
                                     <i class="ti-time"></i> {{ $activityLog->user->name }}'s Recent Activity
                                 </h3>
                                 

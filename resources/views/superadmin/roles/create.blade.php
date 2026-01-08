@@ -25,7 +25,6 @@
 
         .info-box i {
             color: #0066cc;
-            font-size: 1.2rem;
         }
 
         #permissions-container{
@@ -52,7 +51,6 @@
         }
 
         .permission-module-title {
-            font-size: 1.1rem;
             font-weight: 600;
             color: #212529;
             text-transform: capitalize;
@@ -61,7 +59,6 @@
         .select-all-label {
             display: flex;
             align-items: center;
-            font-size: 0.9rem;
             color: #6c757d;
             cursor: pointer;
         }
@@ -98,7 +95,6 @@
         .permission-item label {
             margin-bottom: 0;
             cursor: pointer;
-            font-size: 0.9rem;
             color: #495057;
         }
 
@@ -342,16 +338,53 @@
             // Initial count
             updatePermissionCount();
 
-            // Form validation
+            // Form validation with SweetAlert
             $('form').on('submit', function(e) {
-                const roleName = $('#name').val().trim();
+                e.preventDefault(); // Prevent default submission
                 
+                const form = this;
+                const roleName = $('#name').val().trim();
+                const selectedPermissions = $('.module-permission:checked').length;
+                
+                // Validate role name
                 if (!roleName) {
-                    e.preventDefault();
-                    alert('Please enter a role name.');
-                    $('#name').focus();
+                    swal({
+                        title: "Role Name Required!",
+                        text: "Please enter a role name.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#name').focus();
+                    });
                     return false;
                 }
+                
+                // Optional: Warn if no permissions selected
+                if (selectedPermissions === 0) {
+                    swal({
+                        title: "No Permissions Selected!",
+                        text: "You haven't selected any permissions for this role. Do you want to continue?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, continue",
+                        cancelButtonText: "No, let me select",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            // Disable submit button and submit form
+                            $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Creating Role...');
+                            form.submit();
+                        }
+                    });
+                    return false;
+                }
+                
+                // If validation passes, disable button and submit
+                $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Creating Role...');
+                form.submit();
+                
+                return true;
             });
         });
     </script>

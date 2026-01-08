@@ -22,7 +22,7 @@
         }
 
         .info-value {
-            font-size: 1rem;
+            /* font-size: 1rem; */
             color: #212529;
             font-weight: 500;
         }
@@ -76,7 +76,7 @@
         }
 
         .permission-module-title {
-            font-size: 1.1rem;
+            /* font-size: 1.1rem; */
             font-weight: 600;
             color: #212529;
             text-transform: capitalize;
@@ -98,7 +98,7 @@
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
             border-radius: 6px;
-            font-size: 1rem;
+            /* font-size: 1rem; */
             color: #155724;
         }
 
@@ -143,7 +143,6 @@
             background-color: #f8f9fa;
             padding: 12px;
             text-align: left;
-            font-size: 0.875rem;
             font-weight: 600;
             color: #6c757d;
             text-transform: uppercase;
@@ -200,7 +199,6 @@
         }
 
         .empty-state i {
-            font-size: 4rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -268,7 +266,10 @@
                                     <a href="{{ route('superadmin.roles.edit', $role) }}" class="btn btn-primary">
                                         <i class="ti-pencil-alt"></i> Edit Role
                                     </a>
-                                    <form action="{{ route('superadmin.roles.destroy', $role) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this role? This action cannot be undone.');">
+                                    <form action="{{ route('superadmin.roles.destroy', $role) }}" 
+                                        method="POST" 
+                                        style="display: inline-block;"
+                                        id="deleteRoleForm">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger">
@@ -535,7 +536,32 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Add any custom JavaScript here if needed
+            // Handle role deletion with SweetAlert
+            $('#deleteRoleForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const roleName = "{{ $role->name }}";
+                
+                swal({
+                    title: "Are you sure?",
+                    text: "You want to delete the role '" + roleName + "'? This action cannot be undone!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

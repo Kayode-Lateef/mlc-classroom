@@ -153,7 +153,10 @@
                                 <a href="{{ route('superadmin.classes.edit', $class) }}" class="btn btn-primary">
                                     <i class="ti-pencil-alt"></i> Edit Class
                                 </a>
-                                <form action="{{ route('superadmin.classes.destroy', $class) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this class? This action cannot be undone.');">
+                                <form action="{{ route('superadmin.classes.destroy', $class) }}" 
+                                    method="POST" 
+                                    style="display: inline-block;"
+                                    id="deleteClassForm">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">
@@ -509,7 +512,54 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Tab functionality is handled by Bootstrap
+            // Handle class deletion with SweetAlert
+            $('#deleteClassForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const className = "{{ $class->name }}";
+                const enrolledCount = {{ $class->students()->count() ?? 0 }};
+                const scheduleCount = {{ $class->schedules()->count() ?? 0 }};
+                
+                // Prevent deletion if class has enrolled students
+                if (enrolledCount > 0) {
+                    swal({
+                        title: "Cannot Delete Class!",
+                        text: "Class '" + className + "' has " + enrolledCount + " enrolled student(s).\n\nPlease remove all students from this class before deleting.\n\nYou can:\n1. Go to Students tab\n2. Remove each student, or\n3. Use the bulk remove feature",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
+                    return false;
+                }
+                
+                // Warning message
+                let warningText = "You want to delete class '" + className + "'?\n\n";
+                
+                if (scheduleCount > 0) {
+                    warningText += "⚠️ This class has " + scheduleCount + " scheduled session(s) that will also be deleted.\n\n";
+                }
+                
+                warningText += "This action cannot be undone!";
+                
+                swal({
+                    title: "Are you sure?",
+                    text: warningText,
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

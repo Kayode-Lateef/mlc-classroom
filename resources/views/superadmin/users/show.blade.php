@@ -60,14 +60,14 @@
             display: inline-block;
             padding: 8px 16px;
             border-radius: 20px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 600;
         }
 
         .verification-badge {
             display: inline-flex;
             align-items: center;
-            font-size: 0.8rem;
+            font-size: 1rem;
             margin-top: 5px;
             padding: 3px 8px;
             border-radius: 4px;

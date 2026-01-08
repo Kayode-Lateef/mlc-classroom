@@ -120,7 +120,6 @@
         }
 
         .empty-state i {
-            font-size: 5rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -236,39 +235,7 @@
                         </div>
                     </div>
 
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('warning'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-warning alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-info"></i> {{ session('warning') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                   
 
                     <!-- Roles Grid -->
                     @if($roles->count() > 0)
@@ -322,52 +289,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="role-card">
-                                <!-- Role Card Header -->
-                                <div class="role-card-header {{ in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']) ? 'system-role' : '' }}">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <h4 style="margin: 0; color: white;">
-                                            {{ ucwords(str_replace('_', ' ', $role->name)) }}
-                                        </h4>
-                                        @if(in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
-                                            <span class="system-role-badge">System Role</span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <!-- Role Card Body -->
-                                <div class="role-card-body">
-                                    <!-- Statistics -->
-                                    <div class="stat-item permissions">
-                                        <i class="ti-key"></i>
-                                        <span><strong>{{ $role->permissions_count }}</strong> Permissions</span>
-                                    </div>
-
-                                    <div class="stat-item users">
-                                        <i class="ti-user"></i>
-                                        <span><strong>{{ $role->users_count }}</strong> Users</span>
-                                    </div>
-
-                                    <div class="stat-item date">
-                                        <i class="ti-time"></i>
-                                        <span>Created {{ $role->created_at->diffForHumans() }}</span>
-                                    </div>
-
-                                    <!-- Action Buttons -->
-                                    <div class="action-buttons">
-                                        <a href="{{ route('superadmin.roles.show', $role) }}" class="btn btn-primary btn-sm flex-fill">
-                                            <i class="ti-eye"></i> View Details
-                                        </a>
-                                        @if(!in_array($role->name, ['superadmin', 'admin', 'teacher', 'parent']))
-                                        <a href="{{ route('superadmin.roles.edit', $role) }}" class="btn btn-success btn-sm">
-                                            <i class="ti-pencil-alt"></i>
-                                        </a>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div> --}}
                         @endforeach
                     </div>
 

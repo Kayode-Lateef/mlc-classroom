@@ -247,29 +247,7 @@
                         </div>
                     </div>
 
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
+                   
                     <!-- Students Table -->
                     <div class="row mt-4">
                         <div class="col-lg-12">
@@ -358,7 +336,10 @@
                                                             <form action="{{ route('superadmin.students.destroy', $student) }}" 
                                                                 method="POST" 
                                                                 style="display: inline-block;"
-                                                                onsubmit="return confirm('Are you sure you want to delete {{ $student->full_name }}? This action cannot be undone.');">
+                                                                class="delete-student-form"
+                                                                data-student-name="{{ $student->full_name }}"
+                                                                data-student-id="{{ $student->id }}"
+                                                                data-class-count="{{ $student->classes->count() ?? 0 }}">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-danger" title="Delete">
@@ -409,7 +390,42 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Add any custom JavaScript here if needed
+            // Handle student deletion with SweetAlert
+            $('.delete-student-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const studentName = $(this).data('student-name');
+                const studentId = $(this).data('student-id');
+                const classCount = $(this).data('class-count');
+                
+                let warningText = "You want to delete student '" + studentName + "'?\n\n";
+                
+                if (classCount > 0) {
+                    warningText += "⚠️ This student is currently enrolled in " + classCount + " class(es).\n\n";
+                }
+                
+                warningText += "This action cannot be undone!";
+                
+                swal({
+                    title: "Are you sure?",
+                    text: warningText,
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

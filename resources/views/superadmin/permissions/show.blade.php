@@ -28,13 +28,11 @@
         }
 
         .info-value {
-            font-size: 1.1rem;
             font-weight: 600;
             color: #212529;
         }
 
         .info-value-large {
-            font-size: 2rem;
             font-weight: bold;
             color: #007bff;
         }
@@ -59,17 +57,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
         }
 
         .stat-number {
-            font-size: 2rem;
             font-weight: bold;
             margin: 10px 0 5px;
         }
 
         .stat-label {
-            font-size: 0.875rem;
             color: #6c757d;
         }
 
@@ -92,7 +87,6 @@
         }
 
         .role-name {
-            font-size: 1.4rem;
             font-weight: 600;
             color: #212529;
             text-transform: capitalize;
@@ -104,7 +98,6 @@
             color: #0066cc;
             padding: 3px 10px;
             border-radius: 12px;
-            font-size: 1rem;
             font-weight: 600;
             display: inline-block;
             margin-top: 5px;
@@ -113,7 +106,6 @@
         .role-stats {
             display: flex;
             justify-content: space-between;
-            font-size: 1.2rem;
             color: #6c757d;
             margin-bottom: 12px;
         }
@@ -204,7 +196,6 @@
         }
 
         .user-email {
-            font-size: 1rem;
             color: #6c757d;
             white-space: nowrap;
             overflow: hidden;
@@ -240,7 +231,6 @@
         }
 
         .empty-state i {
-            font-size: 5rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -281,7 +271,9 @@
                                 <a href="{{ route('superadmin.permissions.edit', $permission) }}" class="btn btn-primary">
                                     <i class="ti-pencil-alt"></i> Edit Permission
                                 </a>
-                                <form action="{{ route('superadmin.permissions.destroy', $permission) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this permission? This action cannot be undone.');">
+                                <form action="{{ route('superadmin.permissions.destroy', $permission) }}" method="POST" 
+                                    style="display: inline-block;"
+                                    id="deletePermissionForm">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">
@@ -449,7 +441,7 @@
                                                             <div class="role-section-header">
                                                                 <div class="role-section-title">
                                                                     {{ str_replace('_', ' ', $role->name) }}
-                                                                    <span style="font-weight: 400; font-size: 1.2rem; color: #6c757d;">
+                                                                    <span style="font-weight: 400; color: #6c757d;">
                                                                         ({{ $role->users->count() }} users)
                                                                     </span>
                                                                 </div>
@@ -513,7 +505,31 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Add any custom JavaScript here if needed
+            // Handle role deletion with SweetAlert
+            $('#deletePermissionForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const permissionName = "{{ $permission->name }}";
+                swal({
+                    title: "Are you sure?",
+                    text: "You want to delete the permission '" + permissionName + "'? This action cannot be undone!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

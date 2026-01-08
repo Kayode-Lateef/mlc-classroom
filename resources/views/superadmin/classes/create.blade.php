@@ -317,33 +317,81 @@
                 }
             });
 
-            // Form validation before submit
+            // Form validation before submit with SweetAlert
             $('form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
                 var name = $('#name').val().trim();
                 var subject = $('#subject').val().trim();
                 var capacity = parseInt($('#capacity').val());
 
+                // Validate class name
                 if (name.length < 3) {
-                    e.preventDefault();
-                    alert('Class name must be at least 3 characters long');
-                    $('#name').focus();
+                    swal({
+                        title: "Invalid Class Name!",
+                        text: "Class name must be at least 3 characters long.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#name').focus();
+                    });
                     return false;
                 }
 
+                // Validate subject
                 if (subject.length < 2) {
-                    e.preventDefault();
-                    alert('Subject name must be at least 2 characters long');
-                    $('#subject').focus();
+                    swal({
+                        title: "Invalid Subject!",
+                        text: "Subject name must be at least 2 characters long.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#subject').focus();
+                    });
                     return false;
                 }
 
+                // Validate capacity
                 if (capacity < 1 || capacity > 100) {
-                    e.preventDefault();
-                    alert('Capacity must be between 1 and 100 students');
-                    $('#capacity').focus();
+                    swal({
+                        title: "Invalid Capacity!",
+                        text: "Capacity must be between 1 and 100 students.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#capacity').focus();
+                    });
                     return false;
                 }
 
+                // Optional: Warn about large class sizes
+                if (capacity > 30) {
+                    swal({
+                        title: "Large Class Size!",
+                        text: "You're creating a class with " + capacity + " students.\n\nLarge classes may be difficult to manage. Consider splitting into multiple smaller classes for better learning outcomes.\n\nDo you want to continue?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, create class",
+                        cancelButtonText: "No, let me change",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            // Disable submit button and submit form
+                            $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Creating Class...');
+                            form.submit();
+                        } else {
+                            $('#capacity').focus();
+                        }
+                    });
+                    return false;
+                }
+
+                // If all validations pass, submit form
+                $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Creating Class...');
+                form.submit();
+                
                 return true;
             });
         });

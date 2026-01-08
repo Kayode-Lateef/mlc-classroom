@@ -188,7 +188,7 @@
                                             <li role="presentation" class="active"><a href="#profile-info" aria-controls="profile-info" role="tab" data-toggle="tab"><i class="ti-user"></i> Profile Information</a></li>
                                             <li role="presentation"><a href="#change-password" aria-controls="change-password" role="tab" data-toggle="tab"><i class="ti-lock"></i> Change Password</a></li>
                                             <li role="presentation"><a href="#activity-log" aria-controls="activity-log" role="tab" data-toggle="tab"> <i class="ti-time"></i> Activity Log</a></li>
-                                            <li role="presentation"><a href="#security" aria-controls="security" role="tab" data-toggle="tab"> <i class="ti-shield"></i> Security</a></li>
+                                            {{-- <li role="presentation"><a href="#security" aria-controls="security" role="tab" data-toggle="tab"> <i class="ti-shield"></i> Security</a></li> --}}
                                         </ul>
                                         <div class="tab-content">
                                             <!-- profile-info Tab -->
@@ -204,9 +204,9 @@
                                                  @include('profile.partials.activity-log')
                                             </div>
                                             <!-- Security Tab -->
-                                            <div role="tabpanel" class="tab-pane" id="security">
+                                            {{-- <div role="tabpanel" class="tab-pane" id="security">
                                                  @include('profile.partials.delete-account')
-                                            </div>
+                                            </div> --}}
                                           
                                         </div>
                                     </div>
@@ -437,41 +437,41 @@ $(document).ready(function() {
     // SECURITY TAB SCRIPTS
     // ========================================
     // Enable delete button only when checkbox is checked
-    $(document).on('change', '#confirm-delete', function() {
-        console.log('Checkbox changed:', this.checked);
-        $('#delete-btn').prop('disabled', !this.checked);
-    });
+    // $(document).on('change', '#confirm-delete', function() {
+    //     console.log('Checkbox changed:', this.checked);
+    //     $('#delete-btn').prop('disabled', !this.checked);
+    // });
     
     // Confirm before deleting
-    $(document).on('submit', '#delete-account-form', function(e) {
-        console.log('Delete form submitted');
+    // $(document).on('submit', '#delete-account-form', function(e) {
+    //     console.log('Delete form submitted');
         
-        if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
-            console.log('First confirmation cancelled');
-            e.preventDefault();
-            return false;
-        }
+    //     if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
+    //         console.log('First confirmation cancelled');
+    //         e.preventDefault();
+    //         return false;
+    //     }
         
-        if (!confirm('This is your last chance. Are you really sure?')) {
-            console.log('Second confirmation cancelled');
-            e.preventDefault();
-            return false;
-        }
+    //     if (!confirm('This is your last chance. Are you really sure?')) {
+    //         console.log('Second confirmation cancelled');
+    //         e.preventDefault();
+    //         return false;
+    //     }
         
-        console.log('Account deletion confirmed, submitting form');
-    });
+    //     console.log('Account deletion confirmed, submitting form');
+    // });
     
-    // Debug: Check if delete button exists
-    console.log('Delete button exists:', $('#delete-btn').length > 0);
-    console.log('Delete form exists:', $('#delete-account-form').length > 0);
-    console.log('Confirm checkbox exists:', $('#confirm-delete').length > 0);
+    // // Debug: Check if delete button exists
+    // console.log('Delete button exists:', $('#delete-btn').length > 0);
+    // console.log('Delete form exists:', $('#delete-account-form').length > 0);
+    // console.log('Confirm checkbox exists:', $('#confirm-delete').length > 0);
 
-    // Auto-dismiss success messages after 5 seconds
-    setTimeout(function() {
-        $('.alert-success').fadeOut('slow', function() {
-            $(this).remove();
-        });
-    }, 5000);
+    // // Auto-dismiss success messages after 5 seconds
+    // setTimeout(function() {
+    //     $('.alert-success').fadeOut('slow', function() {
+    //         $(this).remove();
+    //     });
+    // }, 5000);
 });
 </script>
 @endpush

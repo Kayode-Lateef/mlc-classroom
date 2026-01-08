@@ -106,28 +106,7 @@
                 </div>
 
                 <div id="main-content">
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable text-white">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable text-white">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                 
                     
                     <!-- Statistics Cards -->
                     <div class="row">
@@ -503,57 +482,63 @@
 function handleDelete(event, userName) {
     event.preventDefault(); // Stop the form from submitting immediately
     
-    console.log('Delete clicked for:', userName);
+    var form = event.target; // Get the form element
     
-    if (confirm('Are you sure you want to delete ' + userName + '? This action cannot be undone.')) {
-        console.log('Delete confirmed, submitting form');
-        event.target.submit(); // Submit the form if confirmed
-        return true;
-    } else {
-        console.log('Delete cancelled');
-        return false;
-    }
+    swal({
+        title: "Are you sure?",
+        text: "You want to delete " + userName + "? This action cannot be undone!",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, cancel!",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    },
+    function(isConfirm){
+        if (isConfirm) {
+            form.submit(); // Submit the form immediately
+        }
+    });
+    
+    return false;
 }
 
 function handleSuspend(userId, userName, isActive) {
     var action = isActive ? 'suspend' : 'activate';
     
-    console.log('Suspend/Activate clicked:', userId, userName, action);
-    
-    if (!confirm('Are you sure you want to ' + action + ' ' + userName + '?')) {
-        console.log('Action cancelled');
-        return false;
-    }
-    
-    console.log('Action confirmed, submitting form');
-    
     var form = document.getElementById('suspendForm_' + userId);
     
     if (!form) {
-        console.error('Form not found:', 'suspendForm_' + userId);
-        alert('Error: Form not found. Please refresh the page.');
+        swal("Error!", "Form not found. Please refresh the page.", "error");
         return false;
     }
     
-    console.log('Submitting form to:', form.action);
-    form.submit();
-    return true;
+    swal({
+        title: "Are you sure?",
+        text: "You want to " + action + " " + userName + "?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: isActive ? "#DD6B55" : "#28a745",
+        confirmButtonText: "Yes, " + action + "!",
+        cancelButtonText: "No, cancel!",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    },
+    function(isConfirm){
+        if (isConfirm) {
+            form.submit();
+        }
+    });
+    
+    return false;
 }
 
 // jQuery initialization
 $(document).ready(function() {
     console.log('User management initialized');
-    console.log('handleDelete available:', typeof handleDelete === 'function');
-    console.log('handleSuspend available:', typeof handleSuspend === 'function');
-    
-    // Make sure delete forms work
-    $('form[id^="deleteForm_"]').on('submit', function(e) {
-        console.log('Form submit event triggered');
-        // Let the onsubmit handler do its job
-    });
     
     $('#userFilterForm').off('submit').on('submit', function() {
-        console.log('Filter form submitting...');
         return true;
     });
     

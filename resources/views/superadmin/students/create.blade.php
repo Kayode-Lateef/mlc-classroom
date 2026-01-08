@@ -282,13 +282,14 @@
                                                             name="emergency_phone" 
                                                             id="emergency_phone" 
                                                             value="{{ old('emergency_phone') }}"
-                                                            placeholder="+234 800 000 0000"
+                                                            placeholder="+44 20 1234 5678 or 020 1234 5678"
+                                                            minlength="10"
                                                             maxlength="20"
-                                                            pattern="[+]?[0-9\s\-\(\)]+"
+                                                            pattern="(\+44\s?|0)[0-9\s\-\(\)]{9,}"
                                                             class="form-control @error('emergency_phone') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-mobile"></i> Emergency contact phone number
+                                                            <i class="ti-mobile"></i> UK phone number format: +44 20 1234 5678 or 020 1234 5678
                                                         </small>
                                                         @error('emergency_phone')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -396,7 +397,12 @@
                 if (file) {
                     // Check file size (2MB = 2097152 bytes)
                     if (file.size > 2097152) {
-                        alert('File size must not exceed 2MB');
+                        swal({
+                            title: "File Too Large!",
+                            text: "File size must not exceed 2MB. Please choose a smaller image.",
+                            type: "error",
+                            confirmButtonText: "OK"
+                        });
                         $(this).val('');
                         $('#photo-preview').hide();
                         return;
@@ -405,7 +411,12 @@
                     // Check file type
                     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                     if (!allowedTypes.includes(file.type)) {
-                        alert('Only JPG, PNG, and GIF images are allowed');
+                        swal({
+                            title: "Invalid File Type!",
+                            text: "Only JPG, PNG, and GIF images are allowed.",
+                            type: "error",
+                            confirmButtonText: "OK"
+                        });
                         $(this).val('');
                         $('#photo-preview').hide();
                         return;
@@ -434,9 +445,14 @@
                 const todayDate = new Date(today);
                 
                 if (selectedDate >= todayDate) {
-                    alert('Date of birth must be in the past');
-                    $(this).val('');
-                    $(this).addClass('is-invalid');
+                    swal({
+                        title: "Invalid Date!",
+                        text: "Date of birth must be in the past.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#date_of_birth').val('').addClass('is-invalid');
+                    });
                 } else {
                     $(this).removeClass('is-invalid');
                 }
@@ -477,13 +493,16 @@
             // FORM SUBMISSION VALIDATION
             // ========================================
             $('#studentForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
                 let isValid = true;
                 let errors = [];
 
                 // Validate First Name
                 if ($('#first_name').val().trim() === '') {
                     isValid = false;
-                    errors.push('First name is required');
+                    errors.push('• First name is required');
                     $('#first_name').addClass('is-invalid');
                 } else {
                     $('#first_name').removeClass('is-invalid');
@@ -492,7 +511,7 @@
                 // Validate Last Name
                 if ($('#last_name').val().trim() === '') {
                     isValid = false;
-                    errors.push('Last name is required');
+                    errors.push('• Last name is required');
                     $('#last_name').addClass('is-invalid');
                 } else {
                     $('#last_name').removeClass('is-invalid');
@@ -501,7 +520,7 @@
                 // Validate Date of Birth
                 if ($('#date_of_birth').val() === '') {
                     isValid = false;
-                    errors.push('Date of birth is required');
+                    errors.push('• Date of birth is required');
                     $('#date_of_birth').addClass('is-invalid');
                 } else {
                     const selectedDate = new Date($('#date_of_birth').val());
@@ -509,7 +528,7 @@
                     
                     if (selectedDate >= todayDate) {
                         isValid = false;
-                        errors.push('Date of birth must be in the past');
+                        errors.push('• Date of birth must be in the past');
                         $('#date_of_birth').addClass('is-invalid');
                     } else {
                         $('#date_of_birth').removeClass('is-invalid');
@@ -519,7 +538,7 @@
                 // Validate Parent Selection
                 if ($('#parent_id').val() === '') {
                     isValid = false;
-                    errors.push('Please select a parent/guardian');
+                    errors.push('• Please select a parent/guardian');
                     $('#parent_id').addClass('is-invalid');
                 } else {
                     $('#parent_id').removeClass('is-invalid');
@@ -528,29 +547,48 @@
                 // Validate Enrollment Date
                 if ($('#enrollment_date').val() === '') {
                     isValid = false;
-                    errors.push('Enrollment date is required');
+                    errors.push('• Enrollment date is required');
                     $('#enrollment_date').addClass('is-invalid');
                 } else {
                     $('#enrollment_date').removeClass('is-invalid');
                 }
 
-                // If not valid, prevent submission and show errors
+                // If not valid, show SweetAlert with errors
                 if (!isValid) {
-                    e.preventDefault();
-                    
-                    // Scroll to top to show errors
-                    $('html, body').animate({
-                        scrollTop: 0
-                    }, 500);
-                    
-                    // Show alert with errors
-                    alert('Please fix the following errors:\n\n' + errors.join('\n'));
+                    swal({
+                        title: "Validation Error!",
+                        text: "Please fix the following errors:\n\n" + errors.join('\n'),
+                        type: "error",
+                        confirmButtonText: "OK",
+                        html: true
+                    }, function() {
+                        // Scroll to first invalid field
+                        const firstInvalid = $('.is-invalid').first();
+                        if (firstInvalid.length) {
+                            $('html, body').animate({
+                                scrollTop: firstInvalid.offset().top - 100
+                            }, 500);
+                            firstInvalid.focus();
+                        }
+                    });
                     
                     return false;
                 }
 
-                // Disable submit button to prevent double submission
-                $('#submitBtn').prop('disabled', true).html('<i class="ti-reload"></i> Submitting...');
+                // Show loading state with SweetAlert
+                swal({
+                    title: "Creating Student...",
+                    text: "Please wait while we save the student information.",
+                    type: "info",
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                });
+                
+                // Disable submit button
+                $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Submitting...');
+                
+                // Submit form
+                form.submit();
                 
                 return true;
             });

@@ -13,7 +13,6 @@
 
         .info-banner i {
             color: #0066cc;
-            font-size: 1.2rem;
         }
 
         .panel-title {
@@ -36,7 +35,6 @@
             background-color: rgba(255,255,255,0.3);
             padding: 8px 16px;
             border-radius: 20px;
-            font-size: 1rem;
         }
 
         .permission-grid {
@@ -59,14 +57,12 @@
         }
 
         .permission-name {
-            font-size: 1.4rem;
             font-weight: 600;
             color: #212529;
             margin-bottom: 8px;
         }
 
         .permission-roles {
-            font-size: 1rem;
             color: #6c757d;
             display: flex;
             align-items: center;
@@ -112,7 +108,6 @@
         }
 
         .empty-state i {
-            font-size: 5rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -121,7 +116,6 @@
             background-color: #f8f9fa;
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.9rem;
             color: #0066cc;
         }
     </style>
@@ -232,29 +226,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
 
                     <!-- Permissions by Module -->
                     @if($permissions->count() > 0)

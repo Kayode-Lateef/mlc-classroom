@@ -16,7 +16,7 @@
         }
 
         .stat-widget-one .stat-value {
-            font-size: 24px;
+            /* font-size: 24px; */
             font-weight: bold;
         }
 
@@ -136,7 +136,7 @@
                                     <div class="stat-icon dib"><i class="ti-settings color-primary border-primary"></i></div>
                                     <div class="stat-content dib">
                                         <div class="stat-text">Total Settings</div>
-                                        <div class="stat-digit">{{ $stats['total_settings'] }}</div>
+                                        <div class="stat-value">{{ $stats['total_settings'] }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +173,7 @@
                                     <div class="stat-icon dib"><i class="ti-time color-warning border-warning"></i></div>
                                     <div class="stat-content dib">
                                         <div class="stat-text">Last Updated</div>
-                                        <div class="stat-digit">{{ $stats['last_updated'] ? $stats['last_updated']->diffForHumans() : 'Never' }}</div>
+                                        <div class="stat-value">{{ $stats['last_updated'] ? $stats['last_updated']->diffForHumans() : 'Never' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -181,17 +181,8 @@
                       
                     </div>
 
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row mt-3">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                    <!--Error Messages -->
+            
 
                     @if(session('error'))
                         <div class="row mt-3">
@@ -265,11 +256,18 @@
                                                                     <input 
                                                                         type="text" 
                                                                         name="school_phone" 
+                                                                        id="school_phone"
                                                                         value="{{ old('school_phone', $settings->get('school')->firstWhere('key', 'school_phone')?->value) }}"
-                                                                        placeholder="+44..."
+                                                                        placeholder="+44 20 1234 5678 or 020 1234 5678"
                                                                         required
+                                                                        minlength="10"
+                                                                        maxlength="20"
+                                                                        pattern="(\+44\s?|0)[0-9\s\-\(\)]{9,}"
                                                                         class="form-control @error('school_phone') is-invalid @enderror"
                                                                     >
+                                                                    <small class="form-text text-muted">
+                                                                        <i class="ti-info-alt"></i> UK phone number format: +44 20 1234 5678 or 020 1234 5678
+                                                                    </small>
                                                                     @error('school_phone')
                                                                     <span class="invalid-feedback">{{ $message }}</span>
                                                                     @enderror
@@ -651,14 +649,127 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
+            // Phone number validation - UK format
+            $('#school_phone').on('input', function() {
+                let value = $(this).val();
+                // Remove any characters that aren't numbers, +, -, (, ), or spaces
+                value = value.replace(/[^0-9+\-\(\)\s]/g, '');
+                $(this).val(value);
+            });
 
-            // Maintenance mode confirmation
-            $('#maintenance_mode').on('change', function() {
-                if (this.checked) {
-                    if (!confirm('Are you sure you want to enable maintenance mode? Only administrators will be able to access the system.')) {
-                        this.checked = false;
+            // Auto-format UK phone number
+            $('#school_phone').on('blur', function() {
+                let value = $(this).val().trim();
+                
+                // UK phone number regex - more flexible
+                const ukPhoneRegex = /^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/;
+                
+                if (value) {
+                    // Check minimum length (at least 10 characters for UK numbers)
+                    if (value.length < 10) {
+                        $(this).addClass('is-invalid');
+                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
+                            $(this).after('<span class="invalid-feedback d-block">UK phone number must be at least 10 characters.</span>');
+                        }
+                    } 
+                    // Check if it starts with +44 or 0
+                    else if (!value.startsWith('+44') && !value.startsWith('0')) {
+                        $(this).addClass('is-invalid');
+                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
+                            $(this).after('<span class="invalid-feedback d-block">UK phone number must start with +44 or 0.</span>');
+                        }
+                    }
+                    // Check UK phone format
+                    else if (!ukPhoneRegex.test(value)) {
+                        $(this).addClass('is-invalid');
+                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
+                            $(this).after('<span class="invalid-feedback d-block">Please enter a valid UK phone number.</span>');
+                        }
+                    } else {
+                        $(this).removeClass('is-invalid');
+                        $(this).siblings('.invalid-feedback:not([data-server])').remove();
                     }
                 }
+            });
+
+            // Maintenance mode confirmation with SweetAlert
+            $('#maintenance_mode').on('change', function() {
+                const checkbox = this;
+                
+                if (checkbox.checked) {
+                    swal({
+                        title: "Enable Maintenance Mode?",
+                        text: "Only administrators will be able to access the system. All other users will see a maintenance page.",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, enable it",
+                        cancelButtonText: "No, cancel",
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    }, function(isConfirm) {
+                        if (!isConfirm) {
+                            checkbox.checked = false;
+                        }
+                    });
+                }
+            });
+
+            // Form submission validation with SweetAlert
+            $('form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const phoneInput = $('#school_phone');
+                const phoneValue = phoneInput.val().trim();
+                const ukPhoneRegex = /^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/;
+                
+                if (phoneValue) {
+                    // Check minimum length
+                    if (phoneValue.length < 10) {
+                        swal({
+                            title: "Invalid Phone Number!",
+                            text: "UK phone number must be at least 10 characters.",
+                            type: "error",
+                            confirmButtonText: "OK"
+                        }, function() {
+                            phoneInput.addClass('is-invalid').focus();
+                        });
+                        return false;
+                    }
+                    
+                    // Check if starts with +44 or 0
+                    if (!phoneValue.startsWith('+44') && !phoneValue.startsWith('0')) {
+                        swal({
+                            title: "Invalid Phone Number!",
+                            text: "UK phone number must start with +44 or 0.",
+                            type: "error",
+                            confirmButtonText: "OK"
+                        }, function() {
+                            phoneInput.addClass('is-invalid').focus();
+                        });
+                        return false;
+                    }
+                    
+                    // Check UK format
+                    if (!ukPhoneRegex.test(phoneValue)) {
+                        swal({
+                            title: "Invalid Phone Number!",
+                            text: "Please enter a valid UK phone number.\n\nExamples:\n+44 20 1234 5678\n020 1234 5678\n07123 456789",
+                            type: "error",
+                            confirmButtonText: "OK"
+                        }, function() {
+                            phoneInput.addClass('is-invalid').focus();
+                        });
+                        return false;
+                    }
+                }
+                
+                // If all validations pass, disable button and submit
+                $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Saving Settings...');
+                form.submit();
+                
+                return true;
             });
         });
     </script>

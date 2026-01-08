@@ -34,7 +34,6 @@
             display: flex;
             align-items: flex-start;
             margin-bottom: 8px;
-            font-size: 1rem;
         }
 
         .guidelines-box li i {
@@ -74,7 +73,6 @@
         }
 
         .module-name {
-            font-size: 1rem;
             font-weight: 500;
             color: #212529;
             text-transform: capitalize;
@@ -89,14 +87,12 @@
 
         .example-box code {
             color: #495057;
-            font-size: 1rem;
         }
 
         code {
             background-color: #f8f9fa;
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 1rem;
             color: #0066cc;
         }
 
@@ -114,7 +110,6 @@
         }
 
         .sidebar-title {
-            font-size: 1rem;
             font-weight: 600;
             color: #212529;
             margin-bottom: 15px;
@@ -369,42 +364,69 @@
                 }
             });
 
-            // Form validation
+            // Form validation with SweetAlert
             $('form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
                 const permissionName = $('#name').val().trim();
                 
+                // Check if permission name is empty
                 if (!permissionName) {
-                    e.preventDefault();
-                    alert('Please enter a permission name.');
-                    $('#name').focus();
+                    swal({
+                        title: "Permission Name Required!",
+                        text: "Please enter a permission name.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#name').focus();
+                    });
                     return false;
                 }
 
                 // Check if it follows the pattern (at least 2 words)
                 const words = permissionName.split(' ').filter(word => word.length > 0);
                 if (words.length < 2) {
-                    e.preventDefault();
-                    alert('Permission name should follow the format: "action module"\nFor example: "create users" or "view reports"');
-                    $('#name').focus();
+                    swal({
+                        title: "Invalid Format!",
+                        text: "Permission name should follow the format: \"action module\"\n\nFor example: \"create users\" or \"view reports\"",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#name').focus();
+                    });
                     return false;
                 }
 
                 // Check if first word is an action verb
                 const commonActions = ['create', 'view', 'edit', 'update', 'delete', 'manage', 'export', 'import', 'approve', 'reject'];
                 if (!commonActions.includes(words[0])) {
-                    const confirm = window.confirm(
-                        'The permission name should typically start with an action verb like:\n' +
-                        'create, view, edit, delete, manage, export, etc.\n\n' +
-                        'Your permission starts with "' + words[0] + '".\n\n' +
-                        'Do you want to proceed anyway?'
-                    );
-                    
-                    if (!confirm) {
-                        e.preventDefault();
-                        $('#name').focus();
-                        return false;
-                    }
+                    swal({
+                        title: "Unusual Action Verb!",
+                        text: "The permission name should typically start with an action verb like:\ncreate, view, edit, delete, manage, export, etc.\n\nYour permission starts with \"" + words[0] + "\".\n\nDo you want to proceed anyway?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, proceed",
+                        cancelButtonText: "No, let me change",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            // Disable submit button and submit form
+                            $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Creating Permission...');
+                            form.submit();
+                        } else {
+                            $('#name').focus();
+                        }
+                    });
+                    return false;
                 }
+                
+                // If all validations pass, submit form
+                $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Creating Permission...');
+                form.submit();
+                
+                return true;
             });
 
             // Click on example to fill form

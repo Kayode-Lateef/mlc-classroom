@@ -373,36 +373,122 @@
                 }
             });
 
-            // Teacher change confirmation
+            // Teacher change confirmation with SweetAlert
             var originalTeacherId = '{{ $class->teacher_id ?? "" }}';
+            var originalTeacherName = '{{ $class->teacher->name ?? "No Teacher" }}';
+            
             $('#teacher_id').on('change', function() {
                 var newTeacherId = $(this).val();
+                var newTeacherName = $(this).find('option:selected').text();
+                var teacherSelect = $(this);
                 
                 if (originalTeacherId && newTeacherId && originalTeacherId != newTeacherId) {
-                    if (!confirm('Are you sure you want to change the teacher? This may affect scheduled classes and communications.')) {
-                        $(this).val(originalTeacherId);
-                    }
+                    swal({
+                        title: "Change Teacher?",
+                        text: "You are changing the teacher from '" + originalTeacherName + "' to '" + newTeacherName + "'.\n\nThis may affect:\n• Scheduled classes\n• Teacher notifications\n• Student communications\n\nDo you want to continue?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, change teacher",
+                        cancelButtonText: "No, cancel",
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    }, function(isConfirm) {
+                        if (!isConfirm) {
+                            teacherSelect.val(originalTeacherId);
+                        }
+                    });
                 }
             });
 
-            // Form validation before submit
+            // Form validation before submit with SweetAlert
             $('form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                var name = $('#name').val().trim();
+                var subject = $('#subject').val().trim();
                 var capacity = parseInt($('#capacity').val());
                 
+                // Validate class name
+                if (name.length < 3) {
+                    swal({
+                        title: "Invalid Class Name!",
+                        text: "Class name must be at least 3 characters long.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#name').focus();
+                    });
+                    return false;
+                }
+
+                // Validate subject
+                if (subject.length < 2) {
+                    swal({
+                        title: "Invalid Subject!",
+                        text: "Subject name must be at least 2 characters long.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#subject').focus();
+                    });
+                    return false;
+                }
+
+                // Validate capacity - cannot be less than enrolled
                 if (capacity < currentEnrolled) {
-                    e.preventDefault();
-                    alert('Capacity cannot be less than the current number of enrolled students (' + currentEnrolled + ').');
-                    $('#capacity').focus();
+                    swal({
+                        title: "Invalid Capacity!",
+                        text: "Capacity cannot be less than the current number of enrolled students (" + currentEnrolled + ").\n\nPlease either:\n1. Increase the capacity, or\n2. Remove some students from this class first",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#capacity').focus();
+                    });
                     return false;
                 }
 
+                // Validate capacity range
                 if (capacity < 1 || capacity > 100) {
-                    e.preventDefault();
-                    alert('Capacity must be between 1 and 100 students.');
-                    $('#capacity').focus();
+                    swal({
+                        title: "Invalid Capacity!",
+                        text: "Capacity must be between 1 and 100 students.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#capacity').focus();
+                    });
                     return false;
                 }
 
+                // Warning for large class sizes
+                if (capacity > 30 && capacity >= currentEnrolled + 10) {
+                    swal({
+                        title: "Large Class Size!",
+                        text: "You're setting capacity to " + capacity + " students.\n\nLarge classes may be difficult to manage. Consider splitting into multiple smaller classes for better learning outcomes.\n\nDo you want to continue?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, update class",
+                        cancelButtonText: "No, let me change",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            // Disable submit button and submit form
+                            $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Updating Class...');
+                            form.submit();
+                        } else {
+                            $('#capacity').focus();
+                        }
+                    });
+                    return false;
+                }
+
+                // If all validations pass, submit form
+                $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Updating Class...');
+                form.submit();
+                
                 return true;
             });
 

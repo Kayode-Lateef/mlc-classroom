@@ -11,7 +11,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
         }
 
 
@@ -33,7 +32,6 @@
 
         .action-item i {
             color: #007bff;
-            font-size: 2rem;
         }
 
         .filter-card {
@@ -126,17 +124,16 @@
         }
 
         .empty-state i {
-            font-size: 5rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
 
-        .time-display {
+        /* .time-display {
             font-size: 1rem;
-        }
+        } */
 
         .time-relative {
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             color: #6c757d;
         }
     </style>
@@ -235,7 +232,7 @@
                     <div class="row mt-4">
                         <div class="col-lg-12">
                             <div class="top-actions-card">
-                                <h3 style="font-size: 1.6rem; font-weight: 600; margin-bottom: 15px;">
+                                <h3 style="font-weight: 600; margin-bottom: 15px;">
                                     <i class="ti-bar-chart"></i> Top Actions
                                 </h3>
                                 <div class="row">
@@ -243,10 +240,10 @@
                                     <div class="col-lg col-md-4 col-sm-6 mb-3">
                                         <div class="action-item">
                                             <div style="flex: 1;">
-                                                <div style="font-size: 1rem; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                <div style="color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                                     {{ ucwords(str_replace('_', ' ', $action)) }}
                                                 </div>
-                                                <div style="font-size: 1.2rem; font-weight: 600;">{{ number_format($count) }}</div>
+                                                <div style="font-weight: 600;">{{ number_format($count) }}</div>
                                             </div>
                                             <i class="ti-trending-up"></i>
                                         </div>
@@ -450,7 +447,7 @@
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <div style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem;">
+                                                        <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.2rem;">
                                                             {{ $log->description }}
                                                         </div>
                                                     </td>

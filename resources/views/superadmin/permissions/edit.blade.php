@@ -25,7 +25,6 @@
 
         .warning-box i {
             color: #ffc107;
-            font-size: 1.2rem;
         }
 
         .role-item {
@@ -60,7 +59,6 @@
         .role-meta {
             display: flex;
             align-items: center;
-            font-size: 1rem;
             color: #6c757d;
             margin-top: 5px;
         }
@@ -75,7 +73,6 @@
             color: #0066cc;
             padding: 3px 10px;
             border-radius: 12px;
-            font-size: 1rem;
             font-weight: 600;
             display: inline-block;
             margin-top: 5px;
@@ -110,13 +107,11 @@
         }
 
         .info-value {
-            font-size: 1rem;
             font-weight: 500;
             color: #212529;
         }
 
         .info-value-large {
-            font-size: 2rem;
             font-weight: bold;
             color: #007bff;
         }
@@ -151,7 +146,6 @@
             background-color: #f8f9fa;
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.9rem;
             color: #0066cc;
         }
     </style>
@@ -319,7 +313,7 @@
                                             @foreach($permission->roles as $role)
                                             <div class="current-role-item">
                                                 <i class="ti-check"></i>
-                                                <span style="font-size: 1rem; font-weight: 500; text-transform: capitalize;">
+                                                <span style="font-weight: 500; text-transform: capitalize;">
                                                     {{ str_replace('_', ' ', $role->name) }}
                                                 </span>
                                             </div>
@@ -333,7 +327,7 @@
                                         <div class="sidebar-title">
                                             <i class="ti-help-alt"></i> Impact Notice
                                         </div>
-                                        <p style="font-size: 1rem; color: #6c757d; margin: 0;">
+                                        <p style="color: #6c757d; margin: 0;">
                                             This permission affects 
                                             <strong>{{ $permission->roles->sum(function($role) { return $role->users->count(); }) }} users</strong> 
                                             across {{ $permission->roles->count() }} role(s).
@@ -386,6 +380,10 @@
                 hasChanges = true;
             });
 
+            $('#description').on('input', function() {
+                hasChanges = true;
+            });
+
             // Update change indicator
             function updateChangeIndicator() {
                 const currentRoles = [];
@@ -410,9 +408,11 @@
             }
 
             // Warn about unsaved changes
-            $(window).on('beforeunload', function() {
+            $(window).on('beforeunload', function(e) {
                 if (hasChanges) {
-                    return 'You have unsaved changes. Are you sure you want to leave?';
+                    const message = 'You have unsaved changes. Are you sure you want to leave?';
+                    e.returnValue = message;
+                    return message;
                 }
             });
 
@@ -431,8 +431,13 @@
 
                 $('input[name="roles[]"]:checked').each(function() {
                     const roleItem = $(this).closest('.role-item');
-                    const userCount = parseInt(roleItem.find('.role-meta').text().match(/\d+/)[0]);
-                    totalUsers += userCount;
+                    const roleMetaText = roleItem.find('.role-meta').text();
+                    const userCountMatch = roleMetaText.match(/\d+/);
+                    
+                    if (userCountMatch) {
+                        const userCount = parseInt(userCountMatch[0]);
+                        totalUsers += userCount;
+                    }
                     totalRoles++;
                 });
 
@@ -457,31 +462,55 @@
             // Initial affected users count
             updateAffectedUsers();
 
-            // Form validation
+            // Form validation with SweetAlert
             $('form').on('submit', function(e) {
-                const permissionName = $('#name').val().trim();
+                e.preventDefault(); // Prevent default submission
                 
+                const form = this;
+                const permissionName = $('#name').val().trim();
+                const selectedRoles = $('input[name="roles[]"]:checked').length;
+                
+                // Validate permission name
                 if (!permissionName) {
-                    e.preventDefault();
-                    alert('Please enter a permission name.');
-                    $('#name').focus();
+                    swal({
+                        title: "Permission Name Required!",
+                        text: "Please enter a permission name.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#name').focus();
+                    });
                     return false;
                 }
 
                 // Confirm if removing all roles
-                const selectedRoles = $('input[name="roles[]"]:checked').length;
                 if (originalRoles.length > 0 && selectedRoles === 0) {
-                    const confirm = window.confirm(
-                        'Warning: You are removing this permission from all roles.\n\n' +
-                        'This means no users will have this permission anymore.\n\n' +
-                        'Are you sure you want to continue?'
-                    );
-                    
-                    if (!confirm) {
-                        e.preventDefault();
-                        return false;
-                    }
+                    swal({
+                        title: "Remove from All Roles?",
+                        text: "Warning: You are removing this permission from all roles.\n\nThis means no users will have this permission anymore.\n\nAre you sure you want to continue?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Yes, remove from all",
+                        cancelButtonText: "No, cancel",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            // Disable submit button and submit form
+                            $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Updating Permission...');
+                            hasChanges = false; // Prevent unsaved changes warning
+                            form.submit();
+                        }
+                    });
+                    return false;
                 }
+
+                // If validation passes, submit form
+                $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Updating Permission...');
+                hasChanges = false; // Prevent unsaved changes warning
+                form.submit();
+                
+                return true;
             });
 
             // Auto-format permission name
@@ -489,6 +518,24 @@
                 let value = $(this).val();
                 value = value.toLowerCase();
                 $(this).val(value);
+            });
+
+            // Character counter for description (optional enhancement)
+            $('#description').on('input', function() {
+                const maxLength = 500;
+                const currentLength = $(this).val().length;
+                
+                if (!$('#char-counter').length) {
+                    $(this).after('<small id="char-counter" class="form-text text-muted"></small>');
+                }
+                
+                $('#char-counter').text(`${currentLength} / ${maxLength} characters`);
+                
+                if (currentLength > maxLength - 50) {
+                    $('#char-counter').removeClass('text-muted').addClass('text-warning');
+                } else {
+                    $('#char-counter').removeClass('text-warning').addClass('text-muted');
+                }
             });
         });
     </script>

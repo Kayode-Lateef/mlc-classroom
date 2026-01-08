@@ -98,7 +98,7 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/'],
+            'emergency_phone' => ['required', 'string', 'min:10', 'max:20', 'regex:/^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
@@ -228,7 +228,7 @@ class StudentController extends Controller
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
-            'emergency_phone' => ['nullable', 'string', 'max:20', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/'],
+            'emergency_phone' => ['required', 'string', 'min:10', 'max:20', 'regex:/^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/'],
             'medical_info' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [

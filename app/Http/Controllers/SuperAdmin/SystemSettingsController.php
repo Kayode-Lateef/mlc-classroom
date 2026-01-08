@@ -42,7 +42,7 @@ class SystemSettingsController extends Controller
             // School Information
             'school_name' => 'required|string|max:255',
             'school_email' => 'required|email|max:255',
-            'school_phone' => 'required|string|max:20',
+            'school_phone' => ['required', 'string', 'min:10', 'max:20', 'regex:/^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/'],
             'school_address' => 'required|string|max:500',
             'school_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
 
@@ -55,33 +55,66 @@ class SystemSettingsController extends Controller
             'time_format' => 'nullable|string|max:50',
 
             // Notification Settings
-            'email_enabled' => 'required|boolean',
-            'sms_enabled' => 'required|boolean',
+            'email_enabled' => 'nullable|boolean',
+            'sms_enabled' => 'nullable|boolean',
             'admin_notification_email' => 'required|email|max:255',
 
             // Academic Settings
-            'attendance_required' => 'required|boolean',
-            'late_homework_penalty' => 'required|boolean',
+            'attendance_required' => 'nullable|boolean',
+            'late_homework_penalty' => 'nullable|boolean',
             'homework_due_days' => 'nullable|integer|min:1|max:30',
             'progress_report_frequency' => 'nullable|string|max:50',
 
             // Maintenance
-            'maintenance_mode' => 'required|boolean',
+            'maintenance_mode' => 'nullable|boolean',
             'maintenance_message' => 'nullable|string|max:500',
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+
+        // Custom error messages
+        $messages = [
+            'school_name.required' => 'School name is required.',
+            'school_email.required' => 'School email is required.',
+            'school_email.email' => 'Please provide a valid school email address.',
+            'school_phone.required' => 'School phone is required.',
+            'school_phone.min' => 'Phone number must be at least 10 characters.',
+            'school_phone.max' => 'Phone number must not exceed 20 characters.',
+            'school_phone.regex' => 'Please enter a valid UK phone number (e.g., +44 20 1234 5678 or 020 1234 5678).',
+            'school_address.required' => 'School address is required.',
+            'school_logo.image' => 'School logo must be an image.',
+            'school_logo.mimes' => 'School logo must be a file of type: jpeg, png, jpg, gif.',
+            'school_logo.max' => 'School logo must not exceed 2MB.',
+            'term_end_date.after' => 'Term end date must be after the start date.',
+            'admin_notification_email.required' => 'Admin notification email is required.',
+            'admin_notification_email.email' => 'Please provide a valid admin email address.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
-                ->with('error', 'Please fix the errors below.');
+                ->with('error', 'Please fix the validation errors below.');
         }
 
         $updatedSettings = [];
 
         try {
+            // Handle checkbox fields (they won't be in request if unchecked)
+            $checkboxFields = [
+                'email_enabled',
+                'sms_enabled',
+                'attendance_required',
+                'late_homework_penalty',
+                'maintenance_mode'
+            ];
+
+            // Set checkbox values (0 if not checked, 1 if checked)
+            foreach ($checkboxFields as $field) {
+                $request->merge([$field => $request->has($field) ? 1 : 0]);
+            }
+
             // Update each setting
             foreach ($request->except(['_token', 'school_logo']) as $key => $value) {
                 $setting = SystemSetting::where('key', $key)->first();
@@ -117,7 +150,23 @@ class SystemSettingsController extends Controller
 
             // Handle logo upload
             if ($request->hasFile('school_logo')) {
-                $logoPath = $request->file('school_logo')->store('logos', 'public');
+                $file = $request->file('school_logo');
+                
+                // Validate file size
+                if ($file->getSize() > 2097152) { // 2MB in bytes
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'School logo must not exceed 2MB.');
+                }
+                
+                // Delete old logo if exists
+                $oldLogo = SystemSetting::where('key', 'school_logo')->first();
+                if ($oldLogo && $oldLogo->value && Storage::disk('public')->exists($oldLogo->value)) {
+                    Storage::disk('public')->delete($oldLogo->value);
+                }
+                
+                // Store new logo
+                $logoPath = $file->store('logos', 'public');
                 
                 SystemSetting::updateOrCreate(
                     ['key' => 'school_logo'],
@@ -126,7 +175,7 @@ class SystemSettingsController extends Controller
                 
                 $updatedSettings[] = [
                     'key' => 'school_logo',
-                    'old' => SystemSetting::get('school_logo'),
+                    'old' => $oldLogo?->value,
                     'new' => $logoPath
                 ];
             }
@@ -150,10 +199,11 @@ class SystemSettingsController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Settings update failed: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Failed to update settings. Please try again.');
+                ->with('error', 'Failed to update settings: ' . $e->getMessage());
         }
     }
 

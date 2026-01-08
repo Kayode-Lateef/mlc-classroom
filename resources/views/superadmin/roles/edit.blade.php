@@ -26,7 +26,7 @@
 
         .info-box i {
             color: #ffc107;
-            font-size: 1.2rem;
+           
         }
 
         .warning-box {
@@ -39,7 +39,6 @@
 
         .warning-box i {
             color: #dc3545;
-            font-size: 1.2rem;
         }
 
         .permission-module {
@@ -60,7 +59,6 @@
         }
 
         .permission-module-title {
-            font-size: 1.1rem;
             font-weight: 600;
             color: #212529;
             text-transform: capitalize;
@@ -69,7 +67,6 @@
         .select-all-label {
             display: flex;
             align-items: center;
-            font-size: 0.9rem;
             color: #6c757d;
             cursor: pointer;
         }
@@ -113,7 +110,6 @@
         .permission-item label {
             margin-bottom: 0;
             cursor: pointer;
-            font-size: 0.9rem;
             color: #495057;
         }
 
@@ -314,7 +310,6 @@
         </div>
     </div>
 @endsection
-
 @push('scripts')
     <script>
         $(document).ready(function() {
@@ -382,13 +377,15 @@
 
             // Warn about unsaved changes
             let formChanged = false;
-            $('input[type="checkbox"]').on('change', function() {
+            $('input[type="checkbox"], #name').on('change input', function() {
                 formChanged = true;
             });
 
-            $(window).on('beforeunload', function() {
+            $(window).on('beforeunload', function(e) {
                 if (formChanged) {
-                    return 'You have unsaved changes. Are you sure you want to leave?';
+                    const message = 'You have unsaved changes. Are you sure you want to leave?';
+                    e.returnValue = message;
+                    return message;
                 }
             });
 
@@ -396,16 +393,55 @@
                 formChanged = false; // Don't show warning on form submit
             });
 
-            // Form validation
+            // Form validation with SweetAlert
             $('form').on('submit', function(e) {
-                const roleName = $('#name').val().trim();
+                e.preventDefault(); // Prevent default submission
                 
+                const form = this;
+                const roleName = $('#name').val().trim();
+                const selectedPermissions = $('.module-permission:checked').length;
+                
+                // Validate role name
                 if (!roleName) {
-                    e.preventDefault();
-                    alert('Please enter a role name.');
-                    $('#name').focus();
+                    swal({
+                        title: "Role Name Required!",
+                        text: "Please enter a role name.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#name').focus();
+                    });
                     return false;
                 }
+                
+                // Optional: Warn if no permissions selected
+                if (selectedPermissions === 0) {
+                    swal({
+                        title: "No Permissions Selected!",
+                        text: "You haven't selected any permissions for this role. Do you want to continue?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, continue",
+                        cancelButtonText: "No, let me select",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            // Disable submit button and submit form
+                            $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Updating Role...');
+                            formChanged = false; // Prevent unsaved changes warning
+                            form.submit();
+                        }
+                    });
+                    return false;
+                }
+                
+                // If validation passes, disable button and submit
+                $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Updating Role...');
+                formChanged = false; // Prevent unsaved changes warning
+                form.submit();
+                
+                return true;
             });
 
             // Highlight changes

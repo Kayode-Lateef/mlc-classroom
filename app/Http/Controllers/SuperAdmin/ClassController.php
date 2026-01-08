@@ -121,11 +121,14 @@ class ClassController extends Controller
      */
     public function show(ClassModel $class)
     {
+        // Load relationships - ONLY load ACTIVE enrollments for the students relationship
         $class->load([
             'teacher',
             'schedules',
-            'enrollments' => function($query) {
-                $query->where('status', 'active')->with('student');
+            'students' => function($query) {
+                // Use the students relationship (many-to-many) and filter by active status
+                $query->wherePivot('status', 'active')
+                    ->orderBy('first_name', 'asc');
             },
             'attendance' => function($query) {
                 $query->orderBy('date', 'desc')->limit(30);
@@ -135,7 +138,7 @@ class ClassController extends Controller
             }
         ]);
 
-        // Calculate statistics
+        // Calculate statistics - Use ACTIVE enrollments only
         $totalEnrolled = $class->enrollments()->where('status', 'active')->count();
         $availableSeats = $class->capacity - $totalEnrolled;
         $utilizationRate = $class->capacity > 0 ? round(($totalEnrolled / $class->capacity) * 100, 2) : 0;
@@ -159,15 +162,36 @@ class ClassController extends Controller
             'pending_homework' => $pendingHomework,
         ];
 
-        // Get unenrolled active students for enrollment
-        $enrolledStudentIds = $class->enrollments()->where('status', 'active')->pluck('student_id');
+        // Get available students for enrollment (not currently ACTIVE in this class)
+        $enrolledStudentIds = $class->enrollments()
+            ->where('status', 'active')
+            ->pluck('student_id');
+        
         $availableStudents = Student::where('status', 'active')
             ->whereNotIn('id', $enrolledStudentIds)
             ->orderBy('first_name')
             ->get();
 
-        return view('superadmin.classes.show', compact('class', 'availableStudents', 'stats'));
+        // ✅ NEW: Get complete enrollment history (all statuses)
+        $enrollmentHistory = $class->enrollments()
+            ->with('student.parent')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('student_id')
+            ->map(function($studentEnrollments) {
+                return [
+                    'student' => $studentEnrollments->first()->student,
+                    'enrollments' => $studentEnrollments,
+                    'total_enrollments' => $studentEnrollments->count(),
+                    'current_status' => $studentEnrollments->first()->status,
+                    'first_enrollment' => $studentEnrollments->last()->enrollment_date,
+                    'last_enrollment' => $studentEnrollments->first()->enrollment_date,
+                ];
+            });
+
+        return view('superadmin.classes.show', compact('class', 'availableStudents', 'stats', 'enrollmentHistory'));
     }
+
 
     /**
      * Show the form for editing the specified class
@@ -329,13 +353,20 @@ class ClassController extends Controller
      */
     public function unenrollStudent(ClassModel $class, Student $student)
     {
-        $enrollment = $class->enrollments()->where('student_id', $student->id)->where('status', 'active')->first();
+        $enrollment = $class->enrollments()
+            ->where('student_id', $student->id)
+            ->where('status', 'active')
+            ->first();
         
         if (!$enrollment) {
             return back()->with('error', 'Student is not actively enrolled in this class!');
         }
 
-        $enrollment->update(['status' => 'dropped']);
+        // Update status and set dropped date
+        $enrollment->update([
+            'status' => 'dropped',
+            'dropped_date' => now(),
+        ]);
 
         // Log activity
         ActivityLog::create([
@@ -348,6 +379,6 @@ class ClassController extends Controller
             'user_agent' => request()->userAgent(),
         ]);
 
-        return back()->with('success', 'Student removed from class!');
+        return back()->with('success', "Student '{$student->full_name}' has been removed from '{$class->name}' successfully!");
     }
 }

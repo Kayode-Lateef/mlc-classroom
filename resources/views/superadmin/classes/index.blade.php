@@ -27,24 +27,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
 
-        .class-card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            color: white;
-        }
-
-        .class-card-header h3 {
-            margin: 0 0 5px 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .class-card-header p {
-            margin: 0;
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
         .class-card-body {
             padding: 20px;
             flex: 1;

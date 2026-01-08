@@ -125,5 +125,115 @@ return [
     ],
 
 
+      /*
+    |--------------------------------------------------------------------------
+    | Application Pagination Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure default pagination limits for different modules
+    |
+    */
+    'pagination' => [
+        'students' => env('PAGINATION_STUDENTS', 20),
+        'teachers' => env('PAGINATION_TEACHERS', 20),
+        'parents' => env('PAGINATION_PARENTS', 20),
+        'classes' => env('PAGINATION_CLASSES', 20),
+        'attendance' => env('PAGINATION_ATTENDANCE', 50),
+        'homework' => env('PAGINATION_HOMEWORK', 20),
+        'resources' => env('PAGINATION_RESOURCES', 24),
+        'activity_logs' => env('PAGINATION_LOGS', 50),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure student-specific settings
+    |
+    */
+    'student' => [
+        // Age restrictions (in years)
+        'min_age' => env('STUDENT_MIN_AGE', 4),
+        'max_age' => env('STUDENT_MAX_AGE', 18),
+        
+        // Profile photo settings
+        'photo_max_size' => env('STUDENT_PHOTO_MAX_SIZE', 2048), // KB
+        'photo_allowed_types' => ['jpeg', 'png', 'jpg', 'gif'],
+        
+        // History limits
+        'attendance_history_limit' => env('STUDENT_ATTENDANCE_HISTORY', 30),
+        'homework_history_limit' => env('STUDENT_HOMEWORK_HISTORY', 20),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | File Upload Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure file upload limits and allowed types
+    |
+    */
+    'uploads' => [
+        'profile_photos' => [
+            'max_size' => 2048, // KB
+            'allowed_types' => ['jpeg', 'png', 'jpg', 'gif'],
+        ],
+        'homework_submissions' => [
+            'max_size' => 10240, // 10MB
+            'allowed_types' => ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+        ],
+        'learning_resources' => [
+            'max_size' => 20480, // 20MB
+            'allowed_types' => ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'mp4', 'zip'],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notification Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure notification behavior
+    |
+    */
+    'notifications' => [
+        // Who gets notified for student enrollments
+        'student_enrollment' => ['superadmin', 'parent'],
+        
+        // Who gets notified for status changes
+        'student_status_change' => ['superadmin', 'parent'],
+        
+        // Who gets notified for deletions
+        'student_deletion' => ['parent'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activity Log Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure activity logging
+    |
+    */
+    'activity_log' => [
+        'enabled' => env('ACTIVITY_LOG_ENABLED', true),
+        'retention_days' => env('ACTIVITY_LOG_RETENTION_DAYS', 90),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure cache durations (in seconds)
+    |
+    */
+    'cache' => [
+        'statistics' => env('CACHE_STATISTICS_DURATION', 3600), // 1 hour
+        'user_permissions' => env('CACHE_PERMISSIONS_DURATION', 86400), // 24 hours
+        'class_schedules' => env('CACHE_SCHEDULES_DURATION', 3600), // 1 hour
+    ],
+
 
 ];

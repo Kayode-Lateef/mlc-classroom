@@ -66,6 +66,9 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     
     // Students
     Route::resource('students', StudentController::class);
+    // AJAX endpoint for duplicate checking
+    Route::post('students/check-duplicate', [StudentController::class, 'checkDuplicate'])
+        ->name('students.check-duplicate');
     
     // Classes
     Route::resource('classes', ClassController::class);

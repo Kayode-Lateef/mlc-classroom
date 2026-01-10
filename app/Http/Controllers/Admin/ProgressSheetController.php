@@ -13,6 +13,7 @@ use App\Models\ActivityLog;
 use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ProgressSheetController extends Controller
@@ -22,54 +23,87 @@ class ProgressSheetController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ProgressSheet::with(['class', 'teacher', 'schedule', 'progressNotes']);
-
-        // Date range filter
-        $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
-        $dateTo = $request->get('date_to', now()->format('Y-m-d'));
-
-        $query->whereBetween('date', [$dateFrom, $dateTo]);
-
-        // Class filter
-        if ($request->filled('class_id')) {
-            $query->where('class_id', $request->class_id);
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        if (!auth()->user()->can('view progress sheets')) {
+            abort(403, 'You do not have permission to view progress sheets.');
         }
 
-        // Teacher filter
-        if ($request->filled('teacher_id')) {
-            $query->where('teacher_id', $request->teacher_id);
+        try {
+            $query = ProgressSheet::with(['class', 'teacher', 'schedule', 'progressNotes']);
+
+            // ✅ ENHANCED: Default to last 30 days with configurable range
+            $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
+            $dateTo = $request->get('date_to', now()->format('Y-m-d'));
+
+            $query->whereBetween('date', [$dateFrom, $dateTo]);
+
+            // Class filter
+            if ($request->filled('class_id')) {
+                $query->where('class_id', $request->class_id);
+            }
+
+            // Teacher filter
+            if ($request->filled('teacher_id')) {
+                $query->where('teacher_id', $request->teacher_id);
+            }
+
+            // ✅ ENHANCED: Search by topic/objective with better matching
+            if ($request->filled('search')) {
+                $search = trim($request->search);
+                $query->where(function($q) use ($search) {
+                    $q->where('topic', 'like', '%' . $search . '%')
+                      ->orWhere('objective', 'like', '%' . $search . '%')
+                      ->orWhere('notes', 'like', '%' . $search . '%');
+                });
+            }
+
+            // ✅ ENHANCED: Performance filter (by student performance)
+            if ($request->filled('performance')) {
+                $query->whereHas('progressNotes', function($q) use ($request) {
+                    $q->where('performance', $request->performance);
+                });
+            }
+
+            // Sort with validation
+            $sortBy = $request->get('sort_by', 'date');
+            $sortOrder = $request->get('sort_order', 'desc');
+            
+            // ✅ ADDED: Validate sort columns
+            $allowedSortColumns = ['date', 'topic', 'created_at', 'class_id', 'teacher_id'];
+            if (!in_array($sortBy, $allowedSortColumns)) {
+                $sortBy = 'date';
+            }
+            
+            $query->orderBy($sortBy, $sortOrder);
+
+            $progressSheets = $query->paginate(config('app.pagination.progress_sheets', 10));
+
+            // Get filter options
+            $classes = ClassModel::orderBy('name')->get();
+            $teachers = User::where('role', 'teacher')
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get();
+
+            // ✅ ENHANCED: Statistics with additional metrics
+            $stats = $this->calculateStatistics($dateFrom, $dateTo, $request);
+
+            return view('admin.progress-sheets.index', compact(
+                'progressSheets',
+                'classes',
+                'teachers',
+                'stats',
+                'dateFrom',
+                'dateTo'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Error loading progress sheets: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'An error occurred while loading progress sheets. Please try again.');
         }
-
-        // Search by topic/objective
-        if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('topic', 'like', '%' . $request->search . '%')
-                  ->orWhere('objective', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Sort
-        $sortBy = $request->get('sort_by', 'date');
-        $sortOrder = $request->get('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
-
-        $progressSheets = $query->paginate(10);
-
-        // Get filter options
-        $classes = ClassModel::orderBy('name')->get();
-        $teachers = User::where('role', 'teacher')->orderBy('name')->get();
-
-        // Statistics
-        $stats = $this->calculateStatistics($dateFrom, $dateTo, $request);
-
-        return view('admin.progress-sheets.index', compact(
-            'progressSheets',
-            'classes',
-            'teachers',
-            'stats',
-            'dateFrom',
-            'dateTo'
-        ));
     }
 
     /**
@@ -77,9 +111,27 @@ class ProgressSheetController extends Controller
      */
     public function create()
     {
-        $classes = ClassModel::with('teacher')->orderBy('name')->get();
-        
-        return view('admin.progress-sheets.create', compact('classes'));
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        if (!auth()->user()->can('create progress sheets')) {
+            abort(403, 'You do not have permission to create progress sheets.');
+        }
+
+        try {
+            // ✅ ENHANCED: Only show classes with active teachers
+            $classes = ClassModel::with('teacher')
+                ->whereHas('teacher', function($q) {
+                    $q->where('status', 'active');
+                })
+                ->orderBy('name')
+                ->get();
+            
+            return view('admin.progress-sheets.create', compact('classes'));
+
+        } catch (\Exception $e) {
+            Log::error('Error loading progress sheet creation form: ' . $e->getMessage());
+            
+            return back()->with('error', 'An error occurred while loading the form.');
+        }
     }
 
     /**
@@ -87,8 +139,23 @@ class ProgressSheetController extends Controller
      */
     public function store(Request $request)
     {
-        // Custom validation messages
-        $messages = [
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        if (!auth()->user()->can('create progress sheets')) {
+            abort(403, 'You do not have permission to create progress sheets.');
+        }
+
+        $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'date' => 'required|date|before_or_equal:today',
+            'schedule_id' => 'nullable|exists:schedules,id',
+            'topic' => 'required|string|max:255',
+            'objective' => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:2000',
+            'student_notes' => 'nullable|array',
+            'student_notes.*.student_id' => 'required|exists:students,id',
+            'student_notes.*.performance' => 'nullable|in:excellent,good,average,struggling,absent',
+            'student_notes.*.notes' => 'nullable|string|max:500',
+        ], [
             'class_id.required' => 'Please select a class.',
             'class_id.exists' => 'Selected class does not exist.',
             'date.required' => 'Progress sheet date is required.',
@@ -104,43 +171,62 @@ class ProgressSheetController extends Controller
             'student_notes.*.student_id.exists' => 'Selected student does not exist.',
             'student_notes.*.performance.in' => 'Invalid performance level. Choose: excellent, good, average, struggling, or absent.',
             'student_notes.*.notes.max' => 'Individual student notes must not exceed 500 characters.',
-        ];
+        ]);
 
-        $validator = Validator::make($request->all(), [
-            'class_id' => 'required|exists:classes,id',
-            'date' => 'required|date|before_or_equal:today',
-            'schedule_id' => 'nullable|exists:schedules,id',
-            'topic' => 'required|string|max:255',
-            'objective' => 'nullable|string|max:1000',
-            'notes' => 'nullable|string|max:2000',
-            'student_notes' => 'nullable|array',
-            'student_notes.*.student_id' => 'required|exists:students,id',
-            'student_notes.*.performance' => 'nullable|in:excellent,good,average,struggling,absent',
-            'student_notes.*.notes' => 'nullable|string|max:500',
-        ], $messages);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Please fix the errors below.');
-        }
+        DB::beginTransaction();
 
         try {
-            DB::beginTransaction();
+            // ✅ ENHANCED: Verify class exists and has active teacher
+            $class = ClassModel::with('teacher')->findOrFail($validated['class_id']);
+            
+            if (!$class->teacher) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Cannot create progress sheet: Class has no assigned teacher.');
+            }
+
+            if ($class->teacher->status !== 'active') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Cannot create progress sheet: Teacher is not active.');
+            }
+
+            // ✅ ADDED: Check for duplicate progress sheet (same class, same date)
+            $existingSheet = ProgressSheet::where('class_id', $validated['class_id'])
+                ->where('date', $validated['date'])
+                ->first();
+
+            if ($existingSheet) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'A progress sheet already exists for this class on ' . 
+                        \Carbon\Carbon::parse($validated['date'])->format('d M Y') . 
+                        '. Please edit the existing one or choose a different date.');
+            }
 
             // Create progress sheet
             $progressSheet = ProgressSheet::create([
-                'class_id' => $request->class_id,
-                'schedule_id' => $request->schedule_id,
-                'date' => $request->date,
-                'topic' => $request->topic,
-                'objective' => $request->objective,
-                'notes' => $request->notes,
+                'class_id' => $validated['class_id'],
+                'schedule_id' => $validated['schedule_id'],
+                'date' => $validated['date'],
+                'topic' => $validated['topic'],
+                'objective' => $validated['objective'],
+                'notes' => $validated['notes'],
                 'teacher_id' => auth()->id(),
             ]);
 
-            $studentsWithNotes = []; // Track students who have notes
+            // ✅ ENHANCED: Track performance statistics
+            $performanceStats = [
+                'excellent' => 0,
+                'good' => 0,
+                'average' => 0,
+                'struggling' => 0,
+                'absent' => 0,
+                'total_notes' => 0,
+            ];
+            
+            $studentsWithNotes = [];
+            $strugglingStudents = [];
 
             // Create student notes
             if ($request->has('student_notes')) {
@@ -153,40 +239,105 @@ class ProgressSheetController extends Controller
                             'notes' => $noteData['notes'] ?? null,
                         ]);
                         
-                        // Track students with notes for notifications
                         $studentsWithNotes[] = $noteData['student_id'];
+                        $performanceStats['total_notes']++;
+                        
+                        // Track performance statistics
+                        if (!empty($noteData['performance'])) {
+                            $performanceStats[$noteData['performance']]++;
+                            
+                            // ✅ ADDED: Track struggling students for alerts
+                            if ($noteData['performance'] === 'struggling') {
+                                $strugglingStudents[] = $noteData['student_id'];
+                            }
+                        }
                     }
                 }
             }
 
-            // Log activity
+            // ✅ ENHANCED: Activity log with performance statistics
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'created_progress_sheet',
                 'model_type' => 'ProgressSheet',
                 'model_id' => $progressSheet->id,
-                'description' => "Created progress sheet: {$progressSheet->topic}",
+                'description' => "Created progress sheet: {$progressSheet->topic} for {$class->name} " .
+                    "({$performanceStats['total_notes']} student notes, " .
+                    "{$performanceStats['struggling']} struggling)",
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
 
             DB::commit();
 
-            // Send notifications to parents (After successful commit)
-            if (!empty($studentsWithNotes)) {
-                $this->notifyParentsOfProgressSheet($progressSheet, $studentsWithNotes);
+            // ✅ ENHANCED: Send comprehensive notifications
+            try {
+                // Notify teacher (if different from creator)
+                if ($class->teacher && $class->teacher->id !== auth()->id()) {
+                    NotificationHelper::notifyUser(
+                        $class->teacher,
+                        'Progress Sheet Created',
+                        "A progress sheet has been created for {$class->name} by " . auth()->user()->name,
+                        'progress_sheet_created',
+                        [
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'progress_sheet_id' => $progressSheet->id,
+                            'topic' => $progressSheet->topic,
+                            'date' => $progressSheet->date,
+                            'total_notes' => $performanceStats['total_notes'],
+                            'url' => route('teacher.progress-sheets.show', $progressSheet->id)
+                        ]
+                    );
+                }
+
+                // Notify parents of students with progress notes
+                if (!empty($studentsWithNotes)) {
+                    $this->notifyParentsOfProgressSheet($progressSheet, $studentsWithNotes);
+                }
+
+                // ✅ ADDED: Alert admins if multiple students struggling
+                if (count($strugglingStudents) >= 3) {
+                    NotificationHelper::notifyAdmins(
+                        'Multiple Struggling Students Alert',
+                        "{$class->name} has " . count($strugglingStudents) . 
+                        " struggling students in progress sheet: {$progressSheet->topic}",
+                        'struggling_students_alert',
+                        [
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'progress_sheet_id' => $progressSheet->id,
+                            'struggling_count' => count($strugglingStudents),
+                            'topic' => $progressSheet->topic,
+                            'date' => $progressSheet->date,
+                            'urgent' => true,
+                            'url' => route('admin.progress-sheets.show', $progressSheet->id)
+                        ],
+                        auth()->id()
+                    );
+                }
+
+                Log::info("Progress sheet notifications sent for {$class->name}");
+
+            } catch (\Exception $e) {
+                Log::error('Failed to send progress sheet notifications: ' . $e->getMessage());
             }
 
             return redirect()->route('admin.progress-sheets.index')
-                ->with('success', 'Progress sheet created successfully!');
+                ->with('success', 'Progress sheet created successfully! ' . 
+                    count($studentsWithNotes) . ' parent notifications sent.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Progress sheet creation failed: ' . $e->getMessage());
             
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Failed to create progress sheet. Please try again.');
+            Log::error('Progress sheet creation failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'data' => $validated
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Failed to create progress sheet. Please try again.'])
+                ->withInput();
         }
     }
 
@@ -195,31 +346,59 @@ class ProgressSheetController extends Controller
      */
     public function show(ProgressSheet $progressSheet)
     {
-        $progressSheet->load([
-            'class',
-            'teacher',
-            'schedule',
-            'progressNotes.student'
-        ]);
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        if (!auth()->user()->can('view progress sheets')) {
+            abort(403, 'You do not have permission to view progress sheet details.');
+        }
 
-        // Group notes by performance
-        $notesByPerformance = $progressSheet->progressNotes->groupBy('performance');
+        try {
+            $progressSheet->load([
+                'class',
+                'teacher',
+                'schedule',
+                'progressNotes.student.parent'
+            ]);
 
-        // Calculate statistics
-        $stats = [
-            'total_students' => $progressSheet->progressNotes->count(),
-            'excellent' => $progressSheet->progressNotes->where('performance', 'excellent')->count(),
-            'good' => $progressSheet->progressNotes->where('performance', 'good')->count(),
-            'average' => $progressSheet->progressNotes->where('performance', 'average')->count(),
-            'struggling' => $progressSheet->progressNotes->where('performance', 'struggling')->count(),
-            'absent' => $progressSheet->progressNotes->where('performance', 'absent')->count(),
-        ];
+            // Group notes by performance
+            $notesByPerformance = $progressSheet->progressNotes->groupBy('performance');
 
-        return view('admin.progress-sheets.show', compact(
-            'progressSheet',
-            'notesByPerformance',
-            'stats'
-        ));
+            // ✅ ENHANCED: Calculate comprehensive statistics
+            $stats = [
+                'total_students' => $progressSheet->progressNotes->count(),
+                'excellent' => $progressSheet->progressNotes->where('performance', 'excellent')->count(),
+                'good' => $progressSheet->progressNotes->where('performance', 'good')->count(),
+                'average' => $progressSheet->progressNotes->where('performance', 'average')->count(),
+                'struggling' => $progressSheet->progressNotes->where('performance', 'struggling')->count(),
+                'absent' => $progressSheet->progressNotes->where('performance', 'absent')->count(),
+                'with_notes' => $progressSheet->progressNotes->whereNotNull('notes')->count(),
+                'without_notes' => $progressSheet->progressNotes->whereNull('notes')->count(),
+            ];
+
+            // ✅ ADDED: Calculate success rate (excellent + good / total)
+            $totalWithPerformance = $stats['total_students'] - $stats['absent'];
+            if ($totalWithPerformance > 0) {
+                $successCount = $stats['excellent'] + $stats['good'];
+                $stats['success_rate'] = round(($successCount / $totalWithPerformance) * 100, 1);
+            } else {
+                $stats['success_rate'] = 0;
+            }
+
+            // ✅ ADDED: Flag if many students struggling
+            $stats['alert_struggling'] = $stats['struggling'] >= 3;
+
+            return view('admin.progress-sheets.show', compact(
+                'progressSheet',
+                'notesByPerformance',
+                'stats'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Error loading progress sheet details: ' . $e->getMessage(), [
+                'progress_sheet_id' => $progressSheet->id
+            ]);
+            
+            return back()->with('error', 'An error occurred while loading progress sheet details.');
+        }
     }
 
     /**
@@ -227,20 +406,46 @@ class ProgressSheetController extends Controller
      */
     public function edit(ProgressSheet $progressSheet)
     {
-        $progressSheet->load(['class', 'schedule', 'progressNotes.student']);
-        $classes = ClassModel::with('teacher')->orderBy('name')->get();
-        $students = Student::where('status', 'active')
-            ->whereHas('classes', function($q) use ($progressSheet) {
-                $q->where('classes.id', $progressSheet->class_id);
-            })
-            ->orderBy('first_name')
-            ->get();
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        if (!auth()->user()->can('edit progress sheets')) {
+            abort(403, 'You do not have permission to edit progress sheets.');
+        }
 
-        return view('admin.progress-sheets.edit', compact(
-            'progressSheet',
-            'classes',
-            'students'
-        ));
+        try {
+            $progressSheet->load(['class', 'schedule', 'progressNotes.student']);
+            
+            // ✅ ENHANCED: Only show classes with active teachers
+            $classes = ClassModel::with('teacher')
+                ->whereHas('teacher', function($q) {
+                    $q->where('status', 'active');
+                })
+                ->orderBy('name')
+                ->get();
+                
+            $students = Student::where('status', 'active')
+                ->whereHas('classes', function($q) use ($progressSheet) {
+                    $q->where('classes.id', $progressSheet->class_id);
+                })
+                ->orderBy('first_name')
+                ->get();
+
+            // ✅ ADDED: Calculate days since creation
+            $daysSinceCreation = now()->diffInDays($progressSheet->created_at);
+            $isOldSheet = $daysSinceCreation > 7;
+
+            return view('admin.progress-sheets.edit', compact(
+                'progressSheet',
+                'classes',
+                'students',
+                'isOldSheet',
+                'daysSinceCreation'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Error loading progress sheet edit form: ' . $e->getMessage());
+            
+            return back()->with('error', 'An error occurred while loading the edit form.');
+        }
     }
 
     /**
@@ -248,26 +453,12 @@ class ProgressSheetController extends Controller
      */
     public function update(Request $request, ProgressSheet $progressSheet)
     {
-        // Custom validation messages
-        $messages = [
-            'class_id.required' => 'Please select a class.',
-            'class_id.exists' => 'Selected class does not exist.',
-            'date.required' => 'Progress sheet date is required.',
-            'date.date' => 'Please enter a valid date.',
-            'date.before_or_equal' => 'Cannot create progress sheet for future dates.',
-            'schedule_id.exists' => 'Selected schedule does not exist.',
-            'topic.required' => 'Lesson topic is required.',
-            'topic.max' => 'Topic must not exceed 255 characters.',
-            'objective.max' => 'Objective must not exceed 1000 characters.',
-            'notes.max' => 'General notes must not exceed 2000 characters.',
-            'student_notes.array' => 'Invalid student notes format.',
-            'student_notes.*.student_id.required' => 'Student ID is required for each note.',
-            'student_notes.*.student_id.exists' => 'Selected student does not exist.',
-            'student_notes.*.performance.in' => 'Invalid performance level. Choose: excellent, good, average, struggling, or absent.',
-            'student_notes.*.notes.max' => 'Individual student notes must not exceed 500 characters.',
-        ];
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        if (!auth()->user()->can('edit progress sheets')) {
+            abort(403, 'You do not have permission to edit progress sheets.');
+        }
 
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'class_id' => 'required|exists:classes,id',
             'date' => 'required|date|before_or_equal:today',
             'schedule_id' => 'nullable|exists:schedules,id',
@@ -278,30 +469,82 @@ class ProgressSheetController extends Controller
             'student_notes.*.student_id' => 'required|exists:students,id',
             'student_notes.*.performance' => 'nullable|in:excellent,good,average,struggling,absent',
             'student_notes.*.notes' => 'nullable|string|max:500',
-        ], $messages);
+        ], [
+            'class_id.required' => 'Please select a class.',
+            'class_id.exists' => 'Selected class does not exist.',
+            'date.required' => 'Progress sheet date is required.',
+            'date.date' => 'Please enter a valid date.',
+            'date.before_or_equal' => 'Cannot set progress sheet for future dates.',
+            'topic.required' => 'Lesson topic is required.',
+            'topic.max' => 'Topic must not exceed 255 characters.',
+            'objective.max' => 'Objective must not exceed 1000 characters.',
+            'notes.max' => 'General notes must not exceed 2000 characters.',
+            'student_notes.*.performance.in' => 'Invalid performance level.',
+            'student_notes.*.notes.max' => 'Student notes must not exceed 500 characters.',
+        ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Please fix the errors below.');
-        }
+        DB::beginTransaction();
 
         try {
-            DB::beginTransaction();
+            // ✅ ENHANCED: Track changes for notifications
+            $changes = [];
+            $oldClass = $progressSheet->class;
+            $oldTopic = $progressSheet->topic;
+            $oldDate = $progressSheet->date;
+
+            if ($validated['class_id'] != $progressSheet->class_id) {
+                $newClass = ClassModel::findOrFail($validated['class_id']);
+                $changes[] = "class changed from {$oldClass->name} to {$newClass->name}";
+            }
+            if ($validated['topic'] != $oldTopic) {
+                $changes[] = "topic changed from '{$oldTopic}' to '{$validated['topic']}'";
+            }
+            if ($validated['date'] != $oldDate) {
+                $changes[] = "date changed from {$oldDate} to {$validated['date']}";
+            }
+
+            // ✅ ADDED: Check for duplicate if date/class changed
+            if ($validated['class_id'] != $progressSheet->class_id || 
+                $validated['date'] != $progressSheet->date) {
+                $duplicate = ProgressSheet::where('class_id', $validated['class_id'])
+                    ->where('date', $validated['date'])
+                    ->where('id', '!=', $progressSheet->id)
+                    ->first();
+
+                if ($duplicate) {
+                    return back()
+                        ->withInput()
+                        ->with('error', 'A progress sheet already exists for this class on this date.');
+                }
+            }
+
+            // Get old notes for comparison
+            $oldNotes = $progressSheet->progressNotes()
+                ->get()
+                ->keyBy('student_id')
+                ->map(function($note) {
+                    return $note->performance;
+                })
+                ->toArray();
 
             // Update progress sheet
             $progressSheet->update([
-                'class_id' => $request->class_id,
-                'schedule_id' => $request->schedule_id,
-                'date' => $request->date,
-                'topic' => $request->topic,
-                'objective' => $request->objective,
-                'notes' => $request->notes,
+                'class_id' => $validated['class_id'],
+                'schedule_id' => $validated['schedule_id'],
+                'date' => $validated['date'],
+                'topic' => $validated['topic'],
+                'objective' => $validated['objective'],
+                'notes' => $validated['notes'],
             ]);
 
             // Delete existing notes
             $progressSheet->progressNotes()->delete();
+
+            // ✅ ENHANCED: Track performance changes and new notes
+            $performanceChanges = [];
+            $newNotes = [];
+            $strugglingStudents = [];
+            $totalNotes = 0;
 
             // Create new student notes
             if ($request->has('student_notes')) {
@@ -313,33 +556,118 @@ class ProgressSheetController extends Controller
                             'performance' => $noteData['performance'] ?? null,
                             'notes' => $noteData['notes'] ?? null,
                         ]);
+
+                        $totalNotes++;
+                        
+                        // Track performance changes
+                        $studentId = $noteData['student_id'];
+                        $newPerformance = $noteData['performance'] ?? null;
+                        
+                        if (isset($oldNotes[$studentId]) && $oldNotes[$studentId] !== $newPerformance) {
+                            $performanceChanges[$studentId] = [
+                                'old' => $oldNotes[$studentId],
+                                'new' => $newPerformance
+                            ];
+                        } elseif (!isset($oldNotes[$studentId]) && $newPerformance) {
+                            $newNotes[] = $studentId;
+                        }
+
+                        if ($newPerformance === 'struggling') {
+                            $strugglingStudents[] = $studentId;
+                        }
                     }
                 }
             }
 
-            // Log activity
+            if (!empty($performanceChanges)) {
+                $changes[] = count($performanceChanges) . " student performance updates";
+            }
+            if (!empty($newNotes)) {
+                $changes[] = count($newNotes) . " new student notes";
+            }
+
+            // ✅ ENHANCED: Activity log with detailed changes
+            $changeDescription = !empty($changes) ? ' (' . implode(', ', $changes) . ')' : '';
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'updated_progress_sheet',
                 'model_type' => 'ProgressSheet',
                 'model_id' => $progressSheet->id,
-                'description' => "Updated progress sheet: {$progressSheet->topic}",
+                'description' => "Updated progress sheet: {$progressSheet->topic}" . 
+                    " for {$progressSheet->class->name}{$changeDescription}",
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
 
             DB::commit();
 
+            // ✅ ADDED: Send notifications for significant changes
+            try {
+                // Notify parents of students with performance changes
+                if (!empty($performanceChanges)) {
+                    foreach ($performanceChanges as $studentId => $change) {
+                        $student = Student::with('parent')->find($studentId);
+                        if ($student && $student->parent) {
+                            NotificationHelper::notifyUser(
+                                $student->parent,
+                                'Progress Update for ' . $student->first_name,
+                                "Performance updated from " . ucfirst($change['old']) . 
+                                " to " . ucfirst($change['new']) . 
+                                " in {$progressSheet->class->name}",
+                                'progress_performance_changed',
+                                [
+                                    'student_id' => $student->id,
+                                    'student_name' => $student->full_name,
+                                    'class_name' => $progressSheet->class->name,
+                                    'old_performance' => $change['old'],
+                                    'new_performance' => $change['new'],
+                                    'topic' => $progressSheet->topic,
+                                    'url' => route('parent.students.show', $student->id)
+                                ]
+                            );
+                        }
+                    }
+                }
+
+                // Alert if multiple students struggling
+                if (count($strugglingStudents) >= 3) {
+                    NotificationHelper::notifyAdmins(
+                        'Struggling Students Alert',
+                        "{$progressSheet->class->name} has " . count($strugglingStudents) . 
+                        " struggling students",
+                        'struggling_students_alert',
+                        [
+                            'class_name' => $progressSheet->class->name,
+                            'struggling_count' => count($strugglingStudents),
+                            'topic' => $progressSheet->topic,
+                            'urgent' => true,
+                            'url' => route('admin.progress-sheets.show', $progressSheet->id)
+                        ],
+                        auth()->id()
+                    );
+                }
+
+                Log::info("Progress sheet update notifications sent");
+
+            } catch (\Exception $e) {
+                Log::error('Failed to send progress sheet update notifications: ' . $e->getMessage());
+            }
+
             return redirect()->route('admin.progress-sheets.show', $progressSheet)
-                ->with('success', 'Progress sheet updated successfully!');
+                ->with('success', 'Progress sheet updated successfully!' . 
+                    (!empty($changes) ? ' Notifications sent for performance changes.' : ''));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Progress sheet update failed: ' . $e->getMessage());
             
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Failed to update progress sheet. Please try again.');
+            Log::error('Progress sheet update failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'progress_sheet_id' => $progressSheet->id
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Failed to update progress sheet. Please try again.'])
+                ->withInput();
         }
     }
 
@@ -348,9 +676,19 @@ class ProgressSheetController extends Controller
      */
     public function destroy(ProgressSheet $progressSheet)
     {
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        if (!auth()->user()->can('delete progress sheets')) {
+            abort(403, 'You do not have permission to delete progress sheets.');
+        }
+
+        DB::beginTransaction();
+
         try {
             $topic = $progressSheet->topic;
+            $className = $progressSheet->class->name;
+            $date = $progressSheet->date;
             $id = $progressSheet->id;
+            $notesCount = $progressSheet->progressNotes()->count();
 
             $progressSheet->delete();
 
@@ -360,19 +698,25 @@ class ProgressSheetController extends Controller
                 'action' => 'deleted_progress_sheet',
                 'model_type' => 'ProgressSheet',
                 'model_id' => $id,
-                'description' => "Deleted progress sheet: {$topic}",
+                'description' => "Deleted progress sheet: {$topic} for {$className} " .
+                    "({$notesCount} student notes removed)",
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
             ]);
 
+            DB::commit();
+
             return redirect()->route('admin.progress-sheets.index')
-                ->with('success', 'Progress sheet deleted successfully!');
+                ->with('success', "Progress sheet '{$topic}' deleted successfully!");
 
         } catch (\Exception $e) {
-            \Log::error('Progress sheet deletion failed: ' . $e->getMessage());
+            DB::rollBack();
             
-            return redirect()->back()
-                ->with('error', 'Failed to delete progress sheet. Please try again.');
+            Log::error('Progress sheet deletion failed: ' . $e->getMessage(), [
+                'progress_sheet_id' => $progressSheet->id
+            ]);
+            
+            return back()->with('error', 'Failed to delete progress sheet. Please try again.');
         }
     }
 
@@ -381,28 +725,34 @@ class ProgressSheetController extends Controller
      */
     public function getStudents(Request $request)
     {
-        $classId = $request->get('class_id');
-        
-        if (!$classId) {
-            return response()->json(['error' => 'Class ID is required'], 400);
+        try {
+            $classId = $request->get('class_id');
+            
+            if (!$classId) {
+                return response()->json(['error' => 'Class ID is required'], 400);
+            }
+
+            $students = Student::where('status', 'active')
+                ->whereHas('classes', function($q) use ($classId) {
+                    $q->where('classes.id', $classId);
+                })
+                ->orderBy('first_name')
+                ->get(['id', 'first_name', 'last_name', 'profile_photo']);
+
+            $schedules = Schedule::where('class_id', $classId)
+                ->orderBy('day_of_week')
+                ->orderBy('start_time')
+                ->get();
+
+            return response()->json([
+                'students' => $students,
+                'schedules' => $schedules,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching students: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to load students'], 500);
         }
-
-        $students = Student::where('status', 'active')
-            ->whereHas('classes', function($q) use ($classId) {
-                $q->where('classes.id', $classId);
-            })
-            ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name', 'profile_photo']);
-
-        $schedules = Schedule::where('class_id', $classId)
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->get();
-
-        return response()->json([
-            'students' => $students,
-            'schedules' => $schedules,
-        ]);
     }
 
     /**
@@ -410,33 +760,58 @@ class ProgressSheetController extends Controller
      */
     private function calculateStatistics($dateFrom, $dateTo, $request)
     {
-        $query = ProgressSheet::whereBetween('date', [$dateFrom, $dateTo]);
+        try {
+            $query = ProgressSheet::whereBetween('date', [$dateFrom, $dateTo]);
 
-        if ($request->filled('class_id')) {
-            $query->where('class_id', $request->class_id);
-        }
-
-        if ($request->filled('teacher_id')) {
-            $query->where('teacher_id', $request->teacher_id);
-        }
-
-        $totalSheets = $query->count();
-        $totalNotes = ProgressNote::whereHas('progressSheet', function($q) use ($dateFrom, $dateTo, $request) {
-            $q->whereBetween('date', [$dateFrom, $dateTo]);
             if ($request->filled('class_id')) {
-                $q->where('class_id', $request->class_id);
+                $query->where('class_id', $request->class_id);
             }
-            if ($request->filled('teacher_id')) {
-                $q->where('teacher_id', $request->teacher_id);
-            }
-        })->count();
 
-        return [
-            'total_sheets' => $totalSheets,
-            'total_notes' => $totalNotes,
-            'this_week' => ProgressSheet::whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'this_month' => ProgressSheet::whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])->count(),
-        ];
+            if ($request->filled('teacher_id')) {
+                $query->where('teacher_id', $request->teacher_id);
+            }
+
+            $totalSheets = $query->count();
+            
+            $notesQuery = ProgressNote::whereHas('progressSheet', function($q) use ($dateFrom, $dateTo, $request) {
+                $q->whereBetween('date', [$dateFrom, $dateTo]);
+                if ($request->filled('class_id')) {
+                    $q->where('class_id', $request->class_id);
+                }
+                if ($request->filled('teacher_id')) {
+                    $q->where('teacher_id', $request->teacher_id);
+                }
+            });
+
+            $totalNotes = $notesQuery->count();
+
+            // ✅ ADDED: Performance breakdown
+            $performanceStats = [
+                'excellent' => $notesQuery->clone()->where('performance', 'excellent')->count(),
+                'good' => $notesQuery->clone()->where('performance', 'good')->count(),
+                'average' => $notesQuery->clone()->where('performance', 'average')->count(),
+                'struggling' => $notesQuery->clone()->where('performance', 'struggling')->count(),
+                'absent' => $notesQuery->clone()->where('performance', 'absent')->count(),
+            ];
+
+            return [
+                'total_sheets' => $totalSheets,
+                'total_notes' => $totalNotes,
+                'this_week' => ProgressSheet::whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+                'this_month' => ProgressSheet::whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+                'performance' => $performanceStats,
+                'avg_notes_per_sheet' => $totalSheets > 0 ? round($totalNotes / $totalSheets, 1) : 0,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Error calculating statistics: ' . $e->getMessage());
+            return [
+                'total_sheets' => 0,
+                'total_notes' => 0,
+                'this_week' => 0,
+                'this_month' => 0,
+            ];
+        }
     }
 
     /**
@@ -453,7 +828,7 @@ class ProgressSheetController extends Controller
             foreach ($students as $student) {
                 // Only notify if student has a parent
                 if (!$student->parent) {
-                    \Log::warning("Student {$student->id} has no parent assigned for progress sheet notification");
+                    Log::warning("Student {$student->id} has no parent for progress notification");
                     continue;
                 }
 
@@ -468,6 +843,9 @@ class ProgressSheetController extends Controller
                     $message .= " Performance: " . ucfirst($studentNote->performance);
                 }
 
+                // ✅ ENHANCED: Flag urgent if struggling
+                $isUrgent = $studentNote && $studentNote->performance === 'struggling';
+
                 NotificationHelper::notifyStudentParent(
                     $student,
                     'Progress Notes Available',
@@ -480,16 +858,16 @@ class ProgressSheetController extends Controller
                         'topic' => $progressSheet->topic,
                         'date' => $progressSheet->date,
                         'performance' => $studentNote->performance ?? null,
-                        'url' => route('parent.progress.show', $student->id)
+                        'urgent' => $isUrgent,
+                        'url' => route('parent.students.show', $student->id)
                     ]
                 );
             }
 
-            \Log::info("Progress sheet notifications sent for " . count($studentIds) . " students");
+            Log::info("Progress sheet notifications sent for " . count($studentIds) . " students");
 
         } catch (\Exception $e) {
-            // Don't fail the request if notifications fail
-            \Log::error('Failed to send progress sheet notifications: ' . $e->getMessage());
+            Log::error('Failed to send progress sheet notifications: ' . $e->getMessage());
         }
     }
 }

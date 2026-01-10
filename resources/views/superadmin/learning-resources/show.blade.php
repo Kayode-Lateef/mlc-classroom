@@ -36,10 +36,12 @@
         width: 100%;
         height: 100%;
     }
-
-    .sidebar-sticky {
-        position: sticky;
-        top: 20px;
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
     }
 
     .info-item {
@@ -142,7 +144,7 @@
 
                             <!-- Resource Content -->
                             <div class="card alert">
-                                <div class="card-header mb-2">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-eye"></i> Resource Content</h4>
                                 </div>
                                 <div class="card-body">
@@ -229,7 +231,7 @@
                         <div class="col-lg-4">
                             <!-- Quick Actions -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-settings"></i> Actions</h4>
                                 </div>
                                 <div class="card-body">
@@ -243,7 +245,9 @@
                                     </a>
                                     @endif
                                     
-                                    <form action="{{ route('superadmin.resources.destroy', $resource) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this resource?');">
+                                    <form action="{{ route('superadmin.resources.destroy', $resource) }}" 
+                                        method="POST"
+                                        id="deleteResourceForm">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-block">
@@ -255,18 +259,22 @@
 
                             <!-- Resource Information -->
                             <div class="card alert" style="margin-top: 20px;">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-info-alt"></i> Information</h4>
                                 </div>
                                 <div class="card-body">
                                     <div class="info-item">
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Uploaded By</p>
                                         <div style="display: flex; align-items: center;">
+                                            @if($resource->uploader->profile_photo)
+                                            <img src="{{ asset('storage/' . $resource->uploader->profile_photo) }}" alt="{{ $resource->uploader->name }}" class="user-avatar" style="margin-right: 12px;">
+                                            @else
                                             <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #007bff; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
                                                 <span style="color: white; font-weight: 600;">
                                                     {{ strtoupper(substr($resource->uploader->name, 0, 1)) }}
                                                 </span>
                                             </div>
+                                                @endif
                                             <div>
                                                 <p style="margin: 0; font-weight: 600; color: #212529;">{{ $resource->uploader->name }}</p>
                                                 <p style="margin: 0; color: #6c757d;">{{ ucfirst($resource->uploader->role) }}</p>
@@ -326,3 +334,37 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Handle resource deletion with SweetAlert
+    $('#deleteResourceForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+        
+        const form = this;
+        const resourceTitle = "{{ $resource->title }}";
+        const resourceType = "{{ ucfirst($resource->resource_type) }}";
+        
+        swal({
+            title: "Delete Resource?",
+            text: "Are you sure you want to delete this resource?\n\nTitle: " + resourceTitle + "\nType: " + resourceType + "\n\nThis action cannot be undone!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        },
+        function(isConfirm){
+            if (isConfirm) {
+                form.submit(); // Submit the form
+            }
+        });
+        
+        return false;
+    });
+});
+</script>
+@endpush

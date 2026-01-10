@@ -8,37 +8,66 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckUserStatus
 {
-    /**
-     * Handle an incoming request.
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-
-        // If no user, let auth middleware handle it
-        if (!$user) {
-            return $next($request);
+        if (!auth()->check()) {
+            return redirect()->route('login');
         }
 
-        // Check user status
-        if ($user->status === 'suspended') {
-            auth()->logout();
-            return redirect()->route('login')
-                ->with('error', 'Your account has been suspended. Please contact an administrator.');
-        }
+        $user = auth()->user();
 
-        if ($user->status === 'inactive') {
+        // ✅ UPDATED: Check for all non-active statuses
+        if (in_array($user->status, ['suspended', 'banned', 'inactive'])) {
             auth()->logout();
+            
+            $messages = [
+                'suspended' => 'Your account has been suspended. Please contact administration.',
+                'banned' => 'Your account has been banned. Please contact administration.',
+                'inactive' => 'Your account is inactive. Please contact administration.',
+            ];
+            
             return redirect()->route('login')
-                ->with('error', 'Your account is inactive. Please contact an administrator.');
-        }
-
-        if ($user->status === 'banned') {
-            auth()->logout();
-            return redirect()->route('login')
-                ->with('error', 'Your account has been permanently banned.');
+                ->with('error', $messages[$user->status] ?? 'Your account is not active.');
         }
 
         return $next($request);
     }
 }
+
+
+// class CheckUserStatus
+// {
+//     /**
+//      * Handle an incoming request.
+//      */
+//     public function handle(Request $request, Closure $next): Response
+//     {
+//         $user = $request->user();
+
+//         // If no user, let auth middleware handle it
+//         if (!$user) {
+//             return $next($request);
+//         }
+
+//         // Check user status
+//         if ($user->status === 'suspended') {
+//             auth()->logout();
+//             return redirect()->route('login')
+//                 ->with('error', 'Your account has been suspended. Please contact an administrator.');
+//         }
+
+//         if ($user->status === 'inactive') {
+//             auth()->logout();
+//             return redirect()->route('login')
+//                 ->with('error', 'Your account is inactive. Please contact an administrator.');
+//         }
+
+//         if ($user->status === 'banned') {
+//             auth()->logout();
+//             return redirect()->route('login')
+//                 ->with('error', 'Your account has been permanently banned.');
+//         }
+
+//         return $next($request);
+//     }
+// }

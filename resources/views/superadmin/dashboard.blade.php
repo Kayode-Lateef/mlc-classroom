@@ -116,6 +116,7 @@
                         </div>
                     </div>
 
+
                     <!-- Stats Cards Row 2 -->
                     <div class="row">
                         <div class="col-lg-3">
@@ -183,6 +184,142 @@
                         </div>
                     </div>
 
+                    <!-- ============================================ -->
+                    <!-- WEEKLY HOURS & INCOME STATISTICS (NEW) -->
+                    <!-- ============================================ -->
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h4 class="mb-3"><i class="ti-time"></i> Weekly Hours & Income Overview</h4>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Total Weekly Hours -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-time color-primary border-primary"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Total Weekly Hours</div>
+                                        <div class="stat-digit">{{ number_format($totalWeeklyHours, 1) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Income -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-wallet color-success border-success"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Weekly Income</div>
+                                        <div class="stat-digit">£{{ number_format($weeklyIncome, 2) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Income -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-money color-info border-info"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Monthly Income</div>
+                                        <div class="stat-digit">£{{ number_format($monthlyIncome, 2) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Annual Income -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-bar-chart color-warning border-warning"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Annual Projection</div>
+                                        <div class="stat-digit">£{{ number_format($annualIncome, 2) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Info Cards -->
+                    <div class="row">
+                        <!-- Average Hours Per Student -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-stats-up" style="color: #9c27b0; border-color: #9c27b0;"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Avg Hours/Student</div>
+                                        <div class="stat-digit">{{ number_format($avgHoursPerStudent, 1) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hourly Rate -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-tag" style="color: #ff9800; border-color: #ff9800;"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Hourly Rate</div>
+                                        <div class="stat-digit">£{{ number_format($hourlyRate, 2) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hour Changes This Month -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-reload" style="color: #00bcd4; border-color: #00bcd4;"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Hour Changes</div>
+                                        <div class="stat-digit">{{ $hourChangesThisMonth }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Students -->
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-user color-success border-success"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Active Students</div>
+                                        <div class="stat-digit">{{ $stats['active_students'] }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <!-- Charts Section -->
                     <div class="row">
                         <!-- Student & Teacher Enrollment Trend -->
@@ -197,7 +334,49 @@
                             </div>
                         </div>
                         
-                        <!-- User Distribution -->
+                         <!-- Quick Actions -->
+                        <div class="col-lg-4">
+                            <div class="card alert">
+                                <div class="card-header">
+                                    <h4><i class="ti-bolt"></i> Quick Actions</h4>
+                                </div>
+                                <div class="card-body">
+                                    <a href="{{ route('superadmin.students.create') }}" class="btn btn-primary quick-action-btn mb-2">
+                                        <i class="ti-plus"></i> Add New Student
+                                    </a>
+                                    <a href="{{ route('superadmin.users.create') }}" class="btn btn-success quick-action-btn mb-2">
+                                        <i class="ti-user"></i> Add New User
+                                    </a>
+                                    <a href="{{ route('superadmin.classes.create') }}" class="btn btn-info quick-action-btn mb-2">
+                                        <i class="ti-blackboard"></i> Create New Class
+                                    </a>
+                                    <a href="{{ route('superadmin.roles.index') }}" class="btn btn-warning quick-action-btn mb-2">
+                                        <i class="ti-shield"></i> Manage Roles
+                                    </a>
+                                    <a href="{{ route('superadmin.permissions.index') }}" class="btn btn-pink quick-action-btn mb-2">
+                                        <i class="ti-key"></i> Manage Permissions
+                                    </a>
+                                    <a href="{{ route('superadmin.settings.index') }}" class="btn btn-dark quick-action-btn">
+                                        <i class="ti-settings"></i> System Settings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance & Performance Charts -->
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4><i class="ti-bar-chart"></i> Weekly Attendance Overview</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="ct-bar-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-lg-4">
                             <div class="card">
                                 <div class="card-header">
@@ -210,35 +389,79 @@
                         </div>
                     </div>
 
-                    <!-- Attendance & Performance Charts -->
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h4><i class="ti-bar-chart"></i> Weekly Attendance Overview</h4>
-                                </div>
-                                <div class="card-body">
-                                    <div class="ct-bar-chart"></div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h4><i class="ti-pie-chart"></i> Performance Distribution</h4>
-                                </div>
-                                <div class="card-body">
-                                    <div class="ct-pie-chart"></div>
-                                </div>
+<!-- ============================================ -->
+<!-- STUDENTS BY HOUR RANGE CHART (NEW) -->
+<!-- ============================================ -->
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card alert">
+            <div class="card-header">
+                <h4>Students by Weekly Hours</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="studentsByHoursChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+ 
+    <div class="col-lg-6">
+        <div class="card alert">
+            <div class="card-header">
+                <h4>Monthly Income by Hour Range</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="incomeByHourRangeChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+ 
+</div>
+
+
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card alert">
+            <div class="card-header">
+                <h4><i class="ti-stats-up"></i> Income Breakdown</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach(['0.5-2 hrs' => '#3386f7', '2-5 hrs' => '#00bcd4', '5-10 hrs' => '#4caf50', '10+ hrs' => '#ff9800'] as $range => $color)
+                    @php
+                        $index = array_search($range, $incomeByHourRange['labels']);
+                        $studentCount = $studentsByHours[$range] ?? 0;
+                        $income = $incomeByHourRange['data'][$index] ?? 0;
+                    @endphp
+                    <div class="col-lg-3 mb-3">
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid {{ $color }};">
+                            <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 5px;">
+                                {{ $range }}
+                            </div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: {{ $color }};">
+                                {{ $studentCount }} 
+                                <small style="font-size: 0.875rem; color: #6c757d;">students</small>
+                            </div>
+                            <div style="font-size: 1.125rem; font-weight: 600; color: #28a745; margin-top: 5px;">
+                                £{{ number_format($income, 2) }}/mo
                             </div>
                         </div>
                     </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
                     <!-- Recent Activities & Quick Actions -->
                     <div class="row">
                         <!-- Recent System Activities -->
-                        <div class="col-lg-8">
+                        <div class="col-lg-6">
                             <div class="card alert">
                                 <div class="card-header">
                                     <h4><i class="ti-time"></i> Recent System Activities</h4>
@@ -264,31 +487,65 @@
                             </div>
                         </div>
 
-                        <!-- Quick Actions -->
-                        <div class="col-lg-4">
+                        <!-- RECENT HOUR CHANGES -->
+
+                        <div class="col-lg-6">
                             <div class="card alert">
                                 <div class="card-header">
-                                    <h4><i class="ti-bolt"></i> Quick Actions</h4>
+                                    <h4><i class="ti-time"></i> Recent Hour Changes (Last 7 Days)</h4>
                                 </div>
                                 <div class="card-body">
-                                    <a href="{{ route('superadmin.students.create') }}" class="btn btn-primary quick-action-btn mb-2">
-                                        <i class="ti-plus"></i> Add New Student
-                                    </a>
-                                    <a href="{{ route('superadmin.users.create') }}" class="btn btn-success quick-action-btn mb-2">
-                                        <i class="ti-user"></i> Add New User
-                                    </a>
-                                    <a href="{{ route('superadmin.classes.create') }}" class="btn btn-info quick-action-btn mb-2">
-                                        <i class="ti-blackboard"></i> Create New Class
-                                    </a>
-                                    <a href="{{ route('superadmin.roles.index') }}" class="btn btn-warning quick-action-btn mb-2">
-                                        <i class="ti-shield"></i> Manage Roles
-                                    </a>
-                                    <a href="{{ route('superadmin.permissions.index') }}" class="btn btn-pink quick-action-btn mb-2">
-                                        <i class="ti-key"></i> Manage Permissions
-                                    </a>
-                                    <a href="{{ route('superadmin.settings.index') }}" class="btn btn-dark quick-action-btn">
-                                        <i class="ti-settings"></i> System Settings
-                                    </a>
+                                    @if($recentHourChanges->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Student</th>
+                                                        <th>Change</th>
+                                                        <th>Changed By</th>
+                                                        <th>When</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($recentHourChanges as $change)
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{{ route('superadmin.students.show', $change->student_id) }}">
+                                                                {{ $change->student->full_name }}
+                                                            </a>
+                                                        </td>
+                                                        <td>
+                                                            <strong>{{ number_format($change->old_hours, 1) }}</strong> 
+                                                            <i class="ti-arrow-right text-muted"></i> 
+                                                            <strong style="color: #3386f7;">{{ number_format($change->new_hours, 1) }}</strong> hrs
+                                                            
+                                                            @if($change->isIncrease())
+                                                                <span class="badge badge-success ml-2">
+                                                                    <i class="ti-arrow-up"></i> {{ number_format($change->hour_difference, 1) }}
+                                                                </span>
+                                                            @else
+                                                                <span class="badge badge-warning ml-2">
+                                                                    <i class="ti-arrow-down"></i> {{ number_format(abs($change->hour_difference), 1) }}
+                                                                </span>
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $change->changedBy->name }}</td>
+                                                        <td>
+                                                            <small class="text-muted">
+                                                                <i class="ti-time"></i> {{ $change->changed_at->diffForHumans() }}
+                                                            </small>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-4">
+                                            <i class="ti-time" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                            <p class="text-muted mt-2">No hour changes in the last 7 days</p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -463,19 +720,51 @@
                         </div>
                     </div>
 
-                    <!-- Class Performance & System Info -->
+
+
+                    <!--  System Info -->
                     <div class="row">
-                        <!-- Class Performance Chart -->
-                        <div class="col-lg-8">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h4><i class="ti-bar-chart-alt"></i> Class-wise Performance Comparison</h4>
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="classPerformanceChart"></canvas>
+                          <!-- Critical Activity Log -->
+                        @if($criticalActivity->count() > 0)
+                            <div class="col-lg-8">
+                                <div class="card alert alert-warning">
+                                    <div class="card-header mb-3">
+                                        <h4><i class="ti-alert"></i> Critical System Events</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Action</th>
+                                                        <th>Description</th>
+                                                        <th>User</th>
+                                                        <th>Time</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($criticalActivity as $critical)
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge badge-{{ 
+                                                                str_contains($critical->action, 'deleted') ? 'danger' : 
+                                                                (str_contains($critical->action, 'updated') ? 'warning' : 'info') 
+                                                            }}">
+                                                                {{ ucwords(str_replace('_', ' ', $critical->action)) }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $critical->description }}</td>
+                                                        <td>{{ $critical->user ? $critical->user->name : 'System' }}</td>
+                                                        <td>{{ $critical->created_at->diffForHumans() }}</td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @endif
 
                         <!-- System Status -->
                         <div class="col-lg-4">
@@ -527,49 +816,6 @@
                         </div>
                     </div>
 
-                    <!-- Critical Activity Log -->
-                    @if($criticalActivity->count() > 0)
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="card alert alert-warning">
-                                <div class="card-header">
-                                    <h4><i class="ti-alert"></i> Critical System Events</h4>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Action</th>
-                                                    <th>Description</th>
-                                                    <th>User</th>
-                                                    <th>Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($criticalActivity as $critical)
-                                                <tr>
-                                                    <td>
-                                                        <span class="badge badge-{{ 
-                                                            str_contains($critical->action, 'deleted') ? 'danger' : 
-                                                            (str_contains($critical->action, 'updated') ? 'warning' : 'info') 
-                                                        }}">
-                                                            {{ ucwords(str_replace('_', ' ', $critical->action)) }}
-                                                        </span>
-                                                    </td>
-                                                    <td>{{ $critical->description }}</td>
-                                                    <td>{{ $critical->user ? $critical->user->name : 'System' }}</td>
-                                                    <td>{{ $critical->created_at->diffForHumans() }}</td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
 
                     <!-- Footer -->
                     <div class="row">
@@ -593,6 +839,12 @@
         var enrollmentChartData = {!! json_encode($enrollmentChartData) !!};
         var userDistributionData = {!! json_encode($userDistributionData) !!};
         var weeklyAttendanceData = {!! json_encode($weeklyAttendanceData) !!};
+       
+        var studentsByHoursData = {!! json_encode(array_keys($studentsByHours)) !!};
+        var studentsByHoursValues = {!! json_encode(array_values($studentsByHours)) !!};
+        var incomeByHourRangeLabels = {!! json_encode($incomeByHourRange['labels'] ?? []) !!};
+        var incomeByHourRangeValues = {!! json_encode($incomeByHourRange['data'] ?? []) !!}; 
+
     </script>
     
     <script src="{{ asset('assets/js/custom-chart-init.js') }}"></script>

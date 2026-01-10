@@ -1,12 +1,12 @@
 <div class="header">
     <div class="pull-left">
         <div class="logo"><a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.dashboard' : (auth()->user()->isAdmin() ? 'admin.dashboard' : (auth()->user()->isTeacher() ? 'teacher.dashboard' : 'parent.dashboard'))) }}">
-            {{-- @if(config('app.logo'))
+            @if(config('app.logo'))
                 <img src="{{ asset('storage/' . config('app.logo')) }}" alt="{{ config('app.name', 'MLC Classroom') }}" class="logo-img">
             @else
                 <span>MLC Classroom</span>
-            @endif --}}
-            <span>MLC Classroom</span>
+            @endif
+            {{-- <span>MLC Classroom</span> --}}
         </a>
     </div>
         <div class="hamburger sidebar-toggle">

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail; // ✅ ADDED: Email verification interface
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail // ✅ ADDED: implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
@@ -28,6 +28,7 @@ class User extends Authenticatable
         'email_verified_at',
         'status', 
     ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -86,27 +87,44 @@ class User extends Authenticatable
     }
 
 
-    // Add helper methods
+    // === STATUS CHECKS ===
+
+    /**
+     * Check if user account is active
+     */
     public function isActive(): bool
     {
         return $this->status === 'active';
     }
 
+    /**
+     * Check if user account is suspended
+     */
     public function isSuspended(): bool
     {
         return $this->status === 'suspended';
     }
 
+    /**
+     * Check if user account is inactive
+     */
     public function isInactive(): bool
     {
         return $this->status === 'inactive';
     }
 
+    /**
+     * ✅ NEW: Check if user account is banned
+     */
     public function isBanned(): bool
     {
         return $this->status === 'banned';
     }
 
+    /**
+     * Check if user can access the system
+     * Only active users can access
+     */
     public function canAccessSystem(): bool
     {
         return in_array($this->status, ['active']);

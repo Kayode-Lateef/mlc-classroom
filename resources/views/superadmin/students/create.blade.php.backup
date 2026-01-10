@@ -39,6 +39,7 @@
             font-weight: 500;
         }
 
+        /* Force error messages to display */
         .invalid-feedback {
             display: block !important;
             color: #dc3545 !important;
@@ -47,11 +48,6 @@
         .is-invalid {
             border-color: #dc3545 !important;
             background-color: #fff5f5 !important;
-        }
-
-        /* Weekly hours highlight */
-        #weekly_hours {
-            font-weight: 600;
         }
     </style>
 @endpush
@@ -164,7 +160,7 @@
                                                             class="form-control @error('date_of_birth') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-calendar"></i> Student must be between 4-18 years old
+                                                            <i class="ti-calendar"></i> Student's date of birth (must be in the past)
                                                         </small>
                                                         @error('date_of_birth')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -202,10 +198,10 @@
 
                                         <!-- Enrollment Information Section -->
                                         <div class="form-section">
-                                            <h4 class="mb-3"><i class="ti-book"></i> Enrollment & Schedule Information</h4>
+                                            <h4 class="mb-3"><i class="ti-book"></i> Enrollment Information</h4>
                                             <div class="row">
                                                 <!-- Enrollment Date -->
-                                                <div class="col-md-4">
+                                                <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label for="enrollment_date" class="required-field">Enrollment Date</label>
                                                         <input 
@@ -225,40 +221,8 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Weekly Hours - NEW FIELD -->
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label for="weekly_hours" class="required-field">Weekly Hours</label>
-                                                        <select 
-                                                            name="weekly_hours" 
-                                                            id="weekly_hours" 
-                                                            required
-                                                            class="form-control @error('weekly_hours') is-invalid @enderror"
-                                                        >
-                                                            <option value="">Select Hours</option>
-                                                            @php
-                                                                $hours = [];
-                                                                for ($i = 0.5; $i <= 15; $i += 0.5) {
-                                                                    $hours[] = number_format($i, 1);
-                                                                }
-                                                            @endphp
-                                                            @foreach($hours as $hour)
-                                                                <option value="{{ $hour }}" {{ old('weekly_hours', '2.0') == $hour ? 'selected' : '' }}>
-                                                                    {{ $hour }} {{ $hour == '1.0' ? 'hour' : 'hours' }}/week
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                        <small class="form-text text-muted">
-                                                            <i class="ti-time"></i> Total teaching hours per week (30-min increments)
-                                                        </small>
-                                                        @error('weekly_hours')
-                                                        <span class="invalid-feedback">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-
                                                 <!-- Status -->
-                                                <div class="col-md-4">
+                                                <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label for="status" class="required-field">Status</label>
                                                         <select 
@@ -312,14 +276,13 @@
                                                 <!-- Emergency Phone -->
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label for="emergency_phone" class="required-field">Emergency Phone</label>
+                                                        <label for="emergency_phone">Emergency Phone</label>
                                                         <input 
                                                             type="text" 
                                                             name="emergency_phone" 
                                                             id="emergency_phone" 
                                                             value="{{ old('emergency_phone') }}"
                                                             placeholder="+44 20 1234 5678 or 020 1234 5678"
-                                                            required
                                                             minlength="10"
                                                             maxlength="20"
                                                             pattern="(\+44\s?|0)[0-9\s\-\(\)]{9,}"
@@ -389,7 +352,7 @@
                                                 <i class="ti-info-alt mr-3"></i>
                                                 <div>
                                                     <strong>Important Information</strong>
-                                                    <p class="mb-0">Please ensure all required fields are filled correctly. The weekly hours field tracks teaching time for workload and income calculations. The parent will be notified of the new student enrollment via email.</p>
+                                                    <p class="mb-0">Please ensure all required fields are filled correctly. The parent will be notified of the new student enrollment via email.</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -432,6 +395,7 @@
             $('#profile_photo').on('change', function() {
                 const file = this.files[0];
                 if (file) {
+                    // Check file size (2MB = 2097152 bytes)
                     if (file.size > 2097152) {
                         swal({
                             title: "File Too Large!",
@@ -444,6 +408,7 @@
                         return;
                     }
                     
+                    // Check file type
                     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                     if (!allowedTypes.includes(file.type)) {
                         swal({
@@ -470,15 +435,11 @@
             // ========================================
             // DATE VALIDATION
             // ========================================
+            // Set max date for date of birth (must be in the past)
             const today = new Date().toISOString().split('T')[0];
-            const min18Years = new Date();
-            min18Years.setFullYear(min18Years.getFullYear() - 18);
-            const max4Years = new Date();
-            max4Years.setFullYear(max4Years.getFullYear() - 4);
+            $('#date_of_birth').attr('max', today);
             
-            $('#date_of_birth').attr('max', max4Years.toISOString().split('T')[0]);
-            $('#date_of_birth').attr('min', min18Years.toISOString().split('T')[0]);
-            
+            // Validate date of birth on change
             $('#date_of_birth').on('change', function() {
                 const selectedDate = new Date($(this).val());
                 const todayDate = new Date(today);
@@ -498,29 +459,11 @@
             });
 
             // ========================================
-            // WEEKLY HOURS VALIDATION
-            // ========================================
-            $('#weekly_hours').on('change', function() {
-                const hours = parseFloat($(this).val());
-                if (hours < 0.5 || hours > 15) {
-                    swal({
-                        title: "Invalid Hours!",
-                        text: "Weekly hours must be between 0.5 and 15 hours.",
-                        type: "error",
-                        confirmButtonText: "OK"
-                    }, function() {
-                        $('#weekly_hours').val('').addClass('is-invalid');
-                    });
-                } else {
-                    $(this).removeClass('is-invalid');
-                }
-            });
-
-            // ========================================
             // PHONE NUMBER VALIDATION
             // ========================================
             $('#emergency_phone').on('input', function() {
                 let value = $(this).val();
+                // Remove any characters that aren't numbers, +, -, (, ), or spaces
                 value = value.replace(/[^0-9+\-\(\)\s]/g, '');
                 $(this).val(value);
             });
@@ -530,71 +473,87 @@
             // ========================================
             $('#first_name, #last_name').on('input', function() {
                 let value = $(this).val();
-                value = value.replace(/[^a-zA-Z\s\-\']/g, '');
+                // Allow only letters and spaces
+                value = value.replace(/[^a-zA-Z\s]/g, '');
                 $(this).val(value);
+            });
+
+            // ========================================
+            // PARENT SELECTION VALIDATION
+            // ========================================
+            $('#parent_id').on('change', function() {
+                if ($(this).val() === '') {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
             });
 
             // ========================================
             // FORM SUBMISSION VALIDATION
             // ========================================
             $('#studentForm').on('submit', function(e) {
-                e.preventDefault();
+                e.preventDefault(); // Prevent default submission
                 
                 const form = this;
                 let isValid = true;
                 let errors = [];
 
-                // Validate required fields
+                // Validate First Name
                 if ($('#first_name').val().trim() === '') {
                     isValid = false;
                     errors.push('• First name is required');
                     $('#first_name').addClass('is-invalid');
+                } else {
+                    $('#first_name').removeClass('is-invalid');
                 }
 
+                // Validate Last Name
                 if ($('#last_name').val().trim() === '') {
                     isValid = false;
                     errors.push('• Last name is required');
                     $('#last_name').addClass('is-invalid');
+                } else {
+                    $('#last_name').removeClass('is-invalid');
                 }
 
+                // Validate Date of Birth
                 if ($('#date_of_birth').val() === '') {
                     isValid = false;
                     errors.push('• Date of birth is required');
                     $('#date_of_birth').addClass('is-invalid');
+                } else {
+                    const selectedDate = new Date($('#date_of_birth').val());
+                    const todayDate = new Date(today);
+                    
+                    if (selectedDate >= todayDate) {
+                        isValid = false;
+                        errors.push('• Date of birth must be in the past');
+                        $('#date_of_birth').addClass('is-invalid');
+                    } else {
+                        $('#date_of_birth').removeClass('is-invalid');
+                    }
                 }
 
+                // Validate Parent Selection
                 if ($('#parent_id').val() === '') {
                     isValid = false;
                     errors.push('• Please select a parent/guardian');
                     $('#parent_id').addClass('is-invalid');
+                } else {
+                    $('#parent_id').removeClass('is-invalid');
                 }
 
+                // Validate Enrollment Date
                 if ($('#enrollment_date').val() === '') {
                     isValid = false;
                     errors.push('• Enrollment date is required');
                     $('#enrollment_date').addClass('is-invalid');
-                }
-
-                // Validate weekly hours (NEW)
-                if ($('#weekly_hours').val() === '') {
-                    isValid = false;
-                    errors.push('• Weekly hours is required');
-                    $('#weekly_hours').addClass('is-invalid');
                 } else {
-                    const hours = parseFloat($('#weekly_hours').val());
-                    if (hours < 0.5 || hours > 15) {
-                        isValid = false;
-                        errors.push('• Weekly hours must be between 0.5 and 15');
-                        $('#weekly_hours').addClass('is-invalid');
-                    }
+                    $('#enrollment_date').removeClass('is-invalid');
                 }
 
-                if ($('#emergency_phone').val().trim() === '') {
-                    isValid = false;
-                    errors.push('• Emergency phone is required');
-                    $('#emergency_phone').addClass('is-invalid');
-                }
-
+                // If not valid, show SweetAlert with errors
                 if (!isValid) {
                     swal({
                         title: "Validation Error!",
@@ -603,6 +562,7 @@
                         confirmButtonText: "OK",
                         html: true
                     }, function() {
+                        // Scroll to first invalid field
                         const firstInvalid = $('.is-invalid').first();
                         if (firstInvalid.length) {
                             $('html, body').animate({
@@ -615,6 +575,7 @@
                     return false;
                 }
 
+                // Show loading state with SweetAlert
                 swal({
                     title: "Creating Student...",
                     text: "Please wait while we save the student information.",
@@ -623,7 +584,10 @@
                     allowOutsideClick: false
                 });
                 
+                // Disable submit button
                 $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Submitting...');
+                
+                // Submit form
                 form.submit();
                 
                 return true;

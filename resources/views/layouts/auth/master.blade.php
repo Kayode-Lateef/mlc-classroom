@@ -27,7 +27,7 @@
     @stack('styles')
 </head>
 
-<body class="bg-primary">
+<body class="">
     @yield('main_content')
 
     <!-- Base scripts -->

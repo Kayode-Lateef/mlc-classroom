@@ -74,7 +74,7 @@
                         <!-- Form Section -->
                         <div class="col-lg-8">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-calendar"></i> Edit Schedule Details</h4>
                                 </div>
                                 <div class="card-body">
@@ -251,7 +251,7 @@
                         <div class="col-lg-4">
                             <!-- Schedule Statistics -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-stats-up"></i> Schedule Statistics</h4>
                                 </div>
                                 <div class="card-body">
@@ -278,7 +278,7 @@
 
                             <!-- Class Information -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-blackboard"></i> Class Information</h4>
                                 </div>
                                 <div class="card-body">
@@ -307,7 +307,7 @@
 
                             <!-- Quick Actions -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-settings"></i> Quick Actions</h4>
                                 </div>
                                 <div class="card-body">
@@ -352,41 +352,166 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Time validation
+            // Track original values for change detection
+            const originalValues = {
+                class_id: $('#class_id').val(),
+                day_of_week: $('#day_of_week').val(),
+                start_time: $('#start_time').val(),
+                end_time: $('#end_time').val(),
+                room: $('#room').val()
+            };
+
+            // Time validation with SweetAlert
             $('#end_time').on('change', function() {
                 const startTime = $('#start_time').val();
                 const endTime = $(this).val();
                 
                 if (startTime && endTime && endTime <= startTime) {
-                    alert('End time must be after start time!');
-                    $(this).val('{{ $schedule->end_time->format('H:i') }}');
+                    swal({
+                        title: "Invalid Time!",
+                        text: "End time must be after start time.\n\nPlease select a later time.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#end_time').val('{{ $schedule->end_time->format('H:i') }}').focus();
+                    });
                 }
-            });
-
-            // Form submission validation
-            $('form').on('submit', function(e) {
-                const startTime = $('#start_time').val();
-                const endTime = $('#end_time').val();
-                
-                if (endTime <= startTime) {
-                    e.preventDefault();
-                    alert('End time must be after start time!');
-                    return false;
-                }
-
-                // Confirm if changing with existing attendance
-                @if($schedule->attendance()->count() > 0)
-                if (!confirm('This schedule has existing attendance records. Are you sure you want to update it?')) {
-                    e.preventDefault();
-                    return false;
-                }
-                @endif
             });
 
             // Highlight changed fields
             $('select, input').on('change', function() {
-                $(this).addClass('border-warning');
+                const fieldName = $(this).attr('id');
+                const currentValue = $(this).val();
+                
+                if (originalValues[fieldName] && originalValues[fieldName] !== currentValue) {
+                    $(this).addClass('border-warning');
+                } else {
+                    $(this).removeClass('border-warning');
+                }
             });
+
+            // Form submission validation with SweetAlert
+            $('form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const startTime = $('#start_time').val();
+                const endTime = $('#end_time').val();
+                const attendanceCount = {{ $schedule->attendance()->count() ?? 0 }};
+
+                // Validate time order
+                if (endTime <= startTime) {
+                    swal({
+                        title: "Invalid Time Range!",
+                        text: "End time must be after start time.\n\nStart: " + startTime + "\nEnd: " + endTime,
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#end_time').focus();
+                    });
+                    return false;
+                }
+
+                // Check if any fields were changed
+                let hasChanges = false;
+                let changedFields = [];
+                
+                for (let field in originalValues) {
+                    const currentValue = $('#' + field).val();
+                    if (originalValues[field] !== currentValue) {
+                        hasChanges = true;
+                        changedFields.push(field.replace('_', ' ').toUpperCase());
+                    }
+                }
+
+                if (!hasChanges) {
+                    swal({
+                        title: "No Changes Detected",
+                        text: "You haven't made any changes to this schedule.",
+                        type: "info",
+                        confirmButtonText: "OK"
+                    });
+                    return false;
+                }
+
+                // Calculate duration
+                const start = new Date('2000-01-01 ' + startTime);
+                const end = new Date('2000-01-01 ' + endTime);
+                const durationMinutes = (end - start) / (1000 * 60);
+
+                // Warn about very short classes
+                if (durationMinutes < 30) {
+                    swal({
+                        title: "Very Short Class!",
+                        text: "This class is only " + durationMinutes + " minutes long.\n\nAre you sure this is correct?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, continue",
+                        cancelButtonText: "No, let me change",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            proceedWithSubmission(form, attendanceCount);
+                        } else {
+                            $('#start_time').focus();
+                        }
+                    });
+                    return false;
+                }
+
+                // Warn about very long classes
+                if (durationMinutes > 240) {
+                    swal({
+                        title: "Very Long Class!",
+                        text: "This class is " + (durationMinutes / 60).toFixed(1) + " hours long.\n\nAre you sure this is correct?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, continue",
+                        cancelButtonText: "No, let me change",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            proceedWithSubmission(form, attendanceCount);
+                        } else {
+                            $('#end_time').focus();
+                        }
+                    });
+                    return false;
+                }
+
+                // Proceed with submission
+                proceedWithSubmission(form, attendanceCount);
+                
+                return false;
+            });
+
+            // Function to handle submission with attendance warning
+            function proceedWithSubmission(form, attendanceCount) {
+                // Warn if schedule has existing attendance records
+                if (attendanceCount > 0) {
+                    swal({
+                        title: "Schedule Has Attendance Records!",
+                        text: "⚠️ This schedule has " + attendanceCount + " attendance record(s).\n\nUpdating this schedule may affect:\n• Existing attendance data\n• Class reports\n• Student records\n\nAre you sure you want to proceed?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Yes, update schedule",
+                        cancelButtonText: "No, cancel",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Updating Schedule...');
+                            form.submit();
+                        }
+                    });
+                } else {
+                    // No attendance records, just submit
+                    $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Updating Schedule...');
+                    form.submit();
+                }
+            }
         });
     </script>
 @endpush

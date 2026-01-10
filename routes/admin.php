@@ -40,6 +40,9 @@ Route::middleware(['auth', 'role:admin', 'check.status'])->group(function () {
     
     // Students
     Route::resource('students', StudentController::class);
+    // Add this to your admin routes
+    Route::post('students/check-duplicate', [StudentController::class, 'checkDuplicate'])
+    ->name('students.check-duplicate');
     
     // Classes
     Route::resource('classes', ClassController::class);

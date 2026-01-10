@@ -20,6 +20,7 @@ class Student extends Model
         'date_of_birth',
         'parent_id',
         'enrollment_date',
+        'weekly_hours',
         'status',
         'emergency_contact',
         'emergency_phone',
@@ -33,6 +34,7 @@ class Student extends Model
     protected $casts = [
         'date_of_birth' => 'date',
         'enrollment_date' => 'date',
+        'weekly_hours' => 'decimal:1',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -56,7 +58,6 @@ class Student extends Model
 
     /**
      * Get the classes the student is enrolled in.
-     * FIXED: Using 'class_id' instead of 'class_model_id'
      */
     public function classes()
     {
@@ -90,6 +91,14 @@ class Student extends Model
     }
 
     /**
+     * Get the hour history for this student.
+     */
+    public function hourHistory()
+    {
+        return $this->hasMany(StudentHourHistory::class)->orderBy('changed_at', 'desc');
+    }
+
+    /**
      * Get the student's full name.
      */
     public function getFullNameAttribute()
@@ -114,7 +123,6 @@ class Student extends Model
             return asset('storage/' . $this->profile_photo);
         }
         
-        // Return default avatar or initials
         return null;
     }
 
@@ -127,6 +135,22 @@ class Student extends Model
     }
 
     /**
+     * Get formatted weekly hours.
+     */
+    public function getFormattedWeeklyHoursAttribute()
+    {
+        return number_format($this->weekly_hours, 1) . ' hrs/week';
+    }
+
+    /**
+     * Get monthly hours.
+     */
+    public function getMonthlyHoursAttribute()
+    {
+        return round($this->weekly_hours * 4.33, 1);
+    }
+
+    /**
      * Check if student is active.
      */
     public function isActive()
@@ -135,7 +159,7 @@ class Student extends Model
     }
 
     /**
-     * Check if student is within valid age range (4-18 years).
+     * Check if student is within valid age range.
      */
     public function isValidAge()
     {
@@ -144,14 +168,12 @@ class Student extends Model
     }
 
     /**
-     * Get attendance rate for the student.
+     * Get attendance rate.
      */
     public function getAttendanceRate()
     {
         $total = $this->attendance()->count();
-        if ($total === 0) {
-            return 0;
-        }
+        if ($total === 0) return 0;
 
         $present = $this->attendance()->where('status', 'present')->count();
         return round(($present / $total) * 100, 2);
@@ -163,9 +185,7 @@ class Student extends Model
     public function getHomeworkCompletionRate()
     {
         $total = $this->homeworkSubmissions()->count();
-        if ($total === 0) {
-            return 0;
-        }
+        if ($total === 0) return 0;
 
         $submitted = $this->homeworkSubmissions()
             ->whereIn('status', ['submitted', 'graded'])
@@ -175,7 +195,7 @@ class Student extends Model
     }
 
     /**
-     * Get the number of active class enrollments.
+     * Get active enrollments count.
      */
     public function getActiveEnrollmentsCount()
     {
@@ -183,7 +203,7 @@ class Student extends Model
     }
 
     /**
-     * Scope to get only active students.
+     * Scope: Active students only.
      */
     public function scopeActive($query)
     {
@@ -191,7 +211,7 @@ class Student extends Model
     }
 
     /**
-     * Scope to get students by parent.
+     * Scope: Students by parent.
      */
     public function scopeByParent($query, $parentId)
     {
@@ -199,7 +219,7 @@ class Student extends Model
     }
 
     /**
-     * Scope to get students enrolled in a specific year.
+     * Scope: Students enrolled in year.
      */
     public function scopeEnrolledInYear($query, $year)
     {
@@ -207,7 +227,7 @@ class Student extends Model
     }
 
     /**
-     * Scope to get students by age range.
+     * Scope: Students by age range.
      */
     public function scopeByAgeRange($query, $minAge, $maxAge)
     {
@@ -218,7 +238,7 @@ class Student extends Model
     }
 
     /**
-     * Check if student has any related records.
+     * Check if has related records.
      */
     public function hasRelatedRecords()
     {
@@ -229,7 +249,7 @@ class Student extends Model
     }
 
     /**
-     * Get a summary of related records.
+     * Get related records summary.
      */
     public function getRelatedRecordsSummary()
     {
@@ -242,29 +262,20 @@ class Student extends Model
     }
 
     /**
-     * Boot method to add model events.
+     * Log hour change to history.
+     * Call this method manually in the controller after update.
      */
-    protected static function boot()
+    public function logHourChange($oldHours, $newHours, $reason = null)
     {
-        parent::boot();
-
-        // Before deleting, check for relationships
-        static::deleting(function ($student) {
-            // This is called for both soft delete and force delete
-            // Relationships are checked in the controller for better error handling
-        });
-
-        // After creating
-        static::created(function ($student) {
-            // Can add any post-creation logic here
-        });
-
-        // After updating
-        static::updated(function ($student) {
-            // Track status changes
-            if ($student->isDirty('status')) {
-                // Status has changed - could log this
-            }
-        });
+        if ($oldHours != $newHours) {
+            StudentHourHistory::create([
+                'student_id' => $this->id,
+                'old_hours' => $oldHours,
+                'new_hours' => $newHours,
+                'changed_by' => auth()->id(),
+                'reason' => $reason,
+                'changed_at' => now(),
+            ]);
+        }
     }
 }

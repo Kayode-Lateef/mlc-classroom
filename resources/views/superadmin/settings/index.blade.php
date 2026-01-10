@@ -529,91 +529,162 @@
                                                 </div>
                                                 <!-- Academic Settings Tab -->
                                                 <div role="tabpanel" class="tab-pane" id="academic-tab">
-                                                        <h3 style="font-weight: 600; margin-bottom: 25px;">Academic Settings</h3>                                                        
-                                                        <!-- Attendance Settings -->
-                                                        <div class="setting-section">
-                                                            <h4 class="setting-section-title">Attendance Settings</h4>
-                                                            
+                                                    <h3 style="font-weight: 600; margin-bottom: 25px;">Academic Settings</h3>
+
+                                                    <!-- ============================================ -->
+                                                    <!-- HOURLY RATE SETTING (NEW) -->
+                                                    <!-- ============================================ -->
+                                                    <div class="setting-section">
+                                                        <h4 class="setting-section-title">Income & Billing Settings</h4>
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-lg-4">
+                                                                <div class="form-group">
+                                                                    <label for="hourly_rate" class="required-field">
+                                                                        <i class="ti-money"></i> Hourly Teaching Rate
+                                                                    </label>
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text">£</span>
+                                                                        </div>
+                                                                        <input 
+                                                                            type="number" 
+                                                                            id="hourly_rate"
+                                                                            name="hourly_rate" 
+                                                                            value="{{ old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50.00) }}"
+                                                                            min="0"
+                                                                            max="1000"
+                                                                            step="0.01"
+                                                                            class="form-control @error('hourly_rate') is-invalid @enderror"
+                                                                            required
+                                                                        >
+                                                                        <div class="input-group-append">
+                                                                            <span class="input-group-text">/hour</span>
+                                                                        </div>
+                                                                        @error('hourly_rate')
+                                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
+                                                                    </div>
+                                                                    <small class="form-text text-muted">
+                                                                        <i class="ti-info-alt"></i> Used for calculating weekly, monthly, and annual income projections on the dashboard
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-lg-8">
+                                                                <!-- Income Preview (Optional) -->
+                                                                <div class="alert alert-info" style="margin-top: 32px;">
+                                                                    <h5 style="margin-bottom: 10px; font-weight: 600;">
+                                                                        <i class="ti-bar-chart"></i> Income Preview
+                                                                    </h5>
+                                                                    <p style="margin: 0; font-size: 0.875rem;">
+                                                                        Based on current hourly rate, a student with:
+                                                                    </p>
+                                                                    <ul style="margin: 10px 0; font-size: 0.875rem;">
+                                                                        <li><strong>1 hour/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 4.33), 2) }}/month</li>
+                                                                        <li><strong>2 hours/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 2 * 4.33), 2) }}/month</li>
+                                                                        <li><strong>5 hours/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 5 * 4.33), 2) }}/month</li>
+                                                                    </ul>
+                                                                    <small class="text-muted">
+                                                                        <i class="ti-info-alt"></i> Monthly calculations use 4.33 weeks average per month
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- ============================================ -->
+                                                    <!-- EXISTING ATTENDANCE SETTINGS -->
+                                                    <!-- ============================================ -->
+                                                    <div class="setting-section">
+                                                        <h4 class="setting-section-title">Attendance Settings</h4>
+                                                        
+                                                        <label class="toggle-label">
+                                                            <input 
+                                                                type="checkbox" 
+                                                                name="attendance_required" 
+                                                                value="1"
+                                                                {{ old('attendance_required', $settings->get('academic')->firstWhere('key', 'attendance_required')?->value) ? 'checked' : '' }}
+                                                            >
+                                                            <div class="toggle-description">
+                                                                <span style="font-weight: 500;">Require Attendance Marking</span>
+                                                                <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Teachers must mark attendance for each class session</p>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+
+                                                    <!-- ============================================ -->
+                                                    <!-- EXISTING HOMEWORK SETTINGS -->
+                                                    <!-- ============================================ -->
+                                                    <div class="setting-section">
+                                                        <h4 class="setting-section-title">Homework Settings</h4>
+                                                        
+                                                        <div style="margin-bottom: 20px;">
                                                             <label class="toggle-label">
                                                                 <input 
                                                                     type="checkbox" 
-                                                                    name="attendance_required" 
+                                                                    name="late_homework_penalty" 
                                                                     value="1"
-                                                                    {{ old('attendance_required', $settings->get('academic')->firstWhere('key', 'attendance_required')?->value) ? 'checked' : '' }}
+                                                                    {{ old('late_homework_penalty', $settings->get('academic')->firstWhere('key', 'late_homework_penalty')?->value) ? 'checked' : '' }}
                                                                 >
                                                                 <div class="toggle-description">
-                                                                    <span style="font-weight: 500;">Require Attendance Marking</span>
-                                                                    <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Teachers must mark attendance for each class session</p>
+                                                                    <span style="font-weight: 500;">Apply Late Homework Penalty</span>
+                                                                    <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Mark homework as "late" if submitted after due date</p>
                                                                 </div>
                                                             </label>
                                                         </div>
 
-                                                        <!-- Homework Settings -->
-                                                        <div class="setting-section">
-                                                            <h4 class="setting-section-title">Homework Settings</h4>
-                                                            
-                                                            <div style="margin-bottom: 20px;">
-                                                                <label class="toggle-label">
+                                                        <div class="row">
+                                                            <div class="col-lg-4">
+                                                                <div class="form-group">
+                                                                    <label>Default Homework Due Days</label>
                                                                     <input 
-                                                                        type="checkbox" 
-                                                                        name="late_homework_penalty" 
-                                                                        value="1"
-                                                                        {{ old('late_homework_penalty', $settings->get('academic')->firstWhere('key', 'late_homework_penalty')?->value) ? 'checked' : '' }}
+                                                                        type="number" 
+                                                                        name="homework_due_days" 
+                                                                        value="{{ old('homework_due_days', $settings->get('academic')->firstWhere('key', 'homework_due_days')?->value ?? 7) }}"
+                                                                        min="1"
+                                                                        max="30"
+                                                                        class="form-control"
                                                                     >
-                                                                    <div class="toggle-description">
-                                                                        <span style="font-weight: 500;">Apply Late Homework Penalty</span>
-                                                                        <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Mark homework as "late" if submitted after due date</p>
-                                                                    </div>
-                                                                </label>
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-lg-4">
-                                                                    <div class="form-group">
-                                                                        <label>Default Homework Due Days</label>
-                                                                        <input 
-                                                                            type="number" 
-                                                                            name="homework_due_days" 
-                                                                            value="{{ old('homework_due_days', $settings->get('academic')->firstWhere('key', 'homework_due_days')?->value ?? 7) }}"
-                                                                            min="1"
-                                                                            max="30"
-                                                                            class="form-control"
-                                                                        >
-                                                                        <small class="form-text text-muted">Default number of days until homework is due</small>
-                                                                    </div>
+                                                                    <small class="form-text text-muted">Default number of days until homework is due</small>
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                    </div>
 
-                                                        <!-- Progress Report Settings -->
-                                                        <div class="setting-section">
-                                                            <h4 class="setting-section-title">Progress Report Settings</h4>
-                                                            
-                                                            <div class="row">
-                                                                <div class="col-lg-6">
-                                                                    <div class="form-group">
-                                                                        <label>Progress Report Frequency</label>
-                                                                        <select name="progress_report_frequency" class="form-control">
-                                                                            <option value="weekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'weekly' ? 'selected' : '' }}>
-                                                                                Weekly
-                                                                            </option>
-                                                                            <option value="biweekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'biweekly' ? 'selected' : '' }}>
-                                                                                Bi-weekly
-                                                                            </option>
-                                                                            <option value="monthly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value ?? 'monthly') === 'monthly' ? 'selected' : '' }}>
-                                                                                Monthly
-                                                                            </option>
-                                                                            <option value="quarterly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'quarterly' ? 'selected' : '' }}>
-                                                                                Quarterly
-                                                                            </option>
-                                                                        </select>
-                                                                        <small class="form-text text-muted">How often progress reports should be generated</small>
-                                                                    </div>
+                                                    <!-- ============================================ -->
+                                                    <!-- EXISTING PROGRESS REPORT SETTINGS -->
+                                                    <!-- ============================================ -->
+                                                    <div class="setting-section">
+                                                        <h4 class="setting-section-title">Progress Report Settings</h4>
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-lg-6">
+                                                                <div class="form-group">
+                                                                    <label>Progress Report Frequency</label>
+                                                                    <select name="progress_report_frequency" class="form-control">
+                                                                        <option value="weekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'weekly' ? 'selected' : '' }}>
+                                                                            Weekly
+                                                                        </option>
+                                                                        <option value="biweekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'biweekly' ? 'selected' : '' }}>
+                                                                            Bi-weekly
+                                                                        </option>
+                                                                        <option value="monthly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value ?? 'monthly') === 'monthly' ? 'selected' : '' }}>
+                                                                            Monthly
+                                                                        </option>
+                                                                        <option value="quarterly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'quarterly' ? 'selected' : '' }}>
+                                                                            Quarterly
+                                                                        </option>
+                                                                    </select>
+                                                                    <small class="form-text text-muted">How often progress reports should be generated</small>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    
+                                                    </div>
+
                                                 </div>
+
+                                                
                                             </div>
 
                                             <!-- Form Actions -->
@@ -714,6 +785,27 @@
                     });
                 }
             });
+
+             // Update income preview when hourly rate changes
+            $('#hourly_rate').on('input', function() {
+                const rate = parseFloat($(this).val()) || 0;
+                const weeksPerMonth = 4.33;
+                
+                // Update preview values
+                updateIncomePreview(rate, weeksPerMonth);
+            });
+            
+            function updateIncomePreview(rate, weeksPerMonth) {
+                const $preview = $('.alert.alert-info ul');
+                
+                if (rate > 0) {
+                    $preview.html(`
+                        <li><strong>1 hour/week</strong> = £${(rate * weeksPerMonth).toFixed(2)}/month</li>
+                        <li><strong>2 hours/week</strong> = £${(rate * 2 * weeksPerMonth).toFixed(2)}/month</li>
+                        <li><strong>5 hours/week</strong> = £${(rate * 5 * weeksPerMonth).toFixed(2)}/month</li>
+                    `);
+                }
+            }
 
             // Form submission validation with SweetAlert
             $('form').on('submit', function(e) {

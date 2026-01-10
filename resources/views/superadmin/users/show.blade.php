@@ -123,7 +123,6 @@
             padding: 15px;
             background-color: #f8f9fa;
             border-radius: 6px;
-            border-left: 3px solid #007bff;
             margin-bottom: 10px;
         }
 
@@ -256,6 +255,38 @@
 
                                                 
                                             </div>
+                                            @if(!$user->hasVerifiedEmail())
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card alert alert-warning">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2">
+                            <i class="ti-alert"></i> Email Not Verified
+                        </h5>
+                        <p class="mb-0">This user has not verified their email address yet.</p>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <form action="{{ route('superadmin.users.resendVerification', $user) }}" method="POST" style="display: inline-block;">
+                            @csrf
+                            <button type="submit" class="btn btn-info btn-sm mr-2" title="Resend Verification Email">
+                                <i class="ti-email"></i> Resend Link
+                            </button>
+                        </form>
+                        <form action="{{ route('superadmin.users.manualVerify', $user) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to manually verify this user?');">
+                            @csrf
+                            <button type="submit" class="btn btn-success btn-sm" title="Manually Verify User">
+                                <i class="ti-check"></i> Verify Manually
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
                                             <div class="col-lg-12">
                                                 <div class="custom-tab user-profile-tab">
@@ -303,10 +334,45 @@
                                             </div>
 
                                         </div>
-                                     
                                     </div>
+
+                                    {{-- Email Verification Actions (if not verified) --}}
+@if(!$user->hasVerifiedEmail())
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card alert alert-warning">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2">
+                            <i class="ti-alert"></i> Email Not Verified
+                        </h5>
+                        <p class="mb-0">This user has not verified their email address yet.</p>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <form action="{{ route('superadmin.users.resendVerification', $user) }}" method="POST" style="display: inline-block;">
+                            @csrf
+                            <button type="submit" class="btn btn-info btn-sm mr-2" title="Resend Verification Email">
+                                <i class="ti-email"></i> Resend Link
+                            </button>
+                        </form>
+                        <form action="{{ route('superadmin.users.manualVerify', $user) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to manually verify this user?');">
+                            @csrf
+                            <button type="submit" class="btn btn-success btn-sm" title="Manually Verify User">
+                                <i class="ti-check"></i> Verify Manually
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
                                 </div>
                             </div>
+
+
                         </div>
 
                          <!-- /# column -->
@@ -347,6 +413,195 @@
 
                     </div>
                     <!-- /# row -->
+
+
+
+
+
+{{-- ✅ NEW: Permission Management Section (for Admins only) --}}
+@if($user->isAdmin())
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card alert">
+            <div class="card-header">
+                <h4>
+                    <i class="ti-key"></i> Admin Permissions
+                    <span class="badge badge-info ml-2">{{ count($userPermissions) }} Assigned</span>
+                </h4>
+                <div class="card-header-right-icon">
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#permissionsModal">
+                        <i class="ti-settings"></i> Manage Permissions
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                @if(count($userPermissions) > 0)
+                    <div class="permissions-grid">
+                        @foreach($userPermissions as $permission)
+                            <span class="badge badge-success mr-2 mb-2" style="font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                                <i class="ti-check"></i> {{ ucwords(str_replace(['.', '_'], [' → ', ' '], $permission)) }}
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-4">
+                        <i class="ti-lock" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">No specific permissions assigned. This admin has no granular access control.</p>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#permissionsModal">
+                            <i class="ti-plus"></i> Assign Permissions
+                        </button>
+                    </div>
+                @endif
+
+                <div class="alert alert-info mt-4 mb-0" style="border-left: 4px solid #3386f7;">
+                    <strong><i class="ti-info-alt"></i> Permission System:</strong><br>
+                    <small>
+                        • SuperAdmins have all permissions by default (cannot be modified)<br>
+                        • Admins can be assigned specific permissions for granular access control<br>
+                        • Teachers and Parents use role-based access only
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- ✅ Permissions Management Modal --}}
+@if($user->isAdmin())
+<div class="modal fade" id="permissionsModal" tabindex="-1" role="dialog" aria-labelledby="permissionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #3386f7 0%, #e06829 100%); color: white;">
+                <h5 class="modal-title" id="permissionsModalLabel">
+                    <i class="ti-key"></i> Manage Permissions for {{ $user->name }}
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="permissionsForm" action="{{ route('superadmin.users.assignPermissions', $user) }}" method="POST">
+                @csrf
+                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                    @foreach($allPermissions as $module => $permissions)
+                        <div class="permission-module mb-4">
+                            <h5 class="module-title" style="color: #3386f7; border-bottom: 2px solid #3386f7; padding-bottom: 0.5rem;">
+                                <i class="ti-folder"></i> {{ ucfirst($module) }}
+                                <span class="badge badge-secondary">{{ count($permissions) }}</span>
+                            </h5>
+                            <div class="row mt-3">
+                                @foreach($permissions as $permission)
+                                    <div class="col-md-6">
+                                        <div class="custom-control custom-checkbox mb-3">
+                                            <input type="checkbox" 
+                                                   class="custom-control-input" 
+                                                   id="permission_{{ $permission->id }}" 
+                                                   name="permissions[]" 
+                                                   value="{{ $permission->id }}"
+                                                   {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="permission_{{ $permission->id }}">
+                                                {{ ucwords(str_replace(['.', '_'], [' → ', ' '], $permission->name)) }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="ti-close"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti-save"></i> Save Permissions
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('permissionsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const permissions = [];
+    formData.getAll('permissions[]').forEach(id => permissions.push(id));
+    
+    fetch(this.action, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ permissions: permissions })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#permissionsModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to update permissions'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating permissions.');
+    });
+});
+</script>
+@endif
+
+<style>
+    .permissions-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .permission-module {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .module-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .custom-control-label {
+        cursor: pointer;
+        font-size: 0.9rem;
+        user-select: none;
+    }
+
+    .custom-control-input:checked ~ .custom-control-label::before {
+        background-color: #3386f7;
+        border-color: #3386f7;
+    }
+
+    .modal-header {
+        border-bottom: none;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+    }
+</style>
+
+
+
+
+
+
+
+
+
   
                     <div class="row">
                         <div class="col-lg-12">
@@ -556,6 +811,17 @@
 
                         </div>
                     </div>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

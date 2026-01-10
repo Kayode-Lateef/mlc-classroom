@@ -76,30 +76,7 @@
 
                 </div>
 
-                <div id="main-content">
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                    
+                <div id="main-content">                    
                     <!-- Statistics Cards -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
@@ -319,11 +296,17 @@
                                                             <a href="{{ route('superadmin.schedules.edit', $schedule) }}" class="btn btn-sm btn-success mr-1">
                                                                 <i class="ti-pencil"></i>
                                                             </a>
-                                                            <form method="POST" action="{{ route('superadmin.schedules.destroy', $schedule) }}" style="display: inline-block;" onsubmit="return confirm('Delete this schedule?');">
+                                                            <form action="{{ route('superadmin.schedules.destroy', $schedule) }}" 
+                                                                method="POST" 
+                                                                style="display: inline-block;"
+                                                                class="delete-schedule-form"
+                                                                data-class-name="{{ $schedule->class->name }}"
+                                                                data-day="{{ $schedule->day_of_week }}"
+                                                                data-time="{{ $schedule->start_time }} - {{ $schedule->end_time }}">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-danger">
-                                                                    <i class="ti-trash"></i>
+                                                                    <i class="ti-trash"></i> Delete
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -462,6 +445,35 @@
                     $(this).removeClass('shadow');
                 }
             );
+
+              // Handle schedule deletion
+            $('.delete-schedule-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const form = this;
+                const className = $(this).data('class-name');
+                const dayOfWeek = $(this).data('day');
+                const time = $(this).data('time');
+                
+                swal({
+                    title: "Delete Schedule?",
+                    text: "Are you sure you want to delete this schedule?\n\nClass: " + className + "\nDay: " + dayOfWeek + "\nTime: " + time + "\n\nThis action cannot be undone!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit();
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

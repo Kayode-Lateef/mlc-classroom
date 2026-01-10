@@ -489,7 +489,14 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.error('Failed to load students:', xhr);
-                alert('Failed to load students. Please try again.');
+                
+                // CHANGED: alert() replaced with SweetAlert
+                swal({
+                    title: "Failed to Load Students",
+                    text: "Unable to fetch students. Please try again.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                });
             }
         });
     }

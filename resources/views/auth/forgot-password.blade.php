@@ -71,7 +71,14 @@
                 <div class="col-lg-6 col-lg-offset-3">
                     <div class="login-content">
                         <div class="login-logo">
-                            <a href="{{ url('/') }}"><span>MLC CLASSROOM MANAGEMENT</span></a>
+                            <a href="{{ url('/') }}">
+                                @if(config('app.logo'))
+                                    <img src="{{ asset('storage/' . config('app.logo')) }}" alt="{{ config('app.name', 'MLC Classroom') }}" class="logo-img">
+                                @else
+                                    {{-- <span>MLC Classroom</span> --}}
+                                @endif
+                                <span>MLC CLASSROOM PORTAL</span>
+                            </a>
                         </div>
                         <div class="login-form">
                             <h4>Forgot Password</h4>

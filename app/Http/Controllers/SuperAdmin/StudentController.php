@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\ActivityLog;
+use App\Models\StudentHourHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -33,17 +34,12 @@ class StudentController extends Controller
                 $search = trim($request->search);
                 
                 $query->where(function($q) use ($search) {
-                    // Direct matches on first or last name
                     $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%");
                     
-                    // Full name search (handles "Minerva Harvey")
                     $q->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
-                    
-                    // Reverse full name search (handles "Harvey Minerva")
                     $q->orWhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$search}%"]);
                     
-                    // Search by parent name
                     $q->orWhereHas('parent', function($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%");
                     });
@@ -68,13 +64,14 @@ class StudentController extends Controller
             $students = $query->paginate(config('app.pagination.students', 20));
             $parents = User::where('role', 'parent')->orderBy('name')->get();
 
-            // Statistics - Consider caching these in production
+            // Statistics - Include total hours
             $stats = [
                 'total' => Student::count(),
                 'active' => Student::where('status', 'active')->count(),
                 'inactive' => Student::where('status', 'inactive')->count(),
                 'graduated' => Student::where('status', 'graduated')->count(),
                 'withdrawn' => Student::where('status', 'withdrawn')->count(),
+                'total_weekly_hours' => Student::where('status', 'active')->sum('weekly_hours'),
             ];
 
             return view('superadmin.students.index', compact('students', 'parents', 'stats'));
@@ -93,11 +90,10 @@ class StudentController extends Controller
      */
     public function create()
     {
-        // Check permission
-        if (!auth()->user()->can('create-student')) {
-            abort(403, 'Unauthorized action.');
-        }
-
+        // ✅ REMOVED: SuperAdmin permission check
+        // SuperAdmin role is already verified by route middleware: ['auth', 'role:superadmin', 'check.status']
+        // SuperAdmins have ALL permissions by default, no need to check
+        
         $parents = User::where('role', 'parent')
             ->where('status', 'active')
             ->orderBy('name')
@@ -111,11 +107,9 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        // Check permission
-        if (!auth()->user()->can('create-student')) {
-            abort(403, 'Unauthorized action.');
-        }
-
+        // ✅ REMOVED: SuperAdmin permission check
+        // SuperAdmin role is already verified by route middleware
+        
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -123,11 +117,18 @@ class StudentController extends Controller
                 'required',
                 'date',
                 'before:today',
-                'after:' . now()->subYears(18)->format('Y-m-d'), // Not older than 18
-                'before:' . now()->subYears(4)->format('Y-m-d')  // Not younger than 4
+                'after:' . now()->subYears(18)->format('Y-m-d'),
+                'before:' . now()->subYears(4)->format('Y-m-d')
             ],
             'parent_id' => 'required|exists:users,id',
             'enrollment_date' => 'required|date|before_or_equal:today',
+            'weekly_hours' => [
+                'required',
+                'numeric',
+                'min:0.5',
+                'max:15',
+                'regex:/^([0-9]|1[0-5])(\.[05])?$/'  // Only .0 or .5 decimals, max 15
+            ],
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
             'emergency_phone' => ['required', 'string', 'min:10', 'max:20', 'regex:/^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/'],
@@ -139,14 +140,18 @@ class StudentController extends Controller
             'date_of_birth.required' => 'Date of birth is required.',
             'date_of_birth.before' => 'Date of birth must be in the past.',
             'date_of_birth.after' => 'Student must be at least 4 years old.',
-            'date_of_birth.before' => 'Student must be under 18 years old.',
             'parent_id.required' => 'Please select a parent/guardian.',
             'parent_id.exists' => 'Selected parent does not exist.',
             'enrollment_date.required' => 'Enrollment date is required.',
             'enrollment_date.before_or_equal' => 'Enrollment date cannot be in the future.',
+            'weekly_hours.required' => 'Weekly hours is required.',
+            'weekly_hours.numeric' => 'Weekly hours must be a number.',
+            'weekly_hours.min' => 'Weekly hours must be at least 0.5 hours.',
+            'weekly_hours.max' => 'Weekly hours cannot exceed 15 hours.',
+            'weekly_hours.regex' => 'Weekly hours must be in 0.5 hour increments (e.g., 0.5, 1.0, 1.5, 2.0).',
             'status.required' => 'Status is required.',
             'status.in' => 'Invalid status selected.',
-            'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'emergency_phone.regex' => 'Emergency phone format is invalid. Only UK phone numbers are allowed.',
             'emergency_phone.max' => 'Emergency phone number must not exceed 20 characters.',
             'profile_photo.image' => 'Profile photo must be an image.',
             'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
@@ -199,7 +204,7 @@ class StudentController extends Controller
                 'action' => 'created_student',
                 'model_type' => 'Student',
                 'model_id' => $student->id,
-                'description' => "Created student: {$student->first_name} {$student->last_name}",
+                'description' => "Created student: {$student->first_name} {$student->last_name} with {$student->weekly_hours} weekly hours",
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
@@ -210,19 +215,20 @@ class StudentController extends Controller
             try {
                 $superadmins = User::where('role', 'superadmin')
                     ->where('status', 'active')
-                    ->where('id', '!=', auth()->id()) // Don't notify self
+                    ->where('id', '!=', auth()->id())
                     ->get();
                 
                 foreach ($superadmins as $admin) {
                     $admin->notify(new GeneralNotification([
                         'type' => 'general',
                         'title' => 'New Student Enrolled',
-                        'message' => "{$student->full_name} has been enrolled by {$student->parent->name}",
+                        'message' => "{$student->full_name} has been enrolled by {$student->parent->name} ({$student->weekly_hours} hours/week)",
                         'sent_by' => auth()->user()->name,
                         'sent_at' => now()->format('d M Y, H:i'),
                         'data' => [
                             'student_id' => $student->id,
                             'parent_id' => $student->parent_id,
+                            'weekly_hours' => $student->weekly_hours,
                             'url' => route('superadmin.students.show', $student->id)
                         ]
                     ]));
@@ -232,7 +238,7 @@ class StudentController extends Controller
                 $parent->notify(new GeneralNotification([
                     'type' => 'general',
                     'title' => 'Student Profile Created',
-                    'message' => "A student profile has been created for {$student->full_name}",
+                    'message' => "A student profile has been created for {$student->full_name} with {$student->weekly_hours} hours per week",
                     'sent_by' => auth()->user()->name,
                     'sent_at' => now()->format('d M Y, H:i'),
                     'data' => [
@@ -242,7 +248,6 @@ class StudentController extends Controller
                 ]));
                 
             } catch (\Exception $e) {
-                // Log notification failure but don't fail the request
                 Log::error('Failed to send student creation notifications: ' . $e->getMessage());
             }
 
@@ -252,7 +257,6 @@ class StudentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             
-            // Clean up uploaded file if exists
             if (isset($validated['profile_photo'])) {
                 Storage::disk('public')->delete($validated['profile_photo']);
             }
@@ -283,7 +287,10 @@ class StudentController extends Controller
                         ->limit(config('app.attendance_history_limit', 30));
                 },
                 'homeworkSubmissions.homeworkAssignment',
-                'progressNotes.progressSheet'
+                'progressNotes.progressSheet',
+                'hourHistory' => function($query) {
+                    $query->with('changedBy')->limit(10);
+                }
             ]);
 
             // Calculate statistics
@@ -312,6 +319,8 @@ class StudentController extends Controller
                 'graded_homework' => $gradedHomework,
                 'enrolled_classes' => $student->enrollments()->where('status', 'active')->count(),
                 'age' => $age,
+                'weekly_hours' => $student->weekly_hours,
+                'monthly_hours' => $student->monthly_hours,
             ];
 
             return view('superadmin.students.show', compact('student', 'stats'));
@@ -330,11 +339,9 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
-        // Check permission
-        if (!auth()->user()->can('edit-student')) {
-            abort(403, 'Unauthorized action.');
-        }
-
+        // ✅ REMOVED: SuperAdmin permission check
+        // SuperAdmin role is already verified by route middleware
+        
         $parents = User::where('role', 'parent')
             ->where('status', 'active')
             ->orderBy('name')
@@ -348,14 +355,13 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
-        // Check permission
-        if (!auth()->user()->can('edit-student')) {
-            abort(403, 'Unauthorized action.');
-        }
-
+        // ✅ REMOVED: SuperAdmin permission check
+        // SuperAdmin role is already verified by route middleware
+        
         // Store old values for comparison
         $oldStatus = $student->status;
         $oldParentId = $student->parent_id;
+        $oldWeeklyHours = $student->weekly_hours; // STORE OLD HOURS
 
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
@@ -369,6 +375,13 @@ class StudentController extends Controller
             ],
             'parent_id' => 'required|exists:users,id',
             'enrollment_date' => 'required|date|before_or_equal:today',
+            'weekly_hours' => [                    // ADD THIS VALIDATION
+                'required',
+                'numeric',
+                'min:0.5',
+                'max:15',
+                'regex:/^[0-9]+(\.[05])?$/'
+            ],
             'status' => 'required|in:active,inactive,graduated,withdrawn',
             'emergency_contact' => 'nullable|string|max:255',
             'emergency_phone' => ['required', 'string', 'min:10', 'max:20', 'regex:/^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/'],
@@ -380,14 +393,18 @@ class StudentController extends Controller
             'date_of_birth.required' => 'Date of birth is required.',
             'date_of_birth.before' => 'Date of birth must be in the past.',
             'date_of_birth.after' => 'Student must be at least 4 years old.',
-            'date_of_birth.before' => 'Student must be under 18 years old.',
             'parent_id.required' => 'Please select a parent/guardian.',
             'parent_id.exists' => 'Selected parent does not exist.',
             'enrollment_date.required' => 'Enrollment date is required.',
             'enrollment_date.before_or_equal' => 'Enrollment date cannot be in the future.',
+            'weekly_hours.required' => 'Weekly hours is required.',          // ADD THESE
+            'weekly_hours.numeric' => 'Weekly hours must be a number.',
+            'weekly_hours.min' => 'Weekly hours must be at least 0.5 hours.',
+            'weekly_hours.max' => 'Weekly hours cannot exceed 15 hours.',
+            'weekly_hours.regex' => 'Weekly hours must be in 0.5 hour increments (e.g., 1.0, 1.5, 2.0).',
             'status.required' => 'Status is required.',
             'status.in' => 'Invalid status selected.',
-            'emergency_phone.regex' => 'Emergency phone format is invalid. Only numbers, spaces, hyphens, parentheses, and + are allowed.',
+            'emergency_phone.regex' => 'Emergency phone format is invalid.',
             'emergency_phone.max' => 'Emergency phone number must not exceed 20 characters.',
             'profile_photo.image' => 'Profile photo must be an image.',
             'profile_photo.mimes' => 'Profile photo must be a file of type: jpeg, png, jpg, gif.',
@@ -437,6 +454,30 @@ class StudentController extends Controller
             // Update student
             $student->update($validated);
 
+            // ===== NEW: TRACK WEEKLY HOURS CHANGES =====
+            if ($oldWeeklyHours != $validated['weekly_hours']) {
+                \App\Models\StudentHourHistory::create([
+                    'student_id' => $student->id,
+                    'old_hours' => $oldWeeklyHours,
+                    'new_hours' => $validated['weekly_hours'],
+                    'changed_by' => auth()->id(),
+                    'reason' => $request->input('hour_change_reason'), // Optional
+                    'changed_at' => now(),
+                ]);
+                
+                // Also log to activity log
+                ActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'updated_student_hours',
+                    'model_type' => 'Student',
+                    'model_id' => $student->id,
+                    'description' => "Updated {$student->full_name} weekly hours from {$oldWeeklyHours} to {$validated['weekly_hours']}",
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+            }
+            // ============================================
+
             // Delete old photo if new one was uploaded
             if ($request->hasFile('profile_photo') && $oldPhotoPath) {
                 try {
@@ -459,7 +500,7 @@ class StudentController extends Controller
 
             DB::commit();
 
-            // Send notifications after successful update
+            // Send notifications after successful update (existing code...)
             try {
                 // Notify parent if status changed or parent changed
                 if ($oldStatus !== $validated['status'] || $oldParentId !== $validated['parent_id']) {
@@ -528,20 +569,27 @@ class StudentController extends Controller
         }
     }
 
+
+
+
+
+
+
+
+
+
+
     /**
      * Remove the specified student (SOFT DELETE)
      */
     public function destroy(Student $student)
     {
-        // Check permission
-        if (!auth()->user()->can('delete-student')) {
-            abort(403, 'Unauthorized action.');
-        }
-
+        // ✅ REMOVED: SuperAdmin permission check
+        // SuperAdmin role is already verified by route middleware
+        
         DB::beginTransaction();
         
         try {
-            // Enhanced validation - check all relationships
             $hasEnrollments = $student->enrollments()->count() > 0;
             $hasAttendance = $student->attendance()->count() > 0;
             $hasHomework = $student->homeworkSubmissions()->count() > 0;
@@ -562,14 +610,10 @@ class StudentController extends Controller
             $studentName = "{$student->first_name} {$student->last_name}";
             $studentId = $student->id;
             $parentId = $student->parent_id;
-            
-            // Store photo path for cleanup
             $photoPath = $student->profile_photo;
 
-            // Soft delete the student
             $student->delete();
 
-            // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'deleted_student',
@@ -582,7 +626,6 @@ class StudentController extends Controller
 
             DB::commit();
 
-            // Delete profile photo after successful soft delete
             if ($photoPath) {
                 try {
                     Storage::disk('public')->delete($photoPath);
@@ -591,7 +634,6 @@ class StudentController extends Controller
                 }
             }
 
-            // Notify parent
             try {
                 $parent = User::find($parentId);
                 if ($parent) {
@@ -635,7 +677,7 @@ class StudentController extends Controller
                 'last_name' => 'required|string',
                 'date_of_birth' => 'required|date',
                 'parent_id' => 'required|exists:users,id',
-                'student_id' => 'nullable|exists:students,id' // For edit mode
+                'student_id' => 'nullable|exists:students,id'
             ]);
 
             $query = Student::where('first_name', $request->first_name)
@@ -643,7 +685,6 @@ class StudentController extends Controller
                 ->where('date_of_birth', $request->date_of_birth)
                 ->where('parent_id', $request->parent_id);
 
-            // Exclude current student if editing
             if ($request->filled('student_id')) {
                 $query->where('id', '!=', $request->student_id);
             }
@@ -658,6 +699,7 @@ class StudentController extends Controller
                         'full_name' => $duplicate->full_name,
                         'enrollment_date' => $duplicate->enrollment_date,
                         'status' => $duplicate->status,
+                        'weekly_hours' => $duplicate->weekly_hours,
                         'url' => route('superadmin.students.show', $duplicate->id)
                     ]
                 ]);

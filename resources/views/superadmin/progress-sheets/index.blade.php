@@ -12,41 +12,98 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
+        /* Force proper grid layout */
+        .progress-sheets-grid {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+
+        .progress-sheet-col {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+            padding: 0 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 991px) {
+            .progress-sheet-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .progress-sheet-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
         .progress-sheet-card {
             transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
         }
 
         .progress-sheet-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .progress-sheet-card .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
 
         .progress-sheet-title {
             font-weight: 600;
             color: #212529;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             line-height: 1.4;
+            font-size: 18px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 50px;
         }
 
         .progress-sheet-meta {
             color: #6c757d;
-            margin-bottom: 10px;
+            font-size: 14px;
         }
 
         .progress-sheet-meta i {
             margin-right: 5px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .progress-sheet-meta > div {
+            margin-bottom: 5px;
         }
 
         .performance-badges {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 15px;
+            min-height: 32px;
+            margin-top: auto;
+            padding-top: 12px;
         }
 
         .performance-badge {
             padding: 4px 10px;
             border-radius: 12px;
             font-weight: 500;
+            font-size: 13px;
         }
 
         .badge-excellent {
@@ -75,6 +132,18 @@
             color: #6c757d;
         }
 
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .action-buttons .flex-fill {
+            flex: 1;
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -82,14 +151,9 @@
         }
 
         .empty-state i {
-            font-size: 4rem;
             color: #cbd5e0;
             margin-bottom: 20px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
+            font-size: 72px;
         }
 
         .stat-widget-one {
@@ -124,28 +188,6 @@
                     </div>
                 </div>
 
-                <!-- Success/Error Messages -->
-                @if(session('success'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-success fade in alert-dismissable">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <i class="ti-check"></i> {{ session('success') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-danger fade in alert-dismissable">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <i class="ti-alert"></i> {{ session('error') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
 
                 <!-- Statistics Cards -->
                 <div class="row">
@@ -298,94 +340,101 @@
                 <!-- Progress Sheets Grid -->
                 @if($progressSheets->count() > 0)
                     <div class="row">
-                        @foreach($progressSheets as $sheet)
-                        <div class="col-lg-4 col-md-4 mb-4">
-                            <div class="card progress-sheet-card p-3 h-100 d-flex flex-column justify-content-between">
-                                <div class="card-header mb-3">
-                                    <div>
-                                        <h3 class="progress-sheet-title">{{ $sheet->topic }}</h3>
-                                        <span class="badge badge-primary">{{ $sheet->class->name }}</span>
+                        <div class="col-12">
+                            <div class="progress-sheets-grid">
+                                @foreach($progressSheets as $sheet)
+                                <div class="progress-sheet-col">
+                                    <div class="card progress-sheet-card">
+                                        <div class="card-body">
+                                            <!-- Header -->
+                                            <div class="mb-3">
+                                                <h3 class="progress-sheet-title">{{ $sheet->topic }}</h3>
+                                                <span class="badge badge-primary">{{ $sheet->class->name }}</span>
+                                            </div>
+
+                                            <!-- Objective -->
+                                            @if($sheet->objective)
+                                            <p style="color: #6c757d; margin-bottom: 12px; line-height: 1.5;">
+                                                {{ Str::limit($sheet->objective, 100) }}
+                                            </p>
+                                            @endif
+
+                                            <!-- Meta Info -->
+                                            <div class="progress-sheet-meta mb-3">
+                                                <div>
+                                                    <i class="ti-calendar"></i>
+                                                    {{ \Carbon\Carbon::parse($sheet->date)->format('d M Y') }}
+                                                </div>
+                                                <div>
+                                                    <i class="ti-user"></i>
+                                                    {{ $sheet->teacher->name }}
+                                                </div>
+                                                @if($sheet->schedule)
+                                                <div>
+                                                    <i class="ti-time"></i>
+                                                    {{ $sheet->schedule->day_of_week }} • 
+                                                    {{ \Carbon\Carbon::parse($sheet->schedule->start_time)->format('H:i') }} - 
+                                                    {{ \Carbon\Carbon::parse($sheet->schedule->end_time)->format('H:i') }}
+                                                </div>
+                                                @endif
+                                            </div>
+
+                                            <!-- Performance Summary -->
+                                            @if($sheet->progressNotes->count() > 0)
+                                            <div class="performance-badges">
+                                                @php
+                                                    $excellent = $sheet->progressNotes->where('performance', 'excellent')->count();
+                                                    $good = $sheet->progressNotes->where('performance', 'good')->count();
+                                                    $average = $sheet->progressNotes->where('performance', 'average')->count();
+                                                    $struggling = $sheet->progressNotes->where('performance', 'struggling')->count();
+                                                    $absent = $sheet->progressNotes->where('performance', 'absent')->count();
+                                                @endphp
+                                                
+                                                @if($excellent > 0)
+                                                <span class="performance-badge badge-excellent">
+                                                    ✨ {{ $excellent }}
+                                                </span>
+                                                @endif
+                                                @if($good > 0)
+                                                <span class="performance-badge badge-good">
+                                                    ✓ {{ $good }}
+                                                </span>
+                                                @endif
+                                                @if($average > 0)
+                                                <span class="performance-badge badge-average">
+                                                    ~ {{ $average }}
+                                                </span>
+                                                @endif
+                                                @if($struggling > 0)
+                                                <span class="performance-badge badge-struggling">
+                                                    ⚠ {{ $struggling }}
+                                                </span>
+                                                @endif
+                                                @if($absent > 0)
+                                                <span class="performance-badge badge-absent">
+                                                    ✗ {{ $absent }}
+                                                </span>
+                                                @endif
+                                            </div>
+                                            @endif
+
+                                            <!-- Actions -->
+                                            <div class="action-buttons">
+                                                <a href="{{ route('superadmin.progress-sheets.show', $sheet) }}" class="btn btn-primary btn-sm flex-fill">
+                                                    <i class="ti-eye"></i> View
+                                                </a>
+                                                <a href="{{ route('superadmin.progress-sheets.edit', $sheet) }}" class="btn btn-success btn-sm">
+                                                    <i class="ti-pencil-alt"></i>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-
-                                @if($sheet->objective)
-                                <p style="color: #6c757d; margin-bottom: 12px; line-height: 1.5;">
-                                    {{ Str::limit($sheet->objective, 100) }}
-                                </p>
-                                @endif
-
-                                <!-- Meta Info -->
-                                <div class="progress-sheet-meta">
-                                    <div style="margin-bottom: 5px;">
-                                        <i class="ti-calendar"></i>
-                                        {{ \Carbon\Carbon::parse($sheet->date)->format('d M Y') }}
-                                    </div>
-                                    <div style="margin-bottom: 5px;">
-                                        <i class="ti-user"></i>
-                                        {{ $sheet->teacher->name }}
-                                    </div>
-                                    @if($sheet->schedule)
-                                    <div>
-                                        <i class="ti-time"></i>
-                                        {{ $sheet->schedule->day_of_week }} • 
-                                        {{ \Carbon\Carbon::parse($sheet->schedule->start_time)->format('H:i') }} - 
-                                        {{ \Carbon\Carbon::parse($sheet->schedule->end_time)->format('H:i') }}
-                                    </div>
-                                    @endif
-                                </div>
-
-                                <!-- Performance Summary -->
-                                @if($sheet->progressNotes->count() > 0)
-                                <div class="performance-badges">
-                                    @php
-                                        $excellent = $sheet->progressNotes->where('performance', 'excellent')->count();
-                                        $good = $sheet->progressNotes->where('performance', 'good')->count();
-                                        $average = $sheet->progressNotes->where('performance', 'average')->count();
-                                        $struggling = $sheet->progressNotes->where('performance', 'struggling')->count();
-                                        $absent = $sheet->progressNotes->where('performance', 'absent')->count();
-                                    @endphp
-                                    
-                                    @if($excellent > 0)
-                                    <span class="performance-badge badge-excellent">
-                                        ✨ {{ $excellent }}
-                                    </span>
-                                    @endif
-                                    @if($good > 0)
-                                    <span class="performance-badge badge-good">
-                                        ✓ {{ $good }}
-                                    </span>
-                                    @endif
-                                    @if($average > 0)
-                                    <span class="performance-badge badge-average">
-                                        ~ {{ $average }}
-                                    </span>
-                                    @endif
-                                    @if($struggling > 0)
-                                    <span class="performance-badge badge-struggling">
-                                        ⚠ {{ $struggling }}
-                                    </span>
-                                    @endif
-                                    @if($absent > 0)
-                                    <span class="performance-badge badge-absent">
-                                        ✗ {{ $absent }}
-                                    </span>
-                                    @endif
-                                </div>
-                                @endif
-
-                                <!-- Actions -->
-                                <div class="action-buttons" style="padding-top: 12px; border-top: 1px solid #e9ecef;">
-                                    <a href="{{ route('superadmin.progress-sheets.show', $sheet) }}" class="btn btn-primary btn-sm flex-fill">
-                                        <i class="ti-eye"></i> View
-                                    </a>
-                                    <a href="{{ route('superadmin.progress-sheets.edit', $sheet) }}" class="btn btn-success btn-sm">
-                                        <i class="ti-pencil-alt"></i>
-                                    </a>
-                                </div>
+                                @endforeach
                             </div>
                         </div>
-                        @endforeach
                     </div>
+                    
                     <!-- Pagination -->
                     @if($progressSheets->hasPages())
                     <div class="row">

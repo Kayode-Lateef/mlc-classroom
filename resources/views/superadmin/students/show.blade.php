@@ -259,7 +259,7 @@
 
                     <!-- Statistics Cards -->
                     <div class="row">
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-2 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="" style="display: flex; justify-content: center; align-items: center;">
@@ -274,6 +274,24 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one">
+                                    <div class="" style="display: flex; justify-content: center; align-items: center;">
+                                        <div class="stat-icon bg-primary text-white">
+                                            <i class="ti-time"></i>
+                                        </div>
+                                        <div style="margin-left: 15px; flex: 1;">
+                                            <div class="stat-text">Weekly Hours</div>
+                                            <div class="stat-digit">{{ number_format($student->weekly_hours, 1) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
                         <div class="col-lg-3 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one">
@@ -289,7 +307,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-2 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="" style="display: flex; justify-content: center; align-items: center;">
@@ -304,7 +322,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-2 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="" style="display: flex; justify-content: center; align-items: center;">
@@ -332,6 +350,7 @@
                                             <li role="presentation"><a href="#attendance" aria-controls="attendance" role="tab" data-toggle="tab"><i class="ti-check-box"></i> Attendance History</a></li>
                                             <li role="presentation"><a href="#homework" aria-controls="homework" role="tab" data-toggle="tab"> <i class="ti-write"></i> Homework</a></li>
                                             <li role="presentation"><a href="#progress" aria-controls="progress" role="tab" data-toggle="tab"><i class="ti-stats-up"></i> Progress Reports</a></li>
+                                            <li role="presentation"><a href="#hourly-progress" aria-controls="hourly-progress" role="tab" data-toggle="tab"><i class="ti-timer"></i> Hourly Progress History</a></li>
                                         </ul>
                                         <div class="tab-content">
                                             <!-- Classes Tab -->
@@ -451,6 +470,7 @@
                                                     </div>
                                                 @endif
                                             </div>
+                                            <!-- Progress Reports Tab -->
                                             <div role="tabpanel" class="tab-pane" id="progress">
                                                  @if($student->progressNotes->count() > 0)
                                                     <div style="display: flex; flex-direction: column; gap: 15px;">
@@ -494,6 +514,39 @@
                                                         <p>No progress reports have been created for this student yet.</p>
                                                     </div>
                                                 @endif
+                                            </div>
+
+                                            <!-- Hourly Progress History Tab -->
+                                            <div role="tabpanel" class="tab-pane" id="hourly-progress">
+                                                @if($student->hourHistory->count() > 0)
+                                                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                                                        @foreach($student->hourHistory as $history)
+                                                            <div class="class-card">
+                                                                <p class="mb-2">
+                                                                    <strong>{{ number_format($history->old_hours, 1) }}</strong> 
+                                                                    <i class="ti-arrow-right text-muted"></i> 
+                                                                    <strong style="color: #3386f7;">{{ number_format($history->new_hours, 1) }}</strong> hrs/week
+                                                                    
+                                                                    <span class="badge badge-{{ $history->isIncrease() ? 'success' : 'warning' }} ml-2">
+                                                                        {{ $history->formatted_difference }}
+                                                                    </span>
+                                                                </p>
+                                                                <small class="text-muted">
+                                                                    <i class="ti-user"></i> {{ $history->changedBy->name }} • 
+                                                                    <i class="ti-calendar"></i> {{ $history->changed_at->format('d M Y, H:i') }}
+                                                                </small>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                        @else
+                                                            <div class="empty-state">
+                                                                <i class="ti-timer"></i>
+                                                                <h4>No Hourly Progress History</h4>
+                                                                <p>No hourly progress history available for this student yet.</p>
+                                                            </div>
+                                                        @endif
+
+                                               
                                             </div>
                                         </div>
                                     </div>

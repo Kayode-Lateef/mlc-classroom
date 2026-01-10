@@ -96,77 +96,79 @@ $(document).ready(function() {
             });
         }
         
-        // Chartist Pie Chart for Performance - STATIC (can be made dynamic later)
-        if (document.querySelector('.ct-pie-chart')) {
-            new Chartist.Pie('.ct-pie-chart', {
-                series: [45, 30, 15, 10],
-                labels: ['Excellent', 'Good', 'Average', 'Below Average']
-            }, {
-                donut: true,
-                donutWidth: 60,
-                startAngle: 270,
-                showLabel: true
-            });
-        }
 
 
-        // Class Performance Comparison Chart - STATIC (can be made dynamic by querying class averages)
-        if (document.getElementById('classPerformanceChart')) {
-            var ctx = document.getElementById('classPerformanceChart').getContext('2d');
-            new Chart(ctx, {
+        if (document.getElementById('studentsByHoursChart') && typeof studentsByHoursData !== 'undefined' && typeof studentsByHoursValues !== 'undefined') {
+            var studentsByHoursCtx = document.getElementById('studentsByHoursChart').getContext('2d');
+            new Chart(studentsByHoursCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Grade 9A', 'Grade 9B', 'Grade 9C', 'Grade 10A', 'Grade 10B', 'Grade 11A', 'Grade 11B', 'Grade 12A'],
+                    labels: studentsByHoursData,
                     datasets: [{
-                        label: 'Average Score (%)',
-                        data: [85, 78, 82, 88, 75, 90, 86, 92],
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.6)',
-                            'rgba(255, 206, 86, 0.6)',
-                            'rgba(54, 162, 235, 0.6)',
-                            'rgba(153, 102, 255, 0.6)',
-                            'rgba(255, 159, 64, 0.6)',
-                            'rgba(75, 192, 192, 0.6)',
-                            'rgba(255, 99, 132, 0.6)',
-                            'rgba(54, 162, 235, 0.6)'
-                        ],
-                        borderColor: [
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)'
-                        ],
+                        label: 'Number of Students',
+                        data: studentsByHoursValues,
+                        backgroundColor: ['#3386f7', '#00bcd4', '#4caf50', '#ff9800'],
+                        borderColor: ['#3386f7', '#00bcd4', '#4caf50', '#ff9800'],
                         borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        }
-                    },
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
                             ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
+                                stepSize: 1
                             }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     }
                 }
             });
         }
-        // Super Admin dashboard charts Ends
+
+
+    // ========================================
+    // INCOME BY HOUR RANGE CHART
+    // ========================================
+    if (document.getElementById('incomeByHourRangeChart') && typeof incomeByHourRangeLabels !== 'undefined' && typeof incomeByHourRangeValues !== 'undefined') {
+        var incomeByHourRangeCtx = document.getElementById('incomeByHourRangeChart').getContext('2d');
+        new Chart(incomeByHourRangeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: incomeByHourRangeLabels,
+                datasets: [{
+                    label: 'Monthly Income (£)',
+                    data: incomeByHourRangeValues,
+                    backgroundColor: ['#3386f7', '#00bcd4', '#4caf50', '#ff9800'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': £' + context.parsed.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+        
+    // Super Admin dashboard charts Ends
 
 
             // ====================================================================

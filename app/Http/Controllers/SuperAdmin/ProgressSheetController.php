@@ -53,7 +53,7 @@ class ProgressSheetController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $progressSheets = $query->paginate(10);
+        $progressSheets = $query->paginate(12);
         // $totalProgressSheets = ProgressSheet::count();
 
         // Get filter options

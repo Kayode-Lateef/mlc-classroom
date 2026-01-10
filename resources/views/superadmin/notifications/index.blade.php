@@ -264,7 +264,7 @@
 
                 <div class="row">
                     <!-- Send Notification Form -->
-                    <div class="col-lg-5">
+                    <div class="col-lg-7">
                         <div class="card alert compose-card">
                             <div class="card-header mb-2">
                                 <h4><i class="ti-announcement"></i> Send Notification</h4>
@@ -379,7 +379,7 @@
                     </div>
 
                     <!-- Notification History -->
-                    <div class="col-lg-7">
+                    <div class="col-lg-5">
                         <div class="card alert">
                             <div class="card-header mb-2">
                                 <h4><i class="ti-time"></i> Recent Notifications (Last 50)</h4>

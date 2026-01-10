@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Auth\Events\Registered;
+use Spatie\Permission\Models\Permission;
 
 
 class UserManagementController extends Controller
@@ -100,15 +102,20 @@ class UserManagementController extends Controller
             'profile_photo.image' => 'Profile photo must be an image file.',
             'profile_photo.mimes' => 'Profile photo must be a JPEG, PNG, JPG, or GIF file.',
             'profile_photo.max' => 'Profile photo must not exceed 2MB.',
+            'requires_verification.required' => 'Please select email verification option.',
+            'requires_verification.boolean' => 'Invalid verification option selected.',
         ];
+
+        // ✅ UPDATED: Added 'suspended' and 'banned' to status validation
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', Password::min(8)],
             'role' => 'required|in:superadmin,admin,teacher,parent',
             'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:active,inactive,suspended,banned', // ✅ SYNCED WITH DATABASE
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'requires_verification' => 'required|boolean', // ✅ NEW: Email verification option
         ], $messages);
 
         if ($validator->fails()) {
@@ -127,6 +134,13 @@ class UserManagementController extends Controller
             'phone' => $request->phone,
             'status' => $request->status,
         ];
+
+        // ✅ NEW: Handle email verification option
+        if (!$request->requires_verification) {
+            // Auto-verify if superadmin chooses immediate access
+            $userData['email_verified_at'] = now();
+        }
+        // If requires_verification = true, email_verified_at stays NULL
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
@@ -147,16 +161,27 @@ class UserManagementController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        // NOTIFY THE NEW USER
-        $this->notifyNewUser($user, $request->password);
+        // ✅ NEW: Send appropriate notification based on verification requirement
+        if ($request->requires_verification) {
+            // Send verification email
+            event(new Registered($user));
+            $this->notifyNewUserWithVerification($user);
+        } else {
+            // Send welcome email with credentials (immediate access)
+            $this->notifyNewUserWithCredentials($user, $request->password);
+        }
 
         // NOTIFY SUPERADMINS (if not creating a superadmin)
         if ($user->role !== 'superadmin') {
             $this->notifySuperAdminsAboutNewUser($user);
         }
 
+        $successMessage = $request->requires_verification 
+            ? 'User created successfully! Verification email has been sent.'
+            : 'User created successfully! Welcome email with credentials has been sent.';
+
         return redirect()->route('superadmin.users.index')
-            ->with('success', 'User created successfully!');
+            ->with('success', $successMessage);
     }
 
     /**
@@ -185,7 +210,13 @@ class UserManagementController extends Controller
             ->limit(10)
             ->get();
 
-        return view('superadmin.users.show', compact('user', 'userStats', 'recentActivity'));
+        // ✅ NEW: Get user's direct permissions (for granular admin permissions)
+        $userPermissions = $user->permissions()->pluck('name')->toArray();
+        $allPermissions = Permission::orderBy('name')->get()->groupBy(function($permission) {
+            return explode('.', $permission->name)[0] ?? 'general';
+        });
+
+        return view('superadmin.users.show', compact('user', 'userStats', 'recentActivity', 'userPermissions', 'allPermissions'));
     }
 
     /**
@@ -199,7 +230,13 @@ class UserManagementController extends Controller
                 ->with('warning', 'Use your profile page to edit your own account.');
         }
 
-        return view('superadmin.users.edit', compact('user'));
+        // ✅ NEW: Get user's permissions for the edit form
+        $userPermissions = $user->permissions()->pluck('id')->toArray();
+        $allPermissions = Permission::orderBy('name')->get()->groupBy(function($permission) {
+            return explode('.', $permission->name)[0] ?? 'general';
+        });
+
+        return view('superadmin.users.edit', compact('user', 'userPermissions', 'allPermissions'));
     }
 
     /**
@@ -231,14 +268,17 @@ class UserManagementController extends Controller
             'profile_photo.max' => 'Profile photo must not exceed 2MB.',
         ];
 
+        // ✅ UPDATED: Added 'suspended' and 'banned' to status validation
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
             'role' => 'required|in:superadmin,admin,teacher,parent',
             'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:active,inactive,suspended,banned', // ✅ SYNCED WITH DATABASE
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'permissions' => 'nullable|array', // ✅ NEW: Permission assignment
+            'permissions.*' => 'exists:permissions,id',
         ], $messages);
 
         if ($validator->fails()) {
@@ -246,6 +286,10 @@ class UserManagementController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
+
+        // ✅ TRACK ROLE CHANGE for notification
+        $oldRole = $user->role;
+        $roleChanged = ($oldRole !== $request->role);
 
         // Prepare update data
         $updateData = [
@@ -273,6 +317,12 @@ class UserManagementController extends Controller
         // Update user
         $user->update($updateData);
 
+        // ✅ NEW: Sync permissions (for granular admin control)
+        if ($request->has('permissions')) {
+            $permissions = Permission::whereIn('id', $request->permissions)->pluck('name');
+            $user->syncPermissions($permissions);
+        }
+
         // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -283,6 +333,11 @@ class UserManagementController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
+
+        // ✅ NEW: Notify user if role changed
+        if ($roleChanged) {
+            $this->notifyUserRoleChange($user, $oldRole, $request->role);
+        }
 
         return redirect()->route('superadmin.users.index')
             ->with('success', 'User updated successfully!');
@@ -331,9 +386,9 @@ class UserManagementController extends Controller
             'user_agent' => request()->userAgent(),
         ]);
 
-    return redirect()->route('superadmin.users.index')
-        ->with('success', 'User deleted successfully!');
-}
+        return redirect()->route('superadmin.users.index')
+            ->with('success', 'User deleted successfully!');
+    }
 
     /**
      * Toggle user status (Active/Suspended)
@@ -385,31 +440,136 @@ class UserManagementController extends Controller
             ->with('success', "User {$newStatus} successfully!");
     }
 
+    /**
+     * ✅ NEW: Resend email verification link
+     */
+    public function resendVerification(User $user)
+    {
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->back()
+                ->with('warning', 'This user has already verified their email address.');
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'resent_verification',
+            'model_type' => 'User',
+            'model_id' => $user->id,
+            'description' => "Resent email verification to: {$user->name}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Verification email resent successfully!');
+    }
 
     /**
-     *  HELPER: Notify new user with their credentials
+     * ✅ NEW: Manually verify user email (bypass verification)
      */
-    private function notifyNewUser(User $user, $temporaryPassword)
+    public function manualVerify(User $user)
+    {
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->back()
+                ->with('warning', 'This user has already verified their email address.');
+        }
+
+        $user->markEmailAsVerified();
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'manually_verified',
+            'model_type' => 'User',
+            'model_id' => $user->id,
+            'description' => "Manually verified email for: {$user->name}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        // Notify user
+        try {
+            NotificationHelper::notifyUser(
+                $user,
+                'Email Verified',
+                'Your email address has been verified by an administrator. You now have full access to the system.',
+                'general',
+                [
+                    'verified_by' => auth()->user()->name,
+                    'url' => route('login')
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to notify user about manual verification: " . $e->getMessage());
+        }
+
+        return redirect()->back()
+            ->with('success', 'Email verified successfully!');
+    }
+
+
+    // ============================================
+    // HELPER METHODS
+    // ============================================
+
+    /**
+     * ✅ NEW: Notify new user with verification email
+     */
+    private function notifyNewUserWithVerification(User $user)
     {
         try {
-            $message = "Your account has been created successfully. ";
+            $message = "Your account has been created. Please verify your email address to access the system. ";
             $message .= "Role: " . ucfirst($user->role) . ". ";
-            $message .= "Please login and change your password.";
+            $message .= "Check your email for the verification link.";
 
             NotificationHelper::notifyUser(
                 $user,
-                'Account Created',
+                'Account Created - Verify Email',
                 $message,
                 'general',
                 [
                     'role' => $user->role,
                     'created_by' => auth()->user()->name,
-                    'temporary_password' => $temporaryPassword,  // Include for reference
+                    'requires_verification' => true,
                     'url' => route('login')
                 ]
             );
 
-            \Log::info("New user notification sent to: {$user->email}");
+            \Log::info("Verification email sent to: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to send verification email to {$user->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ UPDATED: Notify new user with their credentials (immediate access)
+     */
+    private function notifyNewUserWithCredentials(User $user, $temporaryPassword)
+    {
+        try {
+            $message = "Your account has been created with immediate access. ";
+            $message .= "Role: " . ucfirst($user->role) . ". ";
+            $message .= "Please login and change your password.";
+
+            NotificationHelper::notifyUser(
+                $user,
+                'Account Created - Immediate Access',
+                $message,
+                'general',
+                [
+                    'role' => $user->role,
+                    'created_by' => auth()->user()->name,
+                    'temporary_password' => $temporaryPassword,
+                    'requires_verification' => false,
+                    'url' => route('login')
+                ]
+            );
+
+            \Log::info("Welcome email sent to: {$user->email}");
 
         } catch (\Exception $e) {
             \Log::error("Failed to notify new user {$user->id}: " . $e->getMessage());
@@ -440,6 +600,35 @@ class UserManagementController extends Controller
 
         } catch (\Exception $e) {
             \Log::error("Failed to notify superadmins about new user {$user->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ NEW: Notify user about role change
+     */
+    private function notifyUserRoleChange(User $user, $oldRole, $newRole)
+    {
+        try {
+            $message = "Your role has been changed from " . ucfirst($oldRole) . " to " . ucfirst($newRole) . " by " . auth()->user()->name . ". ";
+            $message .= "Your permissions and access levels may have changed. Please log in to review your new role.";
+
+            NotificationHelper::notifyUser(
+                $user,
+                'Role Changed',
+                $message,
+                'general',
+                [
+                    'old_role' => $oldRole,
+                    'new_role' => $newRole,
+                    'changed_by' => auth()->user()->name,
+                    'url' => route('login')
+                ]
+            );
+
+            \Log::info("Role change notification sent to user: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to notify user {$user->id} about role change: " . $e->getMessage());
         }
     }
 
@@ -538,7 +727,10 @@ class UserManagementController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Update user role (simple role column, no Spatie)
+        // Track old role for notification
+        $oldRole = $user->role;
+
+        // Update user role
         $user->update(['role' => $request->role]);
 
         // Log activity
@@ -552,6 +744,9 @@ class UserManagementController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        // Notify user about role change
+        $this->notifyUserRoleChange($user, $oldRole, $request->role);
+
         return response()->json([
             'success' => true,
             'message' => 'Role assigned successfully!'
@@ -559,24 +754,22 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Assign permissions to user (AJAX endpoint - if using Spatie permissions)
-     * Note: This uses Spatie's permission system, separate from the simple role column
+     * Assign permissions to user (AJAX endpoint - Spatie permissions)
      */
     public function assignPermissions(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
             'permissions' => 'required|array',
-            'permissions.*' => 'string',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // This uses Spatie's permission system (separate from role column)
-        // Only use if you have Spatie Permission package installed
         try {
-            $user->syncPermissions($request->permissions);
+            $permissions = Permission::whereIn('id', $request->permissions)->pluck('name');
+            $user->syncPermissions($permissions);
             
             // Log activity
             ActivityLog::create([
@@ -600,6 +793,4 @@ class UserManagementController extends Controller
             ], 500);
         }
     }
-
-
 }

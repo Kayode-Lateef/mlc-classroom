@@ -45,6 +45,9 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     Route::patch('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggleStatus');
     Route::post('users/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('users.assignRole');
     Route::post('users/{user}/assign-permissions', [UserManagementController::class, 'assignPermissions'])->name('users.assignPermissions');
+    // Email verification management routes
+    Route::post('users/{user}/resend-verification', [UserManagementController::class, 'resendVerification'])->name('users.resendVerification');
+    Route::post('users/{user}/manual-verify', [UserManagementController::class, 'manualVerify'])->name('users.manualVerify');
     Route::resource('users', UserManagementController::class);
     
     // Roles

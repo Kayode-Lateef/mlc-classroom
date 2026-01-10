@@ -133,7 +133,7 @@
     
     <script src="{{ asset('assets/js/lib/sweetalert/sweetalert.min.js') }}"></script>
     <!-- scripit init-->
-    <script src="{{ asset('assets/js/lib/sweetalert/sweetalert.init.js') }}"></script>
+    {{-- <script src="{{ asset('assets/js/lib/sweetalert/sweetalert.init.js') }}"></script> --}}
     
     <!-- Custom scripts (before page-specific scripts) -->
     <script src="{{ asset('assets/js/scripts.js') }}"></script>

@@ -368,7 +368,13 @@ $(document).ready(function() {
             // File size validation (10MB)
             const maxSize = 10 * 1024 * 1024; // 10MB in bytes
             if (file.size > maxSize) {
-                alert('File size exceeds 10MB. Please choose a smaller file.');
+                // CHANGED: alert() replaced with SweetAlert
+                swal({
+                    title: "File Too Large!",
+                    text: "File size exceeds 10MB. Please choose a smaller file.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                });
                 $(this).val('');
                 $('#file-name').hide();
                 return;
@@ -381,21 +387,39 @@ $(document).ready(function() {
             if (resourceType === 'pdf') {
                 validType = file.type === 'application/pdf' || fileName.endsWith('.pdf');
                 if (!validType) {
-                    alert('Please upload a PDF file only.');
+                    // CHANGED: alert() replaced with SweetAlert
+                    swal({
+                        title: "Invalid File Type!",
+                        text: "Please upload a PDF file only.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
                 }
             } else if (resourceType === 'document') {
                 validType = file.type === 'application/msword' || 
                            file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
                            fileName.endsWith('.doc') || fileName.endsWith('.docx');
                 if (!validType) {
-                    alert('Please upload a Word document (.doc or .docx) only.');
+                    // CHANGED: alert() replaced with SweetAlert
+                    swal({
+                        title: "Invalid File Type!",
+                        text: "Please upload a Word document (.doc or .docx) only.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
                 }
             } else if (resourceType === 'image') {
                 validType = file.type.startsWith('image/') && 
                            (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || 
                             fileName.endsWith('.png') || fileName.endsWith('.gif'));
                 if (!validType) {
-                    alert('Please upload an image file (JPG, PNG, or GIF) only.');
+                    // CHANGED: alert() replaced with SweetAlert
+                    swal({
+                        title: "Invalid File Type!",
+                        text: "Please upload an image file (JPG, PNG, or GIF) only.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
                 }
             }
             
@@ -419,7 +443,13 @@ $(document).ready(function() {
         
         if (!resourceType) {
             e.preventDefault();
-            alert('Please select a resource type.');
+            // CHANGED: alert() replaced with SweetAlert
+            swal({
+                title: "Resource Type Required!",
+                text: "Please select a resource type.",
+                type: "error",
+                confirmButtonText: "OK"
+            });
             return false;
         }
         
@@ -428,7 +458,13 @@ $(document).ready(function() {
             const fileInput = document.getElementById('file-input');
             if (!fileInput.files || fileInput.files.length === 0) {
                 e.preventDefault();
-                alert('Please upload a file for the selected resource type.');
+                // CHANGED: alert() replaced with SweetAlert
+                swal({
+                    title: "File Required!",
+                    text: "Please upload a file for the selected resource type.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                });
                 return false;
             }
         }
@@ -438,8 +474,15 @@ $(document).ready(function() {
             const videoUrl = $('input[name="video_url"]').val();
             if (!videoUrl || videoUrl.trim() === '') {
                 e.preventDefault();
-                alert('Please provide a video URL.');
-                $('input[name="video_url"]').focus();
+                // CHANGED: alert() replaced with SweetAlert
+                swal({
+                    title: "Video URL Required!",
+                    text: "Please provide a video URL.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                }, function() {
+                    $('input[name="video_url"]').focus();
+                });
                 return false;
             }
         }
@@ -449,8 +492,15 @@ $(document).ready(function() {
             const externalLink = $('input[name="external_link"]').val();
             if (!externalLink || externalLink.trim() === '') {
                 e.preventDefault();
-                alert('Please provide an external link.');
-                $('input[name="external_link"]').focus();
+                // CHANGED: alert() replaced with SweetAlert
+                swal({
+                    title: "External Link Required!",
+                    text: "Please provide an external link.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                }, function() {
+                    $('input[name="external_link"]').focus();
+                });
                 return false;
             }
         }

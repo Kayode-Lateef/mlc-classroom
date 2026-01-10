@@ -3191,9 +3191,15 @@ tbody tr td:last-child {
     margin-bottom: 15px
 }
 
+/* .login-logo img {
+    background-color: #f5f5f5;
+} */
+
 .login-logo span {
-    color: #fff;
-    font-size: 24px
+    /* color: #fff; */
+    font-size: 24px;
+    display: block;
+    font-weight: 400;
 }
 
 .login-logo img {

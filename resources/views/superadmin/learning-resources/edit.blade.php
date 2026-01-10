@@ -70,7 +70,7 @@
                         <!-- Main Content -->
                         <div class="col-lg-8">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-pencil-alt"></i> Resource Details</h4>
                                 </div>
                                 <div class="card-body">
@@ -236,7 +236,7 @@
                         <div class="col-lg-4">
                             <!-- Current Info -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-info-alt"></i> Current Information</h4>
                                 </div>
                                 <div class="card-body">
@@ -305,14 +305,12 @@
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <!-- Delete Form -->
                                     <form action="{{ route('superadmin.resources.destroy', $resource) }}" 
-                                          method="POST" 
-                                          id="deleteResourceForm"
-                                          style="margin: 0;">
+                                        method="POST" 
+                                        id="deleteResourceForm"
+                                        style="margin: 0;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" 
-                                                class="btn btn-danger"
-                                                onclick="if(confirm('Are you sure you want to delete this resource? This action cannot be undone.')) { document.getElementById('deleteResourceForm').submit(); }">
+                                        <button type="submit" class="btn btn-danger">
                                             <i class="ti-trash"></i> Delete Resource
                                         </button>
                                     </form>
@@ -396,7 +394,12 @@ $(document).ready(function() {
             // File size validation (10MB)
             const maxSize = 10 * 1024 * 1024; // 10MB in bytes
             if (file.size > maxSize) {
-                alert('File size exceeds 10MB. Please choose a smaller file.');
+                swal({
+                    title: "File Too Large!",
+                    text: "File size exceeds 10MB. Please choose a smaller file.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                });
                 $(this).val('');
                 $('#file-name').hide();
                 return;
@@ -409,21 +412,36 @@ $(document).ready(function() {
             if (resourceType === 'pdf') {
                 validType = file.type === 'application/pdf' || fileName.endsWith('.pdf');
                 if (!validType) {
-                    alert('Please upload a PDF file only.');
+                    swal({
+                        title: "Invalid File Type!",
+                        text: "Please upload a PDF file only.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
                 }
             } else if (resourceType === 'document') {
                 validType = file.type === 'application/msword' || 
                            file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
                            fileName.endsWith('.doc') || fileName.endsWith('.docx');
                 if (!validType) {
-                    alert('Please upload a Word document (.doc or .docx) only.');
+                    swal({
+                        title: "Invalid File Type!",
+                        text: "Please upload a Word document (.doc or .docx) only.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
                 }
             } else if (resourceType === 'image') {
                 validType = file.type.startsWith('image/') && 
                            (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || 
                             fileName.endsWith('.png') || fileName.endsWith('.gif'));
                 if (!validType) {
-                    alert('Please upload an image file (JPG, PNG, or GIF) only.');
+                    swal({
+                        title: "Invalid File Type!",
+                        text: "Please upload an image file (JPG, PNG, or GIF) only.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
                 }
             }
             
@@ -447,27 +465,28 @@ $(document).ready(function() {
         
         if (!resourceType) {
             e.preventDefault();
-            alert('Please select a resource type.');
+            swal({
+                title: "Resource Type Required!",
+                text: "Please select a resource type.",
+                type: "error",
+                confirmButtonText: "OK"
+            });
             return false;
         }
-        
-        // Check if file is required
-        // if ((resourceType === 'pdf' || resourceType === 'document' || resourceType === 'image')) {
-        //     const fileInput = document.getElementById('file-input');
-        //     if (!fileInput.files || fileInput.files.length === 0) {
-        //         e.preventDefault();
-        //         alert('Please upload a file for the selected resource type.');
-        //         return false;
-        //     }
-        // }
         
         // Check if video URL is provided
         if (resourceType === 'video') {
             const videoUrl = $('input[name="video_url"]').val();
             if (!videoUrl || videoUrl.trim() === '') {
                 e.preventDefault();
-                alert('Please provide a video URL.');
-                $('input[name="video_url"]').focus();
+                swal({
+                    title: "Video URL Required!",
+                    text: "Please provide a video URL.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                }, function() {
+                    $('input[name="video_url"]').focus();
+                });
                 return false;
             }
         }
@@ -477,13 +496,47 @@ $(document).ready(function() {
             const externalLink = $('input[name="external_link"]').val();
             if (!externalLink || externalLink.trim() === '') {
                 e.preventDefault();
-                alert('Please provide an external link.');
-                $('input[name="external_link"]').focus();
+                swal({
+                    title: "External Link Required!",
+                    text: "Please provide an external link.",
+                    type: "error",
+                    confirmButtonText: "OK"
+                }, function() {
+                    $('input[name="external_link"]').focus();
+                });
                 return false;
             }
         }
         
         return true;
+    });
+
+    // ADDED: Handle resource deletion with SweetAlert
+    $('#deleteResourceForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+        
+        const form = this;
+        const resourceTitle = "{{ $resource->title }}";
+        const resourceType = "{{ ucfirst($resource->resource_type) }}";
+        
+        swal({
+            title: "Delete Resource?",
+            text: "Are you sure you want to delete this resource?\n\nTitle: " + resourceTitle + "\nType: " + resourceType + "\n\nThis action cannot be undone!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        },
+        function(isConfirm){
+            if (isConfirm) {
+                form.submit(); // Submit the form
+            }
+        });
+        
+        return false;
     });
 });
 </script>

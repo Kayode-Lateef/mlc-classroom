@@ -271,6 +271,7 @@
                                                     <th>Parent</th>
                                                     <th>Date of Birth</th>
                                                     <th>Enrollment</th>
+                                                    <th>Weekly Hour</th>
                                                     <th>Status</th>
                                                     <th>Classes</th>
                                                     <th>Actions</th>
@@ -308,6 +309,11 @@
                                                             <small class="text-muted" style="display: block; margin-top: 2px;">Age: {{ $student->date_of_birth->age }}</small>
                                                         </td>
                                                         <td>{{ $student->enrollment_date->format('d M Y') }}</td>
+                                                        <td>
+                                                            <span class="badge badge-info">
+                                                                <i class="ti-time"></i> {{ number_format($student->weekly_hours, 1) }} hrs/week
+                                                            </span>
+                                                        </td>
                                                         <td>
                                                             @if($student->status === 'active')
                                                                 <span class="badge badge-success role-badge">Active</span>

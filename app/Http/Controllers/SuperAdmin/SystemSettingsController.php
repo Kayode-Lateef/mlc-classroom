@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class SystemSettingsController extends Controller
 {
@@ -60,6 +61,7 @@ class SystemSettingsController extends Controller
             'admin_notification_email' => 'required|email|max:255',
 
             // Academic Settings
+            'hourly_rate' => 'required|numeric|min:0|max:1000',  // NEW FIELD
             'attendance_required' => 'nullable|boolean',
             'late_homework_penalty' => 'nullable|boolean',
             'homework_due_days' => 'nullable|integer|min:1|max:30',
@@ -69,7 +71,6 @@ class SystemSettingsController extends Controller
             'maintenance_mode' => 'nullable|boolean',
             'maintenance_message' => 'nullable|string|max:500',
         ];
-
 
         // Custom error messages
         $messages = [
@@ -87,6 +88,12 @@ class SystemSettingsController extends Controller
             'term_end_date.after' => 'Term end date must be after the start date.',
             'admin_notification_email.required' => 'Admin notification email is required.',
             'admin_notification_email.email' => 'Please provide a valid admin email address.',
+            
+            // NEW: Hourly rate validation messages
+            'hourly_rate.required' => 'Hourly rate is required.',
+            'hourly_rate.numeric' => 'Hourly rate must be a number.',
+            'hourly_rate.min' => 'Hourly rate must be at least £0.',
+            'hourly_rate.max' => 'Hourly rate cannot exceed £1,000.',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -183,13 +190,25 @@ class SystemSettingsController extends Controller
             // Clear settings cache
             Cache::forget('system_settings');
 
-            // Log activity
+            // Log activity with special note for hourly rate changes
+            $description = 'Updated ' . count($updatedSettings) . ' system settings';
+            
+            // Check if hourly rate was changed
+            $hourlyRateChange = collect($updatedSettings)->firstWhere('key', 'hourly_rate');
+            if ($hourlyRateChange) {
+                $description .= sprintf(
+                    ' (Hourly rate changed from £%s to £%s)',
+                    number_format($hourlyRateChange['old'] ?? 0, 2),
+                    number_format($hourlyRateChange['new'], 2)
+                );
+            }
+
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'updated_system_settings',
                 'model_type' => 'SystemSetting',
                 'model_id' => null,
-                'description' => 'Updated ' . count($updatedSettings) . ' system settings',
+                'description' => $description,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
@@ -233,6 +252,7 @@ class SystemSettingsController extends Controller
             'admin_notification_email' => 'notifications',
             'sms_provider' => 'notifications',
             
+            'hourly_rate' => 'academic',  // NEW CATEGORY MAPPING
             'attendance_required' => 'academic',
             'late_homework_penalty' => 'academic',
             'homework_due_days' => 'academic',
@@ -252,6 +272,8 @@ class SystemSettingsController extends Controller
                 return $value ? 'true' : 'false';
             case 'integer':
                 return (string) intval($value);
+            case 'decimal':  // NEW TYPE FOR HOURLY RATE
+                return (string) number_format((float) $value, 2, '.', '');
             case 'json':
                 return is_array($value) ? json_encode($value) : $value;
             default:
@@ -266,6 +288,9 @@ class SystemSettingsController extends Controller
     {
         if (is_bool($value) || in_array($value, ['true', 'false', '0', '1'])) {
             return 'boolean';
+        }
+        if (is_numeric($value) && strpos($value, '.') !== false) {
+            return 'decimal';  // NEW: Detect decimal values
         }
         if (is_numeric($value)) {
             return 'integer';

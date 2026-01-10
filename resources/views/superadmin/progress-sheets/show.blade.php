@@ -136,29 +136,6 @@
                     </div>
                 </div>
 
-                <!-- Success/Error Messages -->
-                @if(session('success'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-success fade in alert-dismissable">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <i class="ti-check"></i> {{ session('success') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-danger fade in alert-dismissable">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <i class="ti-alert"></i> {{ session('error') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
                 <div class="row">
                     <!-- Main Content -->
 
@@ -337,7 +314,9 @@
                                     <i class="ti-pencil-alt"></i> Edit Progress Sheet
                                 </a>
 
-                                <form action="{{ route('superadmin.progress-sheets.destroy', $progressSheet) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this progress sheet? This action cannot be undone.');">
+                                <form action="{{ route('superadmin.progress-sheets.destroy', $progressSheet) }}" 
+                                    method="POST" 
+                                    id="deleteProgressSheetForm">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-block">
@@ -418,3 +397,46 @@
         </div>
     </div>
 @endsection
+
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Handle progress sheet deletion with SweetAlert
+    $('#deleteProgressSheetForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+        
+        const form = this;
+        const lessonTitle = "{{ $progressSheet->lesson_title }}";
+        const assessedCount = {{ $progressSheet->progressNotes()->count() ?? 0 }};
+        
+        let warningText = "You want to delete progress sheet '" + lessonTitle + "'?\n\n";
+        
+        if (assessedCount > 0) {
+            warningText += "⚠️ This will delete " + assessedCount + " student assessment(s).\n\n";
+        }
+        
+        warningText += "This action cannot be undone!";
+        
+        swal({
+            title: "Are you sure?",
+            text: warningText,
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel!",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        },
+        function(isConfirm){
+            if (isConfirm) {
+                form.submit(); // Submit the form
+            }
+        });
+        
+        return false;
+    });
+});
+</script>
+@endpush

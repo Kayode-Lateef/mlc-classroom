@@ -9,12 +9,15 @@ use App\Models\ClassModel;
 use App\Models\Attendance;
 use App\Models\ClassEnrollment;
 use App\Models\HomeworkAssignment;
-use App\Models\ProgressSheet;  // ← ADDED: Missing import
+use App\Models\ProgressSheet;
 use App\Models\SmsLog;
 use App\Models\ActivityLog;
+use App\Models\SystemSetting;
+use App\Models\StudentHourHistory;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -23,7 +26,48 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // System-wide statistics
+        // ============================================================
+        // WEEKLY HOURS & INCOME CALCULATIONS (NEW)
+        // ============================================================
+        
+        // Get hourly rate from system settings
+        $hourlyRate = SystemSetting::where('key', 'hourly_rate')->value('value') ?? 50;
+        
+        // Calculate total weekly hours (only active students)
+        $totalWeeklyHours = Student::where('status', 'active')->sum('weekly_hours') ?? 0;
+        
+        // Calculate income projections
+        $weeklyIncome = $totalWeeklyHours * $hourlyRate;
+        $monthlyIncome = $weeklyIncome * 4.33; // Average weeks per month
+        $annualIncome = $monthlyIncome * 12;
+        
+        // Average hours per active student
+        $avgHoursPerStudent = Student::where('status', 'active')->avg('weekly_hours') ?? 0;
+        
+        // Students grouped by hour ranges (for chart)
+        $studentsByHours = [
+            '0.5-2 hrs' => Student::where('status', 'active')->whereBetween('weekly_hours', [0.5, 2.0])->count(),
+            '2-5 hrs' => Student::where('status', 'active')->whereBetween('weekly_hours', [2.0, 5.0])->count(),
+            '5-10 hrs' => Student::where('status', 'active')->whereBetween('weekly_hours', [5.0, 10.0])->count(),
+            '10+ hrs' => Student::where('status', 'active')->where('weekly_hours', '>', 10.0)->count(),
+        ];
+        
+        // Recent hour changes (last 7 days)
+        $recentHourChanges = StudentHourHistory::with(['student', 'changedBy'])
+            ->where('changed_at', '>=', now()->subDays(7))
+            ->orderBy('changed_at', 'desc')
+            ->limit(5)
+            ->get();
+        
+        // Total hour changes this month
+        $hourChangesThisMonth = StudentHourHistory::whereMonth('changed_at', now()->month)
+            ->whereYear('changed_at', now()->year)
+            ->count();
+        
+        // ============================================================
+        // EXISTING SYSTEM-WIDE STATISTICS
+        // ============================================================
+        
         $stats = [
             'total_users' => User::count(),
             'total_students' => Student::count(),
@@ -107,14 +151,15 @@ class DashboardController extends Controller
                 'deleted_role',
                 'updated_permission',
                 'deleted_permission',
-                'user_status_changed'
+                'user_status_changed',
+                'updated_student_hours' // NEW: Track hour changes
             ])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 
         // ============================================================
-        // CHART DATA CALCULATIONS - COMPLETE VERSION
+        // CHART DATA CALCULATIONS
         // ============================================================
 
         // Chart Data: Enrollment Trend (Last 6 months)
@@ -124,17 +169,14 @@ class DashboardController extends Controller
             'teachers' => []
         ];
         
-        // Loop through last 6 months and count registrations
         for ($i = 5; $i >= 0; $i--) {
             $month = now()->subMonths($i);
             $enrollmentChartData['labels'][] = $month->format('M');
             
-            // Count students created in this month
             $enrollmentChartData['students'][] = Student::whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
                 ->count();
             
-            // Count teachers created in this month
             $enrollmentChartData['teachers'][] = User::where('role', 'teacher')
                 ->whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
@@ -158,12 +200,10 @@ class DashboardController extends Controller
             'data' => []
         ];
         
-        // Loop through last 7 days and calculate attendance percentage
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
-            $weeklyAttendanceData['labels'][] = $date->format('D'); // Mon, Tue, Wed...
+            $weeklyAttendanceData['labels'][] = $date->format('D');
             
-            // Calculate attendance percentage for this day
             $dayTotal = Attendance::whereDate('date', $date->toDateString())->count();
             $dayPresent = Attendance::whereDate('date', $date->toDateString())
                 ->where('status', 'present')
@@ -174,16 +214,81 @@ class DashboardController extends Controller
                 : 0;
         }
 
-        // Calculate attendance rate for today (used in stats card)
+        // Calculate attendance rate for today
         $attendanceRate = $attendanceToday['total'] > 0 
             ? round(($attendanceToday['present'] / $attendanceToday['total']) * 100, 1) 
             : 0;
+
+        // ============================================================
+        // NEW: WEEKLY HOURS TREND CHART (Last 6 months)
+        // ============================================================
+        
+        $weeklyHoursTrendData = [
+            'labels' => [],
+            'hours' => [],
+            'income' => []
+        ];
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $weeklyHoursTrendData['labels'][] = $month->format('M');
+            
+            // Get average weekly hours for active students in that month
+            $avgHours = Student::where('status', 'active')
+                ->whereYear('created_at', '<=', $month->year)
+                ->whereMonth('created_at', '<=', $month->month)
+                ->avg('weekly_hours') ?? 0;
+            
+            $weeklyHoursTrendData['hours'][] = round($avgHours, 1);
+            
+            // Calculate projected monthly income for that period
+            $totalHours = Student::where('status', 'active')
+                ->whereYear('created_at', '<=', $month->year)
+                ->whereMonth('created_at', '<=', $month->month)
+                ->sum('weekly_hours') ?? 0;
+            
+            $monthlyIncomeForPeriod = ($totalHours * $hourlyRate * 4.33);
+            $weeklyHoursTrendData['income'][] = round($monthlyIncomeForPeriod, 2);
+        }
+
+        // ============================================================
+        // NEW: INCOME BREAKDOWN BY STUDENT HOUR RANGES
+        // ============================================================
+        
+        $incomeByHourRange = [
+            'labels' => array_keys($studentsByHours),
+            'data' => []
+        ];
+        
+        foreach ($studentsByHours as $range => $count) {
+            // Calculate average hours for each range
+            if ($range === '0.5-2 hrs') {
+                $rangeIncome = Student::where('status', 'active')
+                    ->whereBetween('weekly_hours', [0.5, 2.0])
+                    ->sum('weekly_hours') * $hourlyRate * 4.33;
+            } elseif ($range === '2-5 hrs') {
+                $rangeIncome = Student::where('status', 'active')
+                    ->whereBetween('weekly_hours', [2.0, 5.0])
+                    ->sum('weekly_hours') * $hourlyRate * 4.33;
+            } elseif ($range === '5-10 hrs') {
+                $rangeIncome = Student::where('status', 'active')
+                    ->whereBetween('weekly_hours', [5.0, 10.0])
+                    ->sum('weekly_hours') * $hourlyRate * 4.33;
+            } else { // 10+ hrs
+                $rangeIncome = Student::where('status', 'active')
+                    ->where('weekly_hours', '>', 10.0)
+                    ->sum('weekly_hours') * $hourlyRate * 4.33;
+            }
+            
+            $incomeByHourRange['data'][] = round($rangeIncome, 2);
+        }
 
         // ============================================================
         // RETURN VIEW WITH ALL DATA
         // ============================================================
 
         return view('superadmin.dashboard', compact(
+            // Existing data
             'stats',
             'attendanceToday',
             'attendanceRate',
@@ -198,7 +303,20 @@ class DashboardController extends Controller
             'criticalActivity',
             'enrollmentChartData',
             'userDistributionData',
-            'weeklyAttendanceData'
+            'weeklyAttendanceData',
+            
+            // NEW: Weekly hours & income data
+            'hourlyRate',
+            'totalWeeklyHours',
+            'weeklyIncome',
+            'monthlyIncome',
+            'annualIncome',
+            'avgHoursPerStudent',
+            'studentsByHours',
+            'recentHourChanges',
+            'hourChangesThisMonth',
+            'weeklyHoursTrendData',
+            'incomeByHourRange'
         ));
     }
 }

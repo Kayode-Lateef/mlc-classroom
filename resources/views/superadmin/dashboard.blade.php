@@ -190,7 +190,7 @@
 
                     <div class="row">
                         <div class="col-lg-12">
-                            <h4 class="mb-3"><i class="ti-time"></i> Weekly Hours & Income Overview</h4>
+                            <h4 class="mt-3 mb-3"><i class="ti-time"></i> Weekly Hours & Income Overview</h4>
                         </div>
                     </div>
 
@@ -323,7 +323,7 @@
                     <!-- Charts Section -->
                     <div class="row">
                         <!-- Student & Teacher Enrollment Trend -->
-                        <div class="col-lg-8">
+                        <div class="col-lg-6">
                             <div class="card">
                                 <div class="card-header">
                                     <h4><i class="ti-stats-up"></i> Enrollment Trend (Last 6 Months)</h4>
@@ -333,9 +333,20 @@
                                 </div>
                             </div>
                         </div>
-                        
-                         <!-- Quick Actions -->
-                        <div class="col-lg-4">
+
+                        <div class="col-lg-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4><i class="ti-pie-chart"></i> User Distribution</h4>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="userDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    
+                          <!-- Quick Actions -->
+                        <div class="col-lg-3">
                             <div class="card alert">
                                 <div class="card-header">
                                     <h4><i class="ti-bolt"></i> Quick Actions</h4>
@@ -362,11 +373,139 @@
                                 </div>
                             </div>
                         </div>
+
+                        {{-- <div class="col-lg-3">
+                            <div class="card alert">
+                                <div class="card-header">
+                                    <h4><i class="ti-settings"></i> System Status</h4>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span><i class="ti-server"></i> Database</span>
+                                                <span class="badge badge-success system-status-badge">Online</span>
+                                            </div>
+                                        </li>
+                                        <li class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span><i class="ti-pulse"></i> Server Status</span>
+                                                <span class="badge badge-success system-status-badge">Healthy</span>
+                                            </div>
+                                        </li>
+                                        <li class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span><i class="ti-harddrive"></i> Total Users</span>
+                                                <span class="badge badge-info system-status-badge">{{ $stats['total_users'] }}</span>
+                                            </div>
+                                        </li>
+                                        <li class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span><i class="ti-shield"></i> Roles</span>
+                                                <span class="badge badge-info system-status-badge">{{ $stats['total_roles'] }}</span>
+                                            </div>
+                                        </li>
+                                        <li class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span><i class="ti-key"></i> Permissions</span>
+                                                <span class="badge badge-info system-status-badge">{{ $stats['total_permissions'] }}</span>
+                                            </div>
+                                        </li>
+                                        <li class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span><i class="ti-book"></i> Homework Rate</span>
+                                                <span class="badge badge-{{ $homeworkCompletionRate >= 80 ? 'success' : ($homeworkCompletionRate >= 60 ? 'warning' : 'danger') }} system-status-badge">{{ $homeworkCompletionRate }}%</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div> --}}
+
+                         
+                        
                     </div>
+
+
+                    <!-- Income Breakdown -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card alert">
+                                <div class="col-lg-12">
+                                    <h4><i class="ti-stats-up"></i> Income Breakdown</h4>
+                                </div>
+
+                                <div class="row">
+                                    @foreach(['0.5-2 hrs' => '#3386f7', '2-5 hrs' => '#00bcd4', '5-10 hrs' => '#4caf50', '10+ hrs' => '#ff9800'] as $range => $color)
+                                        @php
+                                            $index = array_search($range, $incomeByHourRange['labels']);
+                                            $studentCount = $studentsByHours[$range] ?? 0;
+                                            $income = $incomeByHourRange['data'][$index] ?? 0;
+                                        @endphp
+                                    <div class="col-lg-3">
+                                        <div class="card" style="padding: 15px; background: #f8f9fa; border-left: 4px solid {{ $color }}">
+                                            <div class="stat-widget-four">
+                                                <div class="stat-icon">
+                                                    <span> {{ $range }}</span>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <div class="text-left dib">
+                                                        <div class="stat-heading" style="font-weight: bold; color: {{ $color }}">
+                                                            {{ $studentCount }}  <small style="color: #6c757d;">students</small>
+                                                        </div>
+                                                        <div class="stat-text" style="color: #28a745"> £{{ number_format($income, 2) }}/mo</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                            </div>
+                            <!-- /# row -->
+                            
+
+                        </div>
+                    </div>
+                    <!-- ============================================ -->
+                    <!-- STUDENTS BY HOUR RANGE CHART -->
+                    <!-- ============================================ -->
+
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <div class="card alert">
+                                <div class="card-header">
+                                    <h4>Students by Weekly Hours</h4>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="studentsByHoursChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                    
+                        <div class="col-lg-6">
+                            <div class="card alert">
+                                <div class="card-header">
+                                    <h4>Monthly Income by Hour Range</h4>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="incomeByHourRangeChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                    
+                    </div>
+
+
 
                     <!-- Attendance & Performance Charts -->
                     <div class="row">
-                        <div class="col-lg-8">
+                        
+                    <!-- Attendance & Performance Charts -->
+                        <div class="col-lg-6">
                             <div class="card">
                                 <div class="card-header">
                                     <h4><i class="ti-bar-chart"></i> Weekly Attendance Overview</h4>
@@ -376,90 +515,8 @@
                                 </div>
                             </div>
                         </div>
+                       
 
-                        <div class="col-lg-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h4><i class="ti-pie-chart"></i> User Distribution</h4>
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="userDistributionChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-<!-- ============================================ -->
-<!-- STUDENTS BY HOUR RANGE CHART (NEW) -->
-<!-- ============================================ -->
-
-<div class="row mt-4">
-    <div class="col-lg-6">
-        <div class="card alert">
-            <div class="card-header">
-                <h4>Students by Weekly Hours</h4>
-            </div>
-            <div class="card-body">
-                <canvas id="studentsByHoursChart" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-
- 
-    <div class="col-lg-6">
-        <div class="card alert">
-            <div class="card-header">
-                <h4>Monthly Income by Hour Range</h4>
-            </div>
-            <div class="card-body">
-                <canvas id="incomeByHourRangeChart" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-
- 
-</div>
-
-
-<div class="row mt-4">
-    <div class="col-lg-12">
-        <div class="card alert">
-            <div class="card-header">
-                <h4><i class="ti-stats-up"></i> Income Breakdown</h4>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    @foreach(['0.5-2 hrs' => '#3386f7', '2-5 hrs' => '#00bcd4', '5-10 hrs' => '#4caf50', '10+ hrs' => '#ff9800'] as $range => $color)
-                    @php
-                        $index = array_search($range, $incomeByHourRange['labels']);
-                        $studentCount = $studentsByHours[$range] ?? 0;
-                        $income = $incomeByHourRange['data'][$index] ?? 0;
-                    @endphp
-                    <div class="col-lg-3 mb-3">
-                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid {{ $color }};">
-                            <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 5px;">
-                                {{ $range }}
-                            </div>
-                            <div style="font-size: 1.5rem; font-weight: bold; color: {{ $color }};">
-                                {{ $studentCount }} 
-                                <small style="font-size: 0.875rem; color: #6c757d;">students</small>
-                            </div>
-                            <div style="font-size: 1.125rem; font-weight: 600; color: #28a745; margin-top: 5px;">
-                                £{{ number_format($income, 2) }}/mo
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-                    <!-- Recent Activities & Quick Actions -->
-                    <div class="row">
                         <!-- Recent System Activities -->
                         <div class="col-lg-6">
                             <div class="card alert">
@@ -486,71 +543,9 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- RECENT HOUR CHANGES -->
-
-                        <div class="col-lg-6">
-                            <div class="card alert">
-                                <div class="card-header">
-                                    <h4><i class="ti-time"></i> Recent Hour Changes (Last 7 Days)</h4>
-                                </div>
-                                <div class="card-body">
-                                    @if($recentHourChanges->count() > 0)
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Student</th>
-                                                        <th>Change</th>
-                                                        <th>Changed By</th>
-                                                        <th>When</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($recentHourChanges as $change)
-                                                    <tr>
-                                                        <td>
-                                                            <a href="{{ route('superadmin.students.show', $change->student_id) }}">
-                                                                {{ $change->student->full_name }}
-                                                            </a>
-                                                        </td>
-                                                        <td>
-                                                            <strong>{{ number_format($change->old_hours, 1) }}</strong> 
-                                                            <i class="ti-arrow-right text-muted"></i> 
-                                                            <strong style="color: #3386f7;">{{ number_format($change->new_hours, 1) }}</strong> hrs
-                                                            
-                                                            @if($change->isIncrease())
-                                                                <span class="badge badge-success ml-2">
-                                                                    <i class="ti-arrow-up"></i> {{ number_format($change->hour_difference, 1) }}
-                                                                </span>
-                                                            @else
-                                                                <span class="badge badge-warning ml-2">
-                                                                    <i class="ti-arrow-down"></i> {{ number_format(abs($change->hour_difference), 1) }}
-                                                                </span>
-                                                            @endif
-                                                        </td>
-                                                        <td>{{ $change->changedBy->name }}</td>
-                                                        <td>
-                                                            <small class="text-muted">
-                                                                <i class="ti-time"></i> {{ $change->changed_at->diffForHumans() }}
-                                                            </small>
-                                                        </td>
-                                                    </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    @else
-                                        <div class="text-center py-4">
-                                            <i class="ti-time" style="font-size: 3rem; color: #cbd5e0;"></i>
-                                            <p class="text-muted mt-2">No hour changes in the last 7 days</p>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
+                    
                     <!-- Recent User Registrations -->
                     <div class="row">
                         <div class="col-lg-12">
@@ -615,6 +610,71 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- RECENT HOUR CHANGES -->
+                    {{-- <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card alert">
+                                <div class="card-header">
+                                    <h4><i class="ti-time"></i> Recent Hour Changes (Last 7 Days)</h4>
+                                </div>
+                                <div class="card-body">
+                                    @if($recentHourChanges->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Student</th>
+                                                        <th>Change</th>
+                                                        <th>Changed By</th>
+                                                        <th>When</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($recentHourChanges as $change)
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{{ route('superadmin.students.show', $change->student_id) }}">
+                                                                {{ $change->student->full_name }}
+                                                            </a>
+                                                        </td>
+                                                        <td>
+                                                            <strong>{{ number_format($change->old_hours, 1) }}</strong> 
+                                                            <i class="ti-arrow-right text-muted"></i> 
+                                                            <strong style="color: #3386f7;">{{ number_format($change->new_hours, 1) }}</strong> hrs
+                                                            
+                                                            @if($change->isIncrease())
+                                                                <span class="badge badge-success ml-2">
+                                                                    <i class="ti-arrow-up"></i> {{ number_format($change->hour_difference, 1) }}
+                                                                </span>
+                                                            @else
+                                                                <span class="badge badge-warning ml-2">
+                                                                    <i class="ti-arrow-down"></i> {{ number_format(abs($change->hour_difference), 1) }}
+                                                                </span>
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $change->changedBy->name }}</td>
+                                                        <td>
+                                                            <small class="text-muted">
+                                                                <i class="ti-time"></i> {{ $change->changed_at->diffForHumans() }}
+                                                            </small>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-4">
+                                            <i class="ti-time" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                            <p class="text-muted mt-2">No hour changes in the last 7 days</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div> --}}
+
 
                     <!-- Recent Enrollments -->
                     <div class="row">
@@ -766,8 +826,21 @@
                             </div>
                         @endif
 
+
+                        
                         <!-- System Status -->
                         <div class="col-lg-4">
+                            <div class="card alert">
+                                <div class="card-header">
+                                    <h4>Calender</h4>
+                                    
+                                </div>
+                                <div class="card-body">
+                                    <div class="year-calendar"></div>
+                                </div>
+                            </div>
+                            <!-- /# card -->
+
                             <div class="card alert">
                                 <div class="card-header">
                                     <h4><i class="ti-settings"></i> System Status</h4>

@@ -532,13 +532,13 @@
                                                     <h3 style="font-weight: 600; margin-bottom: 25px;">Academic Settings</h3>
 
                                                     <!-- ============================================ -->
-                                                    <!-- HOURLY RATE SETTING (NEW) -->
+                                                    <!-- HOURLY RATE SETTING -->
                                                     <!-- ============================================ -->
                                                     <div class="setting-section">
                                                         <h4 class="setting-section-title">Income & Billing Settings</h4>
                                                         
                                                         <div class="row">
-                                                            <div class="col-lg-4">
+                                                            <div class="col-lg-6">
                                                                 <div class="form-group">
                                                                     <label for="hourly_rate" class="required-field">
                                                                         <i class="ti-money"></i> Hourly Teaching Rate
@@ -571,16 +571,16 @@
                                                                 </div>
                                                             </div>
 
-                                                            <div class="col-lg-8">
-                                                                <!-- Income Preview (Optional) -->
+                                                            <div class="col-lg-6">
+                                                                <!-- Income Preview -->
                                                                 <div class="alert alert-info" style="margin-top: 32px;">
                                                                     <h5 style="margin-bottom: 10px; font-weight: 600;">
                                                                         <i class="ti-bar-chart"></i> Income Preview
                                                                     </h5>
-                                                                    <p style="margin: 0; font-size: 0.875rem;">
+                                                                    <p style="margin: 0;">
                                                                         Based on current hourly rate, a student with:
                                                                     </p>
-                                                                    <ul style="margin: 10px 0; font-size: 0.875rem;">
+                                                                    <ul style="margin: 10px 0;">
                                                                         <li><strong>1 hour/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 4.33), 2) }}/month</li>
                                                                         <li><strong>2 hours/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 2 * 4.33), 2) }}/month</li>
                                                                         <li><strong>5 hours/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 5 * 4.33), 2) }}/month</li>
@@ -594,7 +594,7 @@
                                                     </div>
 
                                                     <!-- ============================================ -->
-                                                    <!-- EXISTING ATTENDANCE SETTINGS -->
+                                                    <!-- ATTENDANCE SETTINGS -->
                                                     <!-- ============================================ -->
                                                     <div class="setting-section">
                                                         <h4 class="setting-section-title">Attendance Settings</h4>
@@ -614,7 +614,7 @@
                                                     </div>
 
                                                     <!-- ============================================ -->
-                                                    <!-- EXISTING HOMEWORK SETTINGS -->
+                                                    <!-- HOMEWORK SETTINGS -->
                                                     <!-- ============================================ -->
                                                     <div class="setting-section">
                                                         <h4 class="setting-section-title">Homework Settings</h4>
@@ -653,7 +653,7 @@
                                                     </div>
 
                                                     <!-- ============================================ -->
-                                                    <!-- EXISTING PROGRESS REPORT SETTINGS -->
+                                                    <!-- PROGRESS REPORT SETTINGS -->
                                                     <!-- ============================================ -->
                                                     <div class="setting-section">
                                                         <h4 class="setting-section-title">Progress Report Settings</h4>

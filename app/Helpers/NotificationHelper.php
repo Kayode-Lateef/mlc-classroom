@@ -229,6 +229,50 @@ class NotificationHelper
     }
 
     /**
+     * ✅ NOTIFY ALL ADMINS (queue emails)
+     */
+    public static function notifyAdmins($title, $message, $type, $data = [])
+    {
+        try {
+            $admins = User::where('role', 'admin')
+                ->where('status', 'active')
+                ->get();
+
+            if ($admins->isEmpty()) {
+                Log::warning("No active admins found");
+                return 0;
+            }
+
+            $notified = 0;
+            $data['type'] = $type;
+
+            foreach ($admins as $admin) {
+                // Create in-app notification
+                $admin->notify(new GeneralNotification([
+                    'type' => $type,
+                    'title' => $title,
+                    'message' => $message,
+                    'data' => $data,
+                ]));
+
+                // Queue email (bulk operation)
+                if ($admin->email) {
+                    self::queueEmail($admin, $title, $message, $data);
+                }
+
+                $notified++;
+            }
+
+            Log::info("Notified {$notified} admins (in-app + queued emails)");
+            return $notified;
+
+        } catch (\Exception $e) {
+            Log::error("Failed to notify admins: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
      * ✅ NOTIFY ALL PARENTS (queue all emails)
      */
     public static function notifyAllParents($title, $message, $type, $data = [])

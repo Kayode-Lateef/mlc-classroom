@@ -37,4 +37,5 @@ use App\Http\Controllers\Teacher\LearningResourceController;
     
     // Learning Resources (Teacher can upload and view)
     Route::resource('resources', LearningResourceController::class);
+    Route::get('resources/{resource}/download', [LearningResourceController::class, 'download']);
 });

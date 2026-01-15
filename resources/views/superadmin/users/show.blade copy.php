@@ -197,6 +197,13 @@
         border-color: #3386f7;
     }
 
+    .modal-header {
+        border-bottom: none;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+    }
 </style>
 @endpush
 
@@ -236,10 +243,7 @@
                                     <i class="ti-pencil-alt"></i> Edit User
                                 </a>
                                 @if($user->id !== auth()->id())
-                                <form action="{{ route('superadmin.users.destroy', $user) }}" 
-                                    method="POST" 
-                                    style="display: inline-block;"
-                                    id="deleteUserForm">
+                                <form action="{{ route('superadmin.users.destroy', $user) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">
@@ -434,7 +438,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header mb-3">
+                                <div class="card-header">
                                     <h4>
                                         <i class="ti-key"></i> Admin Permissions
                                         <span class="badge badge-info ml-2">{{ count($userPermissions) }} Assigned</span>
@@ -449,7 +453,7 @@
                                     @if(count($userPermissions) > 0)
                                         <div class="permissions-grid">
                                             @foreach($userPermissions as $permission)
-                                                <span class="badge badge-success mr-2 mb-2" style="padding: 0.5rem 0.75rem;">
+                                                <span class="badge badge-success mr-2 mb-2" style="font-size: 0.875rem; padding: 0.5rem 0.75rem;">
                                                     <i class="ti-check"></i> {{ ucwords(str_replace(['.', '_'], [' → ', ' '], $permission)) }}
                                                 </span>
                                             @endforeach
@@ -478,63 +482,127 @@
                     </div>
                     @endif
 
-                    {{-- ✅ Permissions Management Modal --}}
-                    @if($user->isAdmin())
-                    <div class="modal fade none-border" id="permissionsModal" tabindex="-1" role="dialog" aria-labelledby="permissionsModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-md" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="permissionsModalLabel">
-                                        <i class="ti-key"></i> Manage Permissions for {{ $user->name }}
-                                    </h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                                    {{-- <h4 class="modal-title"><strong>Add New Event</strong></h4> --}}
-                                </div>
-                                    <form id="permissionsForm" action="{{ route('superadmin.users.assignPermissions', $user) }}" method="POST">
-                                    @csrf
-                                    <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
-                                        @foreach($allPermissions as $module => $permissions)
-                                            <div class="permission-module mb-4">
-                                                <h5 class="module-title" style="border-bottom: 2px solid #3386f7; padding-bottom: 0.5rem;">
-                                                    <i class="ti-folder"></i> {{ ucfirst($module) }}
-                                                    <span class="badge badge-secondary">{{ count($permissions) }}</span>
-                                                </h5>
-                                                <div class="permission-grid">
-                                                    @foreach($permissions as $permission)
-                                                        <div class="">
-                                                            <div class="custom-control custom-checkbox mb-3">
-                                                                <input type="checkbox" 
-                                                                    class="custom-control-input" 
-                                                                    id="permission_{{ $permission->id }}" 
-                                                                    name="permissions[]" 
-                                                                    value="{{ $permission->id }}"
-                                                                    {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}>
-                                                                <label class="custom-control-label" for="permission_{{ $permission->id }}">
-                                                                    {{ ucwords(str_replace(['.', '_'], [' → ', ' '], $permission->name)) }}
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        @endforeach
+{{-- ✅ Permissions Management Modal --}}
+@if($user->isAdmin())
+{{-- <div class="modal fade" id="permissionsModal" tabindex="-1" role="dialog" aria-labelledby="permissionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #3386f7 0%, #e06829 100%); color: white;">
+                <h5 class="modal-title" id="permissionsModalLabel">
+                    <i class="ti-key"></i> Manage Permissions for {{ $user->name }}
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="permissionsForm" action="{{ route('superadmin.users.assignPermissions', $user) }}" method="POST">
+                @csrf
+                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                    @foreach($allPermissions as $module => $permissions)
+                        <div class="permission-module mb-4">
+                            <h5 class="module-title" style="color: #3386f7; border-bottom: 2px solid #3386f7; padding-bottom: 0.5rem;">
+                                <i class="ti-folder"></i> {{ ucfirst($module) }}
+                                <span class="badge badge-secondary">{{ count($permissions) }}</span>
+                            </h5>
+                            <div class="row mt-3">
+                                @foreach($permissions as $permission)
+                                    <div class="col-md-6">
+                                        <div class="custom-control custom-checkbox mb-3">
+                                            <input type="checkbox" 
+                                                   class="custom-control-input" 
+                                                   id="permission_{{ $permission->id }}" 
+                                                   name="permissions[]" 
+                                                   value="{{ $permission->id }}"
+                                                   {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="permission_{{ $permission->id }}">
+                                                {{ ucwords(str_replace(['.', '_'], [' → ', ' '], $permission->name)) }}
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                            <i class="ti-close"></i> Cancel
-                                        </button>
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="ti-save"></i> Save Permissions
-                                        </button>
-                                    </div>
-                                </form>
+                                @endforeach
                             </div>
                         </div>
-                    </div>
+                    @endforeach
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="ti-close"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti-save"></i> Save Permissions
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> --}}
 
-                    @endif
+
+<div class="modal fade none-border" id="permissionsModal" tabindex="-1" role="dialog" aria-labelledby="permissionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="permissionsModalLabel">
+                    <i class="ti-key"></i> Manage Permissions for {{ $user->name }}
+                </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                {{-- <h4 class="modal-title"><strong>Add New Event</strong></h4> --}}
+            </div>
+                <form id="permissionsForm" action="{{ route('superadmin.users.assignPermissions', $user) }}" method="POST">
+                @csrf
+                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                    @foreach($allPermissions as $module => $permissions)
+                        <div class="permission-module mb-4">
+                            <h5 class="module-title" style="border-bottom: 2px solid #3386f7; padding-bottom: 0.5rem;">
+                                <i class="ti-folder"></i> {{ ucfirst($module) }}
+                                <span class="badge badge-secondary">{{ count($permissions) }}</span>
+                            </h5>
+                            <div class="permission-grid">
+                                @foreach($permissions as $permission)
+                                    <div class="">
+                                        <div class="custom-control custom-checkbox mb-3">
+                                            <input type="checkbox" 
+                                                class="custom-control-input" 
+                                                id="permission_{{ $permission->id }}" 
+                                                name="permissions[]" 
+                                                value="{{ $permission->id }}"
+                                                {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="permission_{{ $permission->id }}">
+                                                {{ ucwords(str_replace(['.', '_'], [' → ', ' '], $permission->name)) }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="ti-close"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti-save"></i> Save Permissions
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@endif
 
 
+
+
+
+
+
+
+
+
+
+  
                     <div class="row">
                         <div class="col-lg-12">
                             <!-- Role-Specific Statistics -->
@@ -745,6 +813,18 @@
                     </div>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                     <!-- Footer -->
                     <div class="row">
                         <div class="col-lg-12">
@@ -762,100 +842,36 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Handle user deletion with SweetAlert
-            $('#deleteUserForm').on('submit', function(e) {
-                e.preventDefault(); // Prevent default submission
-                
-                const form = this;
-                const userName = "{{ $user->name }}";
-                const userEmail = "{{ $user->email }}";
-                const userRole = "{{ $user->roles->first()->name ?? 'No role' }}";
-                
-                swal({
-                    title: "Delete User?",
-                    text: "Are you sure you want to delete this user?\n\nName: " + userName + "\nEmail: " + userEmail + "\nRole: " + userRole + "\n\nThis action cannot be undone!",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Yes, delete user!",
-                    cancelButtonText: "No, cancel",
-                    closeOnConfirm: true,
-                    closeOnCancel: true
+                document.getElementById('permissionsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const permissions = [];
+            formData.getAll('permissions[]').forEach(id => permissions.push(id));
+            
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
-                function(isConfirm){
-                    if (isConfirm) {
-                        form.submit(); // Submit the form
-                    }
-                });
-                
-                return false;
-            });
-
-            // Handle permissions form submission
-            document.getElementById('permissionsForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                const permissions = [];
-                formData.getAll('permissions[]').forEach(id => permissions.push(id));
-                
-                // Show loading state
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalBtnText = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
-                
-                fetch(this.action, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ permissions: permissions })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Re-enable button
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
-                    
-                    if (data.success) {
-                        // Close modal
-                        $('#permissionsModal').modal('hide');
-                        
-                        // Show success toastr
-                        toastr.success(data.message || 'Permissions assigned successfully!');
-                        
-                        // Reload page after a short delay to show the toastr
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        // Show error with SweetAlert
-                        swal({
-                            title: "Update Failed!",
-                            text: data.message || 'Failed to update permissions',
-                            type: "error",
-                            confirmButtonText: "OK"
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    
-                    // Re-enable button
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
-                    
-                    // Show error with SweetAlert
-                    swal({
-                        title: "Error Occurred!",
-                        text: "An error occurred while updating permissions. Please try again.",
-                        type: "error",
-                        confirmButtonText: "OK"
-                    });
-                });
-            });
+                body: JSON.stringify({ permissions: permissions })
+            })
+            .then(response => response.json())
+            .then(data => {
+            if (data.success) {
+                $('#permissionsModal').modal('hide');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.message || 'Failed to update permissions'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating permissions.');
         });
-    </script>
+    });
+});
+
+</script>
 @endpush

@@ -62,8 +62,13 @@ Route::middleware(['auth', 'role:admin', 'check.status'])->group(function () {
     Route::delete('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
         
     // Homework
+    Route::get('homework/{homework}/download', [HomeworkController::class, 'download'])
+        ->name('homework.download');
+    Route::post('homework/submissions/{submission}/grade', [HomeworkController::class, 'gradeSubmission'])
+        ->name('homework.submissions.grade');
+
     Route::resource('homework', HomeworkController::class);
-    
+        
     // Progress Sheets
     Route::get('progress-sheets/get-students', [ProgressSheetController::class, 'getStudents'])
         ->name('progress-sheets.get-students');

@@ -571,14 +571,6 @@ class StudentController extends Controller
 
 
 
-
-
-
-
-
-
-
-
     /**
      * Remove the specified student (SOFT DELETE)
      */

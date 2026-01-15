@@ -320,7 +320,7 @@
                                                                                 name="permissions[]" 
                                                                                 value="{{ $permission->id }}"
                                                                                 {{ in_array($permission->id, $userPermissions) ? 'checked' : '' }}>
-                                                                            <label class="custom-control-label" for="permission_{{ $permission->id }}" style="font-size: 0.875rem;">
+                                                                            <label class="custom-control-label" for="permission_{{ $permission->id }}">
                                                                                 {{ ucwords(str_replace(['.', '_'], [' → ', ' '], $permission->name)) }}
                                                                             </label>
                                                                         </div>

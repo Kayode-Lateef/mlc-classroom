@@ -44,6 +44,13 @@
             margin-bottom: 5px;
         }
 
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
         .student-note-item {
             border: 1px solid #e9ecef;
             border-radius: 8px;
@@ -128,7 +135,7 @@
                         <div class="page-header">
                             <div class="page-title">
                                 <ol class="breadcrumb text-right">
-                                    <li><a href="{{ route('superadmin.progress-sheets.index') }}">Progress Sheets</a></li>
+                                    <li><a href="{{ route('admin.progress-sheets.index') }}">Progress Sheets</a></li>
                                     <li class="active">Details</li>
                                 </ol>
                             </div>
@@ -136,28 +143,6 @@
                     </div>
                 </div>
 
-                <!-- Success/Error Messages -->
-                @if(session('success'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-success fade in alert-dismissable">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <i class="ti-check"></i> {{ session('success') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-danger fade in alert-dismissable">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <i class="ti-alert"></i> {{ session('error') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
 
                 <div class="row">
                     <!-- Main Content -->
@@ -333,11 +318,11 @@
                                 <h4><i class="ti-settings"></i> Actions</h4>
                             </div>
                             <div class="card-body">
-                                <a href="{{ route('superadmin.progress-sheets.edit', $progressSheet) }}" class="btn btn-primary btn-block mb-2">
+                                <a href="{{ route('admin.progress-sheets.edit', $progressSheet) }}" class="btn btn-primary btn-block mb-2">
                                     <i class="ti-pencil-alt"></i> Edit Progress Sheet
                                 </a>
 
-                                <form action="{{ route('superadmin.progress-sheets.destroy', $progressSheet) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this progress sheet? This action cannot be undone.');">
+                                <form action="{{ route('admin.progress-sheets.destroy', $progressSheet) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this progress sheet? This action cannot be undone.');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-block">
@@ -365,9 +350,13 @@
                             <div class="detail-item">
                                 <div class="detail-label">Teacher</div>
                                 <div style="display: flex; align-items: center;">
+                                    @if($progressSheet->teacher->profile_photo)
+                                        <img src="{{ asset('storage/' . $progressSheet->teacher->profile_photo) }}" alt="{{ $progressSheet->teacher->name }}" class="user-avatar" style="margin-right: 12px;">
+                                    @else
                                     <div class="student-avatar-initial" style="width: 32px; height: 32px; font-size: 0.75rem; margin-right: 10px;">
                                         {{ strtoupper(substr($progressSheet->teacher->name, 0, 1)) }}
                                     </div>
+                                    @endif
                                     <div>
                                         <div class="detail-value">{{ $progressSheet->teacher->name }}</div>
                                         <small class="text-muted">{{ ucfirst($progressSheet->teacher->role) }}</small>

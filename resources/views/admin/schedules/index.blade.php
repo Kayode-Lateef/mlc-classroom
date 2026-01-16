@@ -19,7 +19,6 @@
         }
         
         .schedule-time {
-            font-size: 1rem;
             color: #6c757d;
         }
         
@@ -77,32 +76,11 @@
                 </div>
 
                 <div id="main-content">
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                  
                     
                     <!-- Statistics Cards -->
                     <div class="row">
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-4 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
                                     <div class="stat-icon dib"><i class="ti-calendar color-primary border-primary"></i></div>
@@ -113,7 +91,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-4 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
                                     <div class="stat-icon dib"><i class="ti-blackboard color-success border-success"></i></div>
@@ -124,7 +102,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-4 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
                                     <div class="stat-icon dib"><i class="ti-time color-info border-info"></i></div>
@@ -135,8 +113,11 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-3 col-md-6">
+                       
+                    </div>
+                       <!-- Statistics Cards -->
+                    <div class="row">                      
+                        <div class="col-lg-4 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
                                     <div class="stat-icon dib"><i class="ti-alert {{ $stats['conflicts'] > 0 ? 'color-warning border-warning' : 'color-success border-success' }}"></i></div>
@@ -147,7 +128,28 @@
                                 </div>
                             </div>
                         </div>
-                      
+                         <div class="col-lg-4 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-user color-info border-info"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Active Teachers</div>
+                                        <div class="stat-digit">{{ $stats['active_teachers'] }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib"><i class="ti-reload color-pink border-pink"></i></div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Recurring Schedules</div>
+                                        <div class="stat-digit">{{ $stats['recurring_schedules'] }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
 
@@ -242,27 +244,7 @@
                         </div>
                     </div>
 
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+             
 
                     <!-- Calendar View -->
                     @if($viewType === 'calendar')
@@ -302,14 +284,14 @@
                                                         </p>
                                                         
                                                         @if($schedule->class->teacher)
-                                                        <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                                        <p class="text-muted mb-2">
                                                             <i class="ti-user"></i>
                                                             {{ $schedule->class->teacher->name }}
                                                         </p>
                                                         @endif
                                                         
                                                         @if($schedule->class->room_number)
-                                                        <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                                        <p class="text-muted mb-2">
                                                             <i class="ti-home"></i>
                                                             Room {{ $schedule->class->room_number }}
                                                         </p>
@@ -330,7 +312,7 @@
                                                     </div>
                                                     @endforeach
                                                 @else
-                                                    <p class="text-muted text-center py-4" style="font-size: 1rem;">
+                                                    <p class="text-muted text-center py-4">
                                                         <i class="ti-info-alt"></i><br>
                                                         No classes scheduled
                                                     </p>

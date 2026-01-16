@@ -58,7 +58,8 @@ class UserManagementController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $users = $query->paginate(20);
+        $users = $query->paginate(config('app.pagination.users', 20));
+
 
         // Get role statistics
         $stats = [

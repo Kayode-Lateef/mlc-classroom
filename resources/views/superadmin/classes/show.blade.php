@@ -78,7 +78,6 @@
         }
 
         .empty-state i {
-            /* font-size: 4rem; */
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -643,28 +642,7 @@
                         </div>
                     </div>
 
-                    <!-- Success Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+               
 
                     <!-- Footer -->
                     <div class="row">

@@ -37,9 +37,11 @@
         height: 100%;
     }
 
-    .sidebar-sticky {
-        position: sticky;
-        top: 20px;
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
     }
 
     .info-item {
@@ -262,11 +264,15 @@
                                     <div class="info-item">
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Uploaded By</p>
                                         <div style="display: flex; align-items: center;">
+                                            @if($resource->uploader->profile_photo)
+                                                <img src="{{ asset('storage/' . $resource->uploader->profile_photo) }}" alt="{{ $resource->uploader->name }}" class="user-avatar" style="margin-right: 12px;">
+                                            @else
                                             <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #007bff; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
                                                 <span style="color: white; font-weight: 600;">
                                                     {{ strtoupper(substr($resource->uploader->name, 0, 1)) }}
                                                 </span>
                                             </div>
+                                            @endif
                                             <div>
                                                 <p style="margin: 0; font-weight: 600; color: #212529;">{{ $resource->uploader->name }}</p>
                                                 <p style="margin: 0; color: #6c757d;">{{ ucfirst($resource->uploader->role) }}</p>

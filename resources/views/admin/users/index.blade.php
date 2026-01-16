@@ -106,28 +106,7 @@
                 </div>
 
                 <div id="main-content">
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success fade in alert-dismissable text-white">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable text-white">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                  
                     
                     <!-- Statistics Cards -->
                     <div class="row">
@@ -359,7 +338,7 @@
                                                                 <span class="badge badge-secondary role-badge">{{ ucfirst($user->role) }}</span>
                                                             @endif
                                                         </td>
-                                                        <!-- Replace email verification badge with status badge -->
+                                                         {{-- Status Column --}}
                                                         <td>
                                                             @if($user->status === 'active')
                                                                 <span class="badge badge-success">
@@ -379,10 +358,14 @@
                                                                 </span>
                                                             @endif
                                                             
-                                                            <!-- Email verification (separate) -->
+                                                            {{-- Email verification (separate badge) --}}
                                                             @if($user->email_verified_at)
                                                                 <span class="badge badge-info badge-sm ml-1">
                                                                     <i class="ti-email"></i> Verified
+                                                                </span>
+                                                            @else
+                                                                <span class="badge badge-warning badge-sm ml-1">
+                                                                    <i class="ti-alert"></i> Unverified
                                                                 </span>
                                                             @endif
                                                         </td>

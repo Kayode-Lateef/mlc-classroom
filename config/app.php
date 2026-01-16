@@ -134,6 +134,7 @@ return [
     |
     */
     'pagination' => [
+        'users' => env('PAGINATION_USERS', 10),
         'students' => env('PAGINATION_STUDENTS', 20),
         'teachers' => env('PAGINATION_TEACHERS', 20),
         'parents' => env('PAGINATION_PARENTS', 20),
@@ -143,6 +144,17 @@ return [
         'resources' => env('PAGINATION_RESOURCES', 24),
         'activity_logs' => env('PAGINATION_LOGS', 50),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attendance History Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure how many days of attendance history to display
+    |
+    */
+    
+    'attendance_history_limit' => env('ATTENDANCE_HISTORY_LIMIT', 30),
 
     /*
     |--------------------------------------------------------------------------

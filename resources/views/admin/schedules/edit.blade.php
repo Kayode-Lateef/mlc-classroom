@@ -74,7 +74,7 @@
                         <!-- Form Section -->
                         <div class="col-lg-8">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-calendar"></i> Edit Schedule Details</h4>
                                 </div>
                                 <div class="card-body">
@@ -251,7 +251,7 @@
                         <div class="col-lg-4">
                             <!-- Schedule Statistics -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-stats-up"></i> Schedule Statistics</h4>
                                 </div>
                                 <div class="card-body">
@@ -278,7 +278,7 @@
 
                             <!-- Class Information -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-blackboard"></i> Class Information</h4>
                                 </div>
                                 <div class="card-body">
@@ -307,7 +307,7 @@
 
                             <!-- Quick Actions -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-settings"></i> Quick Actions</h4>
                                 </div>
                                 <div class="card-body">

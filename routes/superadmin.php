@@ -17,7 +17,6 @@ use App\Http\Controllers\SuperAdmin\LearningResourceController;
 use App\Http\Controllers\SuperAdmin\SmsConfigurationController;
 use App\Http\Controllers\SuperAdmin\SmsLogController;
 use App\Http\Controllers\SuperAdmin\NotificationController; 
-// use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SuperAdmin\ReportController;
 
 

@@ -202,7 +202,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-list"></i> Student Attendance ({{ $attendanceRecords->count() }})</h4>
                                 </div>
                                 <div class="card-body">

@@ -389,6 +389,7 @@
                                                         onclick="openGradeModal({{ $submission->id }}, '{{ $submission->student->full_name }}')"
                                                         class="btn btn-sm btn-success"
                                                         style="font-size: 1rem;"
+                                                        title="Grade Submission"
                                                     >
                                                         <i class="ti-pencil"></i> Grade
                                                     </button>
@@ -487,78 +488,104 @@
         </div>
     </div>
 
-    <!-- Grade Modal -->
-    <div id="gradeModal" class="modal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="card alert" style="margin: 0;">
-                    <div class="card-header">
-                        <h4 style="margin: 0;"><i class="ti-pencil"></i> Grade Homework</h4>
+  <!-- Bootstrap 3 Grade Modal -->
+<div class="modal fade" id="gradeModal" tabindex="-1" role="dialog" aria-labelledby="gradeModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="gradeModalLabel">
+                    <i class="ti-pencil-alt"></i> Grade Homework
+                </h4>
+            </div>
+            <form id="gradeForm" method="POST" action="">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label><i class="ti-user"></i> Student:</label>
+                        <p class="form-control-static" id="modalStudentName"></p>
                     </div>
-                    <div class="card-body">
-                        <p style="margin-bottom: 15px; font-size: 0.9375rem;">
-                            Student: <strong id="modalStudentName"></strong>
-                        </p>
-                        
-                        <form id="gradeForm" method="POST">
-                            @csrf
-                            <div class="form-group">
-                                <label class="required-field">Grade</label>
-                                <input 
-                                    type="text" 
-                                    name="grade" 
-                                    required
-                                    maxlength="50"
-                                    placeholder="e.g., A+, 95%, Excellent"
-                                    class="form-control"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label>Teacher Comments</label>
-                                <textarea 
-                                    name="teacher_comments" 
-                                    rows="3"
-                                    maxlength="1000"
-                                    placeholder="Optional feedback for the student..."
-                                    class="form-control"
-                                ></textarea>
-                            </div>
-
-                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                                <button type="button" onclick="closeGradeModal()" class="btn btn-secondary">
-                                    Cancel
-                                </button>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="ti-check"></i> Submit Grade
-                                </button>
-                            </div>
-                        </form>
+                    
+                    <div class="form-group">
+                        <label for="grade">Grade <span class="text-danger">*</span></label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="grade" 
+                               name="grade" 
+                               min="0" 
+                               max="100" 
+                               placeholder="Enter grade (0-100)"
+                               required>
+                        <span class="help-block">Enter a grade between 0 and 100</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="teacher_comments">Teacher Comments</label>
+                        <textarea class="form-control" 
+                                  id="teacher_comments" 
+                                  name="teacher_comments" 
+                                  rows="4" 
+                                  placeholder="Add feedback for the student (optional)"></textarea>
                     </div>
                 </div>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="ti-close"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti-check"></i> Submit Grade
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
-function openGradeModal(submissionId, studentName) {
-    document.getElementById('modalStudentName').textContent = studentName;
-    document.getElementById('gradeForm').action = '/superadmin/homework/submissions/' + submissionId + '/grade';
-    document.getElementById('gradeModal').classList.add('show');
-}
-
-function closeGradeModal() {
-    document.getElementById('gradeModal').classList.remove('show');
-    document.getElementById('gradeForm').reset();
-}
-
-// Close modal on outside click
-document.getElementById('gradeModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeGradeModal();
-    }
+$(document).ready(function() {
+    // Open grade modal function
+    window.openGradeModal = function(submissionId, studentName) {
+        // Set student name
+        $('#modalStudentName').text(studentName);
+        
+        // Set form action
+        $('#gradeForm').attr('action', '/superadmin/homework/submissions/' + submissionId + '/grade');
+        
+        // Show modal (Bootstrap 3 way)
+        $('#gradeModal').modal('show');
+    };
+    
+    // Reset form when modal is closed
+    $('#gradeModal').on('hidden.bs.modal', function () {
+        $('#gradeForm')[0].reset();
+    });
+    
+    // Optional: Form validation
+    $('#gradeForm').on('submit', function(e) {
+        const grade = parseInt($('#grade').val());
+        
+        if (isNaN(grade) || grade < 0 || grade > 100) {
+            e.preventDefault();
+            swal({
+                title: "Invalid Grade!",
+                text: "Please enter a grade between 0 and 100.",
+                type: "error",
+                confirmButtonText: "OK"
+            }, function() {
+                $('#grade').focus();
+            });
+            return false;
+        }
+        
+        // Optional: Disable submit button to prevent double submission
+        $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Submitting...');
+        
+        return true;
+    });
 });
 </script>
 @endpush

@@ -24,8 +24,8 @@ class ProgressSheetController extends Controller
     public function index(Request $request)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('view progress sheets')) {
-            abort(403, 'You do not have permission to view progress sheets.');
+        if (!auth()->user()->can('view progress')) {
+         abort(403, 'You do not have permission to view progress sheets.');
         }
 
         try {
@@ -112,7 +112,7 @@ class ProgressSheetController extends Controller
     public function create()
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('create progress sheets')) {
+        if (!auth()->user()->can('create progress')) {
             abort(403, 'You do not have permission to create progress sheets.');
         }
 
@@ -140,7 +140,7 @@ class ProgressSheetController extends Controller
     public function store(Request $request)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('create progress sheets')) {
+        if (!auth()->user()->can('create progress')) {
             abort(403, 'You do not have permission to create progress sheets.');
         }
 
@@ -347,7 +347,7 @@ class ProgressSheetController extends Controller
     public function show(ProgressSheet $progressSheet)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('view progress sheets')) {
+        if (!auth()->user()->can('view progress')) {
             abort(403, 'You do not have permission to view progress sheet details.');
         }
 
@@ -407,7 +407,7 @@ class ProgressSheetController extends Controller
     public function edit(ProgressSheet $progressSheet)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('edit progress sheets')) {
+        if (!auth()->user()->can('edit progress')) {
             abort(403, 'You do not have permission to edit progress sheets.');
         }
 
@@ -454,7 +454,7 @@ class ProgressSheetController extends Controller
     public function update(Request $request, ProgressSheet $progressSheet)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('edit progress sheets')) {
+        if (!auth()->user()->can('edit progress')) {
             abort(403, 'You do not have permission to edit progress sheets.');
         }
 
@@ -677,7 +677,7 @@ class ProgressSheetController extends Controller
     public function destroy(ProgressSheet $progressSheet)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('delete progress sheets')) {
+        if (!auth()->user()->can('delete progress')) {
             abort(403, 'You do not have permission to delete progress sheets.');
         }
 

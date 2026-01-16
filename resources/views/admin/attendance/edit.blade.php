@@ -244,16 +244,6 @@
                                             <i class="ti-eye"></i> View Session
                                         </a>
                                         
-                                        <form action="{{ route('admin.attendance.destroy', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" 
-                                              method="POST" 
-                                              style="display: inline-block;"
-                                              onsubmit="return confirm('Are you sure you want to delete this entire attendance session? This action cannot be undone.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class="ti-trash"></i> Delete Session
-                                            </button>
-                                        </form>
                                     </div>
 
                                     <div>
@@ -268,7 +258,16 @@
                             </div>
                         </div>
                     </form>
-
+                    <form action="{{ route('admin.attendance.destroy', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" 
+                        method="POST" 
+                        style="display: inline-block; margin-top: 8px;"
+                        id="deleteAttendanceSessionForm">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">
+                            <i class="ti-trash"></i> Delete Session
+                        </button>
+                    </form>
                     <!-- Footer -->
                     <div class="row">
                         <div class="col-lg-12">
@@ -282,3 +281,40 @@
         </div>
     </div>
 @endsection
+
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Handle attendance session deletion with SweetAlert
+    $('#deleteAttendanceSessionForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+        
+        const form = this;
+        const className = "{{ $class->name }}";
+        const date = "{{ $attendanceDate->format('F j, Y') }}"; // e.g., "January 15, 2026"
+        const scheduleTime = "{{ $schedule->start_time->format('H:i') }} - {{ $schedule->end_time->format('H:i') }}";
+        const studentCount = {{ $attendanceRecords->count() ?? 0 }};
+        
+        swal({
+            title: "Delete Attendance Session?",
+            text: "⚠️ You are about to delete this entire attendance session:\n\nClass: " + className + "\nDate: " + date + "\nTime: " + scheduleTime + "\nRecords: " + studentCount + " student(s)\n\nThis action cannot be undone!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete session!",
+            cancelButtonText: "No, cancel",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        },
+        function(isConfirm){
+            if (isConfirm) {
+                form.submit(); // Submit the form
+            }
+        });
+        
+        return false;
+    });
+});
+</script>
+@endpush

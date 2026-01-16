@@ -131,7 +131,8 @@ class ClassController extends Controller
                     ->orderBy('first_name', 'asc');
             },
             'attendance' => function($query) {
-                $query->orderBy('date', 'desc')->limit(30);
+                $query->orderBy('date', 'desc')->limit(config('app.attendance_history_limit', 30));
+
             },
             'homeworkAssignments' => function($query) {
                 $query->orderBy('due_date', 'desc')->limit(10);

@@ -9,7 +9,7 @@
             align-items: center;
             padding: 4px 10px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
         }
 

@@ -30,12 +30,14 @@ use App\Http\Controllers\Teacher\LearningResourceController;
     Route::get('homework/{homework}/submissions', [HomeworkController::class, 'submissions'])->name('homework.submissions');
     
     // Progress Sheets (Only for teacher's classes)
+    Route::get('progress-sheets/get-students', [ProgressSheetController::class, 'getStudents'])
+    ->name('progress-sheets.get-students');
     Route::resource('progress-sheets', ProgressSheetController::class);
     Route::post('progress-sheets/{progressSheet}/notes', [ProgressSheetController::class, 'addNote'])->name('progress-sheets.add-note');
-    
     // ========== RESOURCES ==========
     
     // Learning Resources (Teacher can upload and view)
     Route::resource('resources', LearningResourceController::class);
-    Route::get('resources/{resource}/download', [LearningResourceController::class, 'download']);
+    Route::get('resources/{resource}/download', [LearningResourceController::class, 'download'])
+        ->name('resources.download');
 });

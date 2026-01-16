@@ -399,12 +399,18 @@ class AttendanceController extends Controller
             $previousSessionRate = $this->getPreviousSessionRate($classId, $scheduleId, $date);
             $stats['trend'] = $previousSessionRate ? $stats['attendance_rate'] - $previousSessionRate : null;
 
+            // Get who marked it
+            $markedBy = $attendanceRecords->first()?->markedBy;
+            $markedAt = $attendanceRecords->first()?->created_at;
+
             return view('admin.attendance.show', compact(
                 'class',
                 'schedule',
                 'attendanceDate',
                 'attendanceRecords',
-                'stats'
+                'stats',
+                'markedBy',
+                'markedAt'
             ));
 
         } catch (\Exception $e) {
@@ -444,12 +450,19 @@ class AttendanceController extends Controller
                 ->where('date', $date)
                 ->get()
                 ->keyBy('student_id');
+            
+            // Get all enrolled students (in case some are missing)
+            $students = $class->students()
+                ->wherePivot('status', 'active')
+                ->orderBy('first_name')
+                ->get();
 
             return view('admin.attendance.edit', compact(
                 'class',
                 'schedule',
                 'attendanceDate',
                 'attendanceRecords',
+                'students',
                 'isOldRecord',
                 'daysDiff'
             ));

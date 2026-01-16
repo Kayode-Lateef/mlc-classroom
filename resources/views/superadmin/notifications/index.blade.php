@@ -175,46 +175,9 @@
                     </div>
                 </div>
 
-                <!-- Success/Error Messages -->
-                @if(session('success'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-success alert-dismissable" style="margin-bottom: 20px;">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <strong><i class="ti-check"></i> Success!</strong> {{ session('success') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
+            
 
-                @if(session('error'))
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-danger alert-dismissable" style="margin-bottom: 20px;">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <strong><i class="ti-alert"></i> Error!</strong> {{ session('error') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if($errors->any())
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="alert alert-danger alert-dismissable" style="margin-bottom: 20px;">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                <strong><i class="ti-alert"></i> Validation Errors:</strong>
-                                <ul style="margin-top: 10px; margin-bottom: 0;">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                <!-- Statistics Cards - Unix Admin Design -->
+                <!-- Statistics Cards -->
                 <div class="row" style="margin-bottom: 20px;">
                     <div class="col-lg-3 col-md-6">
                         <div class="card">

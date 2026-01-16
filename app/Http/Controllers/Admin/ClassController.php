@@ -242,8 +242,10 @@ class ClassController extends Controller
             $class->load([
                 'teacher',
                 'schedules',
-                'enrollments' => function($query) {
-                    $query->where('status', 'active')->with('student.parent');
+                'students' => function($query) {
+                // Use the students relationship (many-to-many) and filter by active status
+                $query->wherePivot('status', 'active')
+                    ->orderBy('first_name', 'asc');
                 },
                 'attendance' => function($query) {
                     $query->orderBy('date', 'desc')
@@ -286,7 +288,25 @@ class ClassController extends Controller
                 ->orderBy('first_name')
                 ->get();
 
-            return view('admin.classes.show', compact('class', 'availableStudents', 'stats'));
+            // ✅ NEW: Get complete enrollment history (all statuses)
+            $enrollmentHistory = $class->enrollments()
+                ->with('student.parent')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->groupBy('student_id')
+                ->map(function($studentEnrollments) {
+                    return [
+                        'student' => $studentEnrollments->first()->student,
+                        'enrollments' => $studentEnrollments,
+                        'total_enrollments' => $studentEnrollments->count(),
+                        'current_status' => $studentEnrollments->first()->status,
+                        'first_enrollment' => $studentEnrollments->last()->enrollment_date,
+                        'last_enrollment' => $studentEnrollments->first()->enrollment_date,
+                    ];
+                });
+
+
+            return view('admin.classes.show', compact('class', 'availableStudents', 'stats', 'enrollmentHistory'));
             
         } catch (\Exception $e) {
             Log::error('Error loading class details: ' . $e->getMessage(), [

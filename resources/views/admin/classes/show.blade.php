@@ -299,6 +299,11 @@
                                                 </a>
                                             </li>
                                             <li role="presentation">
+                                                <a href="#enrollment-history" aria-controls="enrollment-history" role="tab" data-toggle="tab">
+                                                    <i class="ti-time"></i> Enrollment History ({{ $enrollmentHistory->count() }})
+                                                </a>
+                                            </li>
+                                            <li role="presentation">
                                                 <a href="#schedules" aria-controls="schedules" role="tab" data-toggle="tab">
                                                     <i class="ti-calendar"></i> Schedules
                                                 </a>
@@ -342,17 +347,18 @@
                                                                             </a>
                                                                         </div>
                                                                     </td>
-                                                                    <td>{{ $student->parent->name }}</td>
+                                                                    <td>{{ $student->parent->name ?? 'N/A' }}</td>
                                                                     <td>{{ \Carbon\Carbon::parse($student->pivot->enrollment_date)->format('d M Y') }}</td>
                                                                     <td>
-                                                                        @if($student->pivot->status === 'active')
-                                                                            <span class="badge badge-success">Active</span>
-                                                                        @else
-                                                                            <span class="badge badge-secondary">{{ ucfirst($student->pivot->status) }}</span>
-                                                                        @endif
+                                                                        <span class="badge badge-success">ACTIVE</span>
                                                                     </td>
                                                                     <td>
-                                                                        <form action="{{ route('admin.classes.unenroll', [$class, $student]) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to remove this student from the class?');">
+                                                                        <form action="{{ route('admin.classes.unenroll', [$class, $student]) }}" 
+                                                                            method="POST" 
+                                                                            style="display: inline-block;"
+                                                                            class="unenroll-student-form"
+                                                                            data-student-name="{{ $student->full_name }}"
+                                                                            data-class-name="{{ $class->name }}">
                                                                             @csrf
                                                                             @method('DELETE')
                                                                             <button type="submit" class="btn btn-sm btn-danger">
@@ -373,6 +379,168 @@
                                                     </div>
                                                 @endif
                                             </div>
+
+                                             <!-- Enrollment History Tab -->
+                                            <div role="tabpanel" class="tab-pane" id="enrollment-history">
+                                                @if($enrollmentHistory->count() > 0)
+                                                    <!-- Info Alert -->
+                                                    <div class="alert alert-info" style="margin-bottom: 20px;">
+                                                        <i class="ti-info-alt"></i> 
+                                                        <strong>Enrollment History:</strong> This shows complete enrollment records including dropped students. 
+                                                        Students with multiple enrollments are grouped together to show their enrollment timeline.
+                                                    </div>
+
+                                                    <!-- Enrollment History Cards -->
+                                                    <div class="row">
+                                                        @foreach($enrollmentHistory as $studentId => $history)
+                                                        <div class="col-lg-6 mb-4">
+                                                            <div class="card alert">
+                                                                <div class="panel lobipanel-basic panel-info">
+                                                                    <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
+                                                                        <div style="display: flex; align-items: center;">
+                                                                            @if($history['student']->profile_photo)
+                                                                                <img src="{{ asset('storage/' . $history['student']->profile_photo) }}" 
+                                                                                    alt="{{ $history['student']->full_name }}" 
+                                                                                    style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; border: 2px solid white;">
+                                                                            @else
+                                                                                <div style="width: 40px; height: 40px; border-radius: 50%; background: white; color: #667eea; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px;">
+                                                                                    {{ strtoupper(substr($history['student']->first_name, 0, 1)) }}
+                                                                                </div>
+                                                                            @endif
+                                                                            <div>
+                                                                                <h5 style="margin: 0; color: white;">
+                                                                                    <a href="{{ route('superadmin.students.show', $history['student']) }}" 
+                                                                                    style="color: white; text-decoration: none;">
+                                                                                        {{ $history['student']->full_name }}
+                                                                                    </a>
+                                                                                </h5>
+                                                                                <small style="opacity: 0.9;">{{ $history['student']->parent->name ?? 'No parent assigned' }}</small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            @if($history['current_status'] === 'active')
+                                                                                <span class="badge" style="background: #10b981; color: white; padding: 5px 12px;">
+                                                                                    <i class="ti-check"></i> ACTIVE
+                                                                                </span>
+                                                                            @elseif($history['current_status'] === 'dropped')
+                                                                                <span class="badge" style="background: #6b7280; color: white; padding: 5px 12px;">
+                                                                                    <i class="ti-close"></i> DROPPED
+                                                                                </span>
+                                                                            @else
+                                                                                <span class="badge" style="background: #3b82f6; color: white; padding: 5px 12px;">
+                                                                                    <i class="ti-flag"></i> {{ strtoupper($history['current_status']) }}
+                                                                                </span>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="card-body" style="padding: 20px;">
+                                                                    <!-- Enrollment Summary -->
+                                                                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                                                        <div>
+                                                                            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">
+                                                                                Total Enrollments
+                                                                            </div>
+                                                                            <div style="font-size: 24px; font-weight: bold; color: #1f2937;">
+                                                                                {{ $history['total_enrollments'] }}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">
+                                                                                First Enrolled
+                                                                            </div>
+                                                                            <div style="font-size: 14px; font-weight: 600; color: #4b5563;">
+                                                                                {{ $history['first_enrollment']->format('M d, Y') }}
+                                                                            </div>
+                                                                        </div>
+                                                                        @if($history['total_enrollments'] > 1)
+                                                                        <div>
+                                                                            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">
+                                                                                Last Enrolled
+                                                                            </div>
+                                                                            <div style="font-size: 14px; font-weight: 600; color: #4b5563;">
+                                                                                {{ $history['last_enrollment']->format('M d, Y') }}
+                                                                            </div>
+                                                                        </div>
+                                                                        @endif
+                                                                    </div>
+
+                                                                    <!-- Enrollment Timeline -->
+                                                                    <div style="margin-top: 20px;">
+                                                                        <h6 style="margin-bottom: 15px; color: #374151; font-weight: 600;">
+                                                                            <i class="ti-time"></i> Enrollment Timeline
+                                                                        </h6>
+                                                                        <div style="position: relative; padding-left: 30px;">
+                                                                            @foreach($history['enrollments'] as $index => $enrollment)
+                                                                            <div style="position: relative; margin-bottom: {{ $loop->last ? '0' : '20px' }};">
+                                                                                <!-- Timeline Dot -->
+                                                                                <div style="position: absolute; left: -30px; width: 12px; height: 12px; border-radius: 50%; 
+                                                                                            background: {{ $enrollment->status === 'active' ? '#10b981' : '#6b7280' }}; 
+                                                                                            border: 3px solid white; box-shadow: 0 0 0 2px {{ $enrollment->status === 'active' ? '#10b981' : '#6b7280' }};">
+                                                                                </div>
+                                                                                
+                                                                                <!-- Timeline Line -->
+                                                                                @if(!$loop->last)
+                                                                                <div style="position: absolute; left: -25px; top: 12px; width: 2px; height: calc(100% + 20px); background: #e5e7eb;"></div>
+                                                                                @endif
+
+                                                                                <!-- Enrollment Info -->
+                                                                                <div style="padding: 12px; background: white; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                                                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                                                                        <div>
+                                                                                            <div style="font-weight: 600; color: #1f2937; margin-bottom: 5px;">
+                                                                                                Enrollment #{{ $history['total_enrollments'] - $index }}
+                                                                                            </div>
+                                                                                            <div style="font-size: 13px; color: #6b7280;">
+                                                                                                <i class="ti-calendar"></i> 
+                                                                                                Enrolled: {{ $enrollment->enrollment_date->format('M d, Y') }}
+                                                                                            </div>
+                                                                                            <div style="font-size: 13px; color: #6b7280; margin-top: 3px;">
+                                                                                                <i class="ti-time"></i> 
+                                                                                                {{ $enrollment->created_at->diffForHumans() }}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            @if($enrollment->status === 'active')
+                                                                                                <span class="badge badge-success">Active</span>
+                                                                                            @elseif($enrollment->status === 'dropped')
+                                                                                                <span class="badge badge-secondary">Dropped</span>
+                                                                                            @else
+                                                                                                <span class="badge badge-info">{{ ucfirst($enrollment->status) }}</span>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Re-enrollment Badge -->
+                                                                    @if($history['total_enrollments'] > 1)
+                                                                    <div style="margin-top: 15px; padding: 10px; background: #fef3c7; border-radius: 4px;">
+                                                                        <i class="ti-reload" style="color: #f59e0b;"></i> 
+                                                                        <strong style="color: #92400e;">Re-enrolled Student</strong>
+                                                                        <span style="color: #78350f; font-size: 13px;">
+                                                                            - This student has enrolled {{ $history['total_enrollments'] }} times
+                                                                        </span>
+                                                                    </div>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <div class="empty-state">
+                                                        <i class="ti-time"></i>
+                                                        <h4>No Enrollment History</h4>
+                                                        <p>No students have been enrolled in this class yet.</p>
+                                                    </div>
+                                                @endif
+                                            </div>   
+
 
                                             <!-- Schedules Tab -->
                                             <div role="tabpanel" class="tab-pane" id="schedules">
@@ -492,29 +660,6 @@
                         </div>
                     </div>
 
-                    <!-- Success Messages -->
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
                     <!-- Footer -->
                     <div class="row">
                         <div class="col-lg-12">
@@ -529,10 +674,85 @@
     </div>
 @endsection
 
+
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Tab functionality is handled by Bootstrap
+            // Handle student unenrollment with SweetAlert
+            $('.unenroll-student-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const studentName = $(this).data('student-name');
+                const className = $(this).data('class-name');
+                
+                swal({
+                    title: "Remove Student from Class?",
+                    text: "Are you sure you want to remove '" + studentName + "' from '" + className + "'?\n\nThis will:\n• Mark the enrollment as 'dropped'\n• Keep the enrollment history for records\n• Student can be re-enrolled if needed\n\nDo you want to continue?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, remove student",
+                    cancelButtonText: "No, cancel",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
+
+            // Handle class deletion (if this script is on the show page)
+            $('#deleteClassForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const form = this;
+                const className = "{{ $class->name }}";
+                const enrolledCount = {{ $class->enrollments()->where('status', 'active')->count() ?? 0 }};
+                const scheduleCount = {{ $class->schedules()->count() ?? 0 }};
+                
+                // Prevent deletion if class has active enrollments
+                if (enrolledCount > 0) {
+                    swal({
+                        title: "Cannot Delete Class!",
+                        text: "Class '" + className + "' has " + enrolledCount + " actively enrolled student(s).\n\nPlease remove all students from this class before deleting.\n\nYou can use the 'Remove' button for each student in the Students tab.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    });
+                    return false;
+                }
+                
+                let warningText = "You want to delete class '" + className + "'?\n\n";
+                
+                if (scheduleCount > 0) {
+                    warningText += "⚠️ This class has " + scheduleCount + " scheduled session(s) that will also be deleted.\n\n";
+                }
+                
+                warningText += "This action cannot be undone!";
+                
+                swal({
+                    title: "Are you sure?",
+                    text: warningText,
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit();
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

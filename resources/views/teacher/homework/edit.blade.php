@@ -1,0 +1,395 @@
+@extends('layouts.app')
+
+@push('styles')
+<style>
+    .current-info-box {
+        background-color: #e7f3ff;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .warning-box {
+        background-color: #fff3cd;
+        padding: 15px;
+        border-radius: 4px;
+    }
+
+    .file-upload-box {
+        border: 2px dashed #cbd5e0;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-box:hover {
+        border-color: #007bff;
+        background-color: #e7f3ff;
+    }
+
+    .current-file-box {
+        background-color: #e7f3ff;
+        border: 1px solid #007bff;
+        border-radius: 6px;
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .guideline-item {
+        display: flex;
+        align-items: start;
+        margin-bottom: 12px;
+    }
+
+    .guideline-item i {
+        color: #007bff;
+        margin-right: 10px;
+        margin-top: 2px;
+    }
+
+</style>
+@endpush
+
+@section('content')
+    <div class="content-wrap">
+        <div class="main">
+            <div class="container-fluid">
+                <!-- Page Header -->
+                <div class="row">
+                    <div class="col-lg-8 p-r-0 title-margin-right">
+                        <div class="page-header">
+                            <div class="page-title">
+                                <h1>Edit Homework Assignment</h1>
+                            </div>
+                        </div>
+                        <span>Update homework assignment details</span>
+                    </div>
+                    <div class="col-lg-4 p-l-0 title-margin-left">
+                        <div class="page-header">
+                            <div class="page-title">
+                                <ol class="breadcrumb text-right">
+                                    <li><a href="{{ route('teacher.dashboard') }}">Dashboard</a></li>
+                                    <li><a href="{{ route('teacher.homework.index') }}">Homework</a></li>
+                                    <li><a href="{{ route('teacher.homework.show', $homework) }}">Details</a></li>
+                                    <li class="active">Edit</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{{ route('teacher.homework.update', $homework) }}" 
+                      method="POST" 
+                      enctype="multipart/form-data"
+                      id="homeworkUpdateForm">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="row">
+                        <!-- Main Content -->
+                        <div class="col-lg-8">
+                            <!-- Homework Details -->
+                            <div class="card alert">
+                                <div class="card-header">
+                                    <h4><i class="ti-pencil-alt"></i> Homework Details</h4>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Class Selection -->
+                                    <div class="form-group">
+                                        <label class="required-field">Class</label>
+                                        <select name="class_id" required class="form-control">
+                                            <option value="">Select a class...</option>
+                                            @foreach($classes as $class)
+                                            <option value="{{ $class->id }}" {{ old('class_id', $homework->class_id) == $class->id ? 'selected' : '' }}>
+                                                {{ $class->name }} - {{ $class->subject }}
+                                                @if($class->teacher)
+                                                ({{ $class->teacher->name }})
+                                                @endif
+                                            </option>
+                                            @endforeach
+                                        </select>
+                                        @error('class_id')
+                                        <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <!-- Title -->
+                                    <div class="form-group">
+                                        <label class="required-field">Homework Title</label>
+                                        <input 
+                                            type="text" 
+                                            name="title" 
+                                            value="{{ old('title', $homework->title) }}"
+                                            required
+                                            maxlength="255"
+                                            class="form-control"
+                                        >
+                                        @error('title')
+                                        <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <!-- Description -->
+                                    <div class="form-group">
+                                        <label>Description</label>
+                                        <textarea 
+                                            name="description" 
+                                            rows="5"
+                                            maxlength="2000"
+                                            class="form-control"
+                                        >{{ old('description', $homework->description) }}</textarea>
+                                        @error('description')
+                                        <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <!-- Dates -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="required-field">Assigned Date</label>
+                                                <input 
+                                                    type="date" 
+                                                    name="assigned_date" 
+                                                    value="{{ old('assigned_date', $homework->assigned_date->format('Y-m-d')) }}"
+                                                    required
+                                                    class="form-control"
+                                                >
+                                                @error('assigned_date')
+                                                <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="required-field">Due Date</label>
+                                                <input 
+                                                    type="date" 
+                                                    name="due_date" 
+                                                    value="{{ old('due_date', $homework->due_date->format('Y-m-d')) }}"
+                                                    required
+                                                    class="form-control"
+                                                >
+                                                @error('due_date')
+                                                <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress Sheet Link -->
+                                    <div class="form-group">
+                                        <label>Link to Progress Sheet (Optional)</label>
+                                        <select name="progress_sheet_id" class="form-control">
+                                            <option value="">No progress sheet</option>
+                                            @foreach($progressSheets as $sheet)
+                                            <option value="{{ $sheet->id }}" {{ old('progress_sheet_id', $homework->progress_sheet_id) == $sheet->id ? 'selected' : '' }}>
+                                                {{ $sheet->class->name }} - {{ $sheet->topic }} ({{ $sheet->date->format('d M Y') }})
+                                            </option>
+                                            @endforeach
+                                        </select>
+                                        @error('progress_sheet_id')
+                                        <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <!-- Current File -->
+                                    @if($homework->file_path)
+                                    <div class="form-group">
+                                        <label>Current Attachment</label>
+                                        <div class="current-file-box">
+                                            <div style="display: flex; align-items: center;">
+                                                <i class="ti-file" style="font-size: 1.5rem; color: #007bff; margin-right: 12px;"></i>
+                                                <span style="color: #495057;">{{ basename($homework->file_path) }}</span>
+                                            </div>
+                                            <a href="{{ route('teacher.homework.download', $homework) }}" class="btn btn-sm btn-primary">
+                                                <i class="ti-download"></i> Download
+                                            </a>
+                                        </div>
+                                        <small class="form-text text-muted">Upload a new file below to replace this attachment</small>
+                                    </div>
+                                    @endif
+
+                                    <!-- File Upload -->
+                                    <div class="form-group">
+                                        <label>{{ $homework->file_path ? 'Replace Attachment (Optional)' : 'Attachment (Optional)' }}</label>
+                                        <div class="file-upload-box">
+                                            <input type="file" name="file" id="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                            <label for="file-input" style="cursor: pointer; margin: 0;">
+                                                <i class="ti-cloud-up" style="font-size: 3rem; color: #6c757d; display: block; margin-bottom: 10px;"></i>
+                                                <p style="margin: 0;"><strong>Click to upload</strong> or drag and drop</p>
+                                                <p style="margin: 5px 0 0 0; font-size: 1rem; color: #6c757d;">PDF, DOC, DOCX, JPG, PNG (MAX. 10MB)</p>
+                                            </label>
+                                        </div>
+                                        <div id="file-name" style="margin-top: 10px; color: #007bff; display: none;">
+                                            <i class="ti-file"></i> <span></span>
+                                        </div>
+                                        @if($homework->file_path)
+                                        <small class="form-text text-muted">Leave empty to keep current file</small>
+                                        @endif
+                                        @error('file')
+                                        <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar -->
+                        <div class="col-lg-4">
+                            <!-- Current Info -->
+                            <div class="card alert sidebar-sticky">
+                                <div class="card-body current-info-box">
+                                    <h4 style="font-weight: 600; margin-bottom: 15px;">
+                                        <i class="ti-info-alt"></i> Current Information
+                                    </h4>
+                                    
+                                    <div style="margin-bottom: 12px;">
+                                        <p style="margin: 0 0 3px 0; color: #007bff;">Class</p>
+                                        <p style="margin: 0; font-weight: 600;">{{ $homework->class->name }}</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 12px;">
+                                        <p style="margin: 0 0 3px 0; color: #007bff;">Teacher</p>
+                                        <p style="margin: 0; font-weight: 600;">{{ $homework->teacher->name }}</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 12px;">
+                                        <p style="margin: 0 0 3px 0; color: #007bff;">Total Students</p>
+                                        <p style="margin: 0; font-weight: 600;">{{ $homework->submissions->count() }}</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 12px;">
+                                        <p style="margin: 0 0 3px 0; color: #007bff;">Submissions</p>
+                                        <p style="margin: 0; font-weight: 600;">
+                                            {{ $homework->submissions->whereIn('status', ['submitted', 'late', 'graded'])->count() }} submitted
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p style="margin: 0 0 3px 0; color: #007bff;">Created</p>
+                                        <p style="margin: 0; font-weight: 600;">{{ $homework->created_at->format('d M Y') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Edit Guidelines -->
+                            <div class="card alert" style="margin-top: 20px;">
+                                <div class="card-header" style="margin-bottom: 15px;">
+                                    <h4><i class="ti-help-alt"></i> Edit Guidelines</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="guideline-item">
+                                        <i class="ti-check"></i>
+                                        <span>Changes will be visible to all students and parents</span>
+                                    </div>
+                                    <div class="guideline-item">
+                                        <i class="ti-check"></i>
+                                        <span>Extending the due date won't affect existing submissions</span>
+                                    </div>
+                                    <div class="guideline-item">
+                                        <i class="ti-check"></i>
+                                        <span>Uploading a new file will replace the existing attachment</span>
+                                    </div>
+                                    <div class="guideline-item">
+                                        <i class="ti-check"></i>
+                                        <span>Changing the class is not recommended if submissions exist</span>
+                                    </div>
+                                    <div class="guideline-item">
+                                        <i class="ti-check"></i>
+                                        <span>All changes are logged in the activity history</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Warning -->
+                            @if($homework->submissions->whereIn('status', ['submitted', 'late', 'graded'])->count() > 0)
+                            <div class="card alert" style="margin-top: 20px;">
+                                <div class="card-body warning-box">
+                                    <div style="display: flex; align-items: start;">
+                                        <i class="ti-alert" style="font-size: 1.5rem; color: #856404; margin-right: 12px; margin-top: 2px;"></i>
+                                        <div>
+                                            <p style="margin: 0 0 8px 0; font-weight: 600; color: #856404;">Caution</p>
+                                            <p style="margin: 0; color: #856404;">
+                                                This homework has {{ $homework->submissions->whereIn('status', ['submitted', 'late', 'graded'])->count() }} submission(s). 
+                                                Make changes carefully to avoid confusion.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </form>
+
+                    <!-- Form Actions -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card alert">
+                                <div class="card-body">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <!-- Delete Form -->
+                                        <form action="{{ route('teacher.homework.destroy', $homework) }}" 
+                                            method="POST" 
+                                            id="deleteForm"
+                                            style="margin: 0;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" 
+                                                    class="btn btn-danger"
+                                                    onclick="if(confirm('Are you sure you want to delete this homework? All {{ $homework->submissions->count() }} submissions will be permanently deleted.')) { document.getElementById('deleteForm').submit(); }">
+                                                <i class="ti-trash"></i> Delete Homework
+                                            </button>
+                                        </form>
+
+                                        <div style="display: flex; gap: 10px;">
+                                            <a href="{{ route('teacher.homework.show', $homework) }}" class="btn btn-secondary">
+                                                <i class="ti-arrow-left"></i> Cancel
+                                            </a>
+                                            <button type="button" class="btn btn-primary" onclick="document.getElementById('homeworkUpdateForm').submit();">
+                                                <i class="ti-check"></i> Update Homework
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="footer">
+                                <p>MLC Classroom - Edit Homework</p>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // File input change handler
+    $('#file-input').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            $('#file-name span').text(file.name);
+            $('#file-name').show();
+        } else {
+            $('#file-name').hide();
+        }
+    });
+});
+</script>
+@endpush

@@ -55,12 +55,17 @@ class ScheduleController extends Controller
         $classes = ClassModel::with('teacher')->orderBy('name')->get();
         $teachers = User::where('role', 'teacher')->orderBy('name')->get();
 
-        // Statistics
+        // ✅ ENHANCED: Statistics with additional metrics
         $stats = [
             'total_schedules' => Schedule::count(),
             'unique_classes' => Schedule::distinct('class_id')->count('class_id'),
             'this_week' => Schedule::whereIn('day_of_week', $this->getWeekDays())->count(),
             'conflicts' => $this->detectConflicts()->count(),
+            'active_teachers' => User::where('role', 'teacher')
+                ->where('status', 'active')
+                ->whereHas('teachingClasses.schedules')
+                ->count(),
+            'recurring_schedules' => Schedule::where('recurring', true)->count(),
         ];
 
         return view('superadmin.schedules.index', compact(

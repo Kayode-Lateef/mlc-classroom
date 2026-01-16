@@ -19,6 +19,7 @@ use App\Http\Controllers\Parent\ResourceController;
     // Students (Only parent's children)
     Route::get('students', [StudentController::class, 'index'])->name('students.index');
     Route::get('students/{student}', [StudentController::class, 'show'])->name('students.show');
+
     
     // ========== ACADEMIC ==========
     

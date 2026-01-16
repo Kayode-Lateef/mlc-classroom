@@ -86,7 +86,7 @@ class ScheduleController extends Controller
                 'conflicts' => $this->detectConflicts()->count(),
                 'active_teachers' => User::where('role', 'teacher')
                     ->where('status', 'active')
-                    ->whereHas('classes.schedules')
+                    ->whereHas('teachingClasses.schedules')
                     ->count(),
                 'recurring_schedules' => Schedule::where('recurring', true)->count(),
             ];

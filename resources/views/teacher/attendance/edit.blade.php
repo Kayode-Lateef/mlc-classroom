@@ -19,6 +19,7 @@
         .status-radio-group {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
         }
 
         .status-radio-label {
@@ -35,10 +36,16 @@
             background-color: #e9ecef;
         }
 
+        .status-radio-label input[type="radio"] {
+            cursor: pointer;
+        }
+
         .session-info-card {
-            padding: 20px;
+            color: white;
+            padding: 25px;
             border-radius: 8px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .student-avatar {
@@ -63,9 +70,31 @@
 
         .warning-box {
             background-color: #fff3cd;
+            border: 1px solid #ffc107;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
+        }
+
+        .info-section {
+            margin-bottom: 5px;
+        }
+
+        .info-section h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .info-section h3 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .info-section small {
+            opacity: 0.8;
+            font-size: 0.875rem;
         }
     </style>
 @endpush
@@ -82,7 +111,7 @@
                                 <h1>Edit Attendance</h1>
                             </div>
                         </div>
-                        <span class="text-muted">Modify existing attendance records</span>
+                        <span class="text-muted">Modify existing attendance records for your class</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
@@ -101,30 +130,38 @@
                     <!-- Session Info Card -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="session-info-card card">
+                            <div class="session-info-card bg-primary">
                                 <div class="row">
                                     <div class="col-md-3">
-                                        <h5 style="margin-bottom: 5px;"><i class="ti-blackboard"></i> Class</h5>
-                                        <h3 style="margin: 0;">{{ $class->name }}</h3>
-                                        <small style="opacity: 0.9;">{{ $class->subject }}</small>
+                                        <div class="info-section">
+                                            <h5><i class="ti-blackboard"></i> Class</h5>
+                                            <h3>{{ $class->name }}</h3>
+                                            <small>{{ $class->subject }}</small>
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <h5 style="margin-bottom: 5px;"><i class="ti-calendar"></i> Date</h5>
-                                        <h3 style="margin: 0;">{{ $attendanceDate->format('d M Y') }}</h3>
-                                        <small style="opacity: 0.9;">{{ $attendanceDate->format('l') }}</small>
+                                        <div class="info-section">
+                                            <h5><i class="ti-calendar"></i> Date</h5>
+                                            <h3>{{ $attendanceDate->format('d M Y') }}</h3>
+                                            <small>{{ $attendanceDate->format('l') }}</small>
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <h5 style="margin-bottom: 5px;"><i class="ti-time"></i> Time</h5>
-                                        <h3 style="margin: 0;">
-                                            {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - 
-                                            {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
-                                        </h3>
-                                        <small style="opacity: 0.9;">{{ $schedule->day_of_week }}</small>
+                                        <div class="info-section">
+                                            <h5><i class="ti-time"></i> Time</h5>
+                                            <h3>
+                                                {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - 
+                                                {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
+                                            </h3>
+                                            <small>{{ $schedule->day_of_week }}</small>
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <h5 style="margin-bottom: 5px;"><i class="ti-user"></i> Teacher</h5>
-                                        <h3 style="margin: 0;">{{ $class->teacher->name ?? 'Not assigned' }}</h3>
-                                        <small style="opacity: 0.9;">Room: {{ $class->room_number ?? 'N/A' }}</small>
+                                        <div class="info-section">
+                                            <h5><i class="ti-user"></i> Students</h5>
+                                            <h3>{{ $attendanceRecords->count() }}</h3>
+                                            <small>Active records</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -135,14 +172,22 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="warning-box">
-                                <i class="ti-alert"></i> <strong>Editing Attendance Records</strong>
-                                <p class="mb-0">You are modifying existing attendance records. Changes will be reflected immediately in reports and statistics.</p>
+                                <div style="display: flex; align-items: start; gap: 10px;">
+                                    <i class="ti-alert" style="font-size: 1.5rem;"></i>
+                                    <div>
+                                        <strong>Editing Attendance Records</strong>
+                                        <p class="mb-0">
+                                            You are modifying existing attendance records. Changes will be reflected immediately in reports and statistics. 
+                                            Parents of newly marked absent students will be notified automatically.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Edit Form -->
-                    <form method="POST" action="{{ route('teacher.attendance.update', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}">
+                    <form method="POST" action="{{ route('teacher.attendance.update', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" id="attendanceEditForm">
                         @csrf
                         @method('PUT')
 
@@ -151,84 +196,102 @@
                             <div class="col-lg-12">
                                 <div class="card alert">
                                     <div class="card-header">
-                                        <h4><i class="ti-user"></i> Update Attendance ({{ $students->count() }} Students)</h4>
+                                        <h4><i class="ti-pencil-alt"></i> Update Attendance Records</h4>
                                         <div class="card-header-right-icon">
-                                            <span class="badge badge-info">{{ $attendanceRecords->count() }} records found</span>
+                                            <span class="badge badge-info">{{ $attendanceRecords->count() }} records</span>
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        @foreach($students as $student)
-                                        @php
-                                            $record = $attendanceRecords->get($student->id);
-                                            $currentStatus = $record ? $record->status : 'present';
-                                            $currentNotes = $record ? $record->notes : '';
-                                        @endphp
-
-                                        <div class="student-row">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-4">
-                                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                                        @if($student->profile_photo)
-                                                            <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="{{ $student->full_name }}" class="student-avatar">
-                                                        @else
-                                                            <div class="student-initial">
-                                                                {{ strtoupper(substr($student->first_name, 0, 1)) }}{{ strtoupper(substr($student->last_name, 0, 1)) }}
+                                        @if($attendanceRecords->count() > 0)
+                                            @foreach($attendanceRecords as $studentId => $record)
+                                            @php
+                                                $student = $record->student;
+                                            @endphp
+                                            <div class="student-row">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-4">
+                                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                                            @if($student->profile_photo)
+                                                                <img src="{{ asset('storage/' . $student->profile_photo) }}" 
+                                                                     alt="{{ $student->full_name }}" 
+                                                                     class="student-avatar">
+                                                            @else
+                                                                <div class="student-initial">
+                                                                    {{ strtoupper(substr($student->first_name, 0, 1)) }}{{ strtoupper(substr($student->last_name, 0, 1)) }}
+                                                                </div>
+                                                            @endif
+                                                            <div>
+                                                                <strong>{{ $student->full_name }}</strong><br>
+                                                                <small class="text-muted">
+                                                                    @if($student->parent)
+                                                                        Parent: {{ $student->parent->name }}
+                                                                    @else
+                                                                        No parent assigned
+                                                                    @endif
+                                                                </small>
                                                             </div>
-                                                        @endif
-                                                        <div>
-                                                            <strong>{{ $student->full_name }}</strong><br>
-                                                            <small class="text-muted">ID: {{ $student->id }}</small>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                <div class="col-md-5">
-                                                    <div class="status-radio-group">
-                                                        <label class="status-radio-label">
-                                                            <input type="radio" name="attendance[{{ $student->id }}]" value="present" {{ $currentStatus === 'present' ? 'checked' : '' }}>
-                                                            <i class="ti-check text-success"></i>
-                                                            <span>Present</span>
-                                                        </label>
+                                                    <div class="col-md-5">
+                                                        <div class="status-radio-group">
+                                                            <label class="status-radio-label">
+                                                                <input type="radio" 
+                                                                       name="attendance[{{ $studentId }}]" 
+                                                                       value="present" 
+                                                                       {{ $record->status === 'present' ? 'checked' : '' }}>
+                                                                <i class="ti-check text-success"></i>
+                                                                <span>Present</span>
+                                                            </label>
 
-                                                        <label class="status-radio-label">
-                                                            <input type="radio" name="attendance[{{ $student->id }}]" value="absent" {{ $currentStatus === 'absent' ? 'checked' : '' }}>
-                                                            <i class="ti-close text-danger"></i>
-                                                            <span>Absent</span>
-                                                        </label>
+                                                            <label class="status-radio-label">
+                                                                <input type="radio" 
+                                                                       name="attendance[{{ $studentId }}]" 
+                                                                       value="absent" 
+                                                                       {{ $record->status === 'absent' ? 'checked' : '' }}>
+                                                                <i class="ti-close text-danger"></i>
+                                                                <span>Absent</span>
+                                                            </label>
 
-                                                        <label class="status-radio-label">
-                                                            <input type="radio" name="attendance[{{ $student->id }}]" value="late" {{ $currentStatus === 'late' ? 'checked' : '' }}>
-                                                            <i class="ti-time text-warning"></i>
-                                                            <span>Late</span>
-                                                        </label>
+                                                            <label class="status-radio-label">
+                                                                <input type="radio" 
+                                                                       name="attendance[{{ $studentId }}]" 
+                                                                       value="late" 
+                                                                       {{ $record->status === 'late' ? 'checked' : '' }}>
+                                                                <i class="ti-time text-warning"></i>
+                                                                <span>Late</span>
+                                                            </label>
 
-                                                        <label class="status-radio-label">
-                                                            <input type="radio" name="attendance[{{ $student->id }}]" value="unauthorized" {{ $currentStatus === 'unauthorized' ? 'checked' : '' }}>
-                                                            <i class="ti-alert text-orange"></i>
-                                                            <span style="font-size: 1.2rem">Unauthorized</span>
-                                                        </label>
+                                                            <label class="status-radio-label">
+                                                                <input type="radio" 
+                                                                       name="attendance[{{ $studentId }}]" 
+                                                                       value="unauthorized" 
+                                                                       {{ $record->status === 'unauthorized' ? 'checked' : '' }}>
+                                                                <i class="ti-alert text-orange"></i>
+                                                                <span>Unauthorized</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-3">
+                                                        <input 
+                                                            type="text" 
+                                                            name="notes[{{ $studentId }}]" 
+                                                            value="{{ $record->notes }}"
+                                                            placeholder="Add notes (optional)" 
+                                                            class="form-control form-control-sm"
+                                                            maxlength="500"
+                                                        >
                                                     </div>
                                                 </div>
-
-                                                <div class="col-md-3">
-                                                    <input 
-                                                        type="text" 
-                                                        name="notes[{{ $student->id }}]" 
-                                                        value="{{ $currentNotes }}"
-                                                        placeholder="Add notes (optional)" 
-                                                        class="form-control form-control-sm"
-                                                    >
-                                                </div>
                                             </div>
-                                        </div>
-                                        @endforeach
-
-                                        @if($students->count() === 0)
-                                        <div class="text-center py-5">
-                                            <i class="ti-user" style="font-size: 3rem; color: #cbd5e0;"></i>
-                                            <h4 class="mt-3">No Students Enrolled</h4>
-                                            <p class="text-muted">This class doesn't have any active students.</p>
-                                        </div>
+                                            @endforeach
+                                        @else
+                                            <div class="text-center py-5">
+                                                <i class="ti-alert" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                                <h4 class="mt-3">No Attendance Records Found</h4>
+                                                <p class="text-muted">No attendance records exist for this session.</p>
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -236,38 +299,50 @@
                         </div>
 
                         <!-- Submit Buttons -->
+                        @if($attendanceRecords->count() > 0)
                         <div class="row">
                             <div class="col-lg-12">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <a href="{{ route('teacher.attendance.show', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" class="btn btn-info">
-                                            <i class="ti-eye"></i> View Session
-                                        </a>
-                                        
-                                    </div>
+                                <div class="card alert">
+                                    <div class="card-body">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                            <div>
+                                                <a href="{{ route('teacher.attendance.show', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" 
+                                                   class="btn btn-info">
+                                                    <i class="ti-eye"></i> View Session Details
+                                                </a>
+                                                
+                                                <button type="button" 
+                                                        class="btn btn-danger" 
+                                                        onclick="confirmDelete()">
+                                                    <i class="ti-trash"></i> Delete Session
+                                                </button>
+                                            </div>
 
-                                    <div>
-                                        <a href="{{ route('teacher.attendance.index') }}" class="btn btn-secondary">
-                                            <i class="ti-close"></i> Cancel
-                                        </a>
-                                        <button type="submit" class="btn btn-success">
-                                            <i class="ti-check"></i> Update Attendance
-                                        </button>
+                                            <div>
+                                                <a href="{{ route('teacher.attendance.index') }}" class="btn btn-secondary">
+                                                    <i class="ti-close"></i> Cancel
+                                                </a>
+                                                <button type="submit" class="btn btn-success" id="submitBtn">
+                                                    <i class="ti-check"></i> Update Attendance
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        @endif
                     </form>
+
+                    <!-- Hidden Delete Form -->
                     <form action="{{ route('teacher.attendance.destroy', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" 
-                        method="POST" 
-                        style="display: inline-block; margin-top: 8px;"
-                        id="deleteAttendanceSessionForm">
+                          method="POST" 
+                          id="deleteAttendanceSessionForm"
+                          style="display: none;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="ti-trash"></i> Delete Session
-                        </button>
                     </form>
+
                     <!-- Footer -->
                     <div class="row">
                         <div class="col-lg-12">
@@ -282,39 +357,65 @@
     </div>
 @endsection
 
-
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Handle attendance session deletion with SweetAlert
-    $('#deleteAttendanceSessionForm').on('submit', function(e) {
-        e.preventDefault(); // Prevent default submission
-        
-        const form = this;
-        const className = "{{ $class->name }}";
-        const date = "{{ $attendanceDate->format('F j, Y') }}"; // e.g., "January 15, 2026"
-        const scheduleTime = "{{ $schedule->start_time->format('H:i') }} - {{ $schedule->end_time->format('H:i') }}";
-        const studentCount = {{ $attendanceRecords->count() ?? 0 }};
-        
-        swal({
-            title: "Delete Attendance Session?",
-            text: "⚠️ You are about to delete this entire attendance session:\n\nClass: " + className + "\nDate: " + date + "\nTime: " + scheduleTime + "\nRecords: " + studentCount + " student(s)\n\nThis action cannot be undone!",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "Yes, delete session!",
-            cancelButtonText: "No, cancel",
-            closeOnConfirm: true,
-            closeOnCancel: true
-        },
-        function(isConfirm){
-            if (isConfirm) {
-                form.submit(); // Submit the form
-            }
-        });
-        
-        return false;
+    // Handle form submission - disable button to prevent double submit
+    $('#attendanceEditForm').on('submit', function(e) {
+        const submitBtn = $('#submitBtn');
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="ti-reload"></i> Updating...');
     });
+});
+
+// Confirm delete function
+function confirmDelete() {
+    const className = "{{ $class->name }}";
+    const date = "{{ $attendanceDate->format('F j, Y') }}";
+    const scheduleTime = "{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}";
+    const studentCount = {{ $attendanceRecords->count() }};
+    
+    swal({
+        title: "Delete Attendance Session?",
+        text: "⚠️ You are about to delete this entire attendance session:\n\n" +
+              "Class: " + className + "\n" +
+              "Date: " + date + "\n" +
+              "Time: " + scheduleTime + "\n" +
+              "Records: " + studentCount + " student(s)\n\n" +
+              "This action cannot be undone!\n\n" +
+              "Are you sure you want to continue?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete session!",
+        cancelButtonText: "No, cancel",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    },
+    function(isConfirm) {
+        if (isConfirm) {
+            document.getElementById('deleteAttendanceSessionForm').submit();
+        }
+    });
+}
+
+// Track changes for unsaved warning
+let formChanged = false;
+$('input[type="radio"], input[type="text"]').on('change', function() {
+    formChanged = true;
+});
+
+// Warn before leaving if unsaved changes
+window.addEventListener('beforeunload', function (e) {
+    if (formChanged) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+// Don't warn when actually submitting
+$('#attendanceEditForm, #deleteAttendanceSessionForm').on('submit', function() {
+    formChanged = false;
 });
 </script>
 @endpush

@@ -21,13 +21,25 @@ use App\Http\Controllers\Teacher\LearningResourceController;
     Route::get('classes/{class}', [ClassController::class, 'show'])->name('classes.show');
     
     // Attendance (Only for teacher's classes)
-    Route::resource('attendance', AttendanceController::class);
-    Route::post('attendance/bulk-mark', [AttendanceController::class, 'bulkMark'])->name('attendance.bulk-mark');
+    // Route::resource('attendance', AttendanceController::class);
+    // Route::post('attendance/bulk-mark', [AttendanceController::class, 'bulkMark'])->name('attendance.bulk-mark');
+    // Attendance Management
+    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('attendance/create', [AttendanceController::class, 'create'])->name('attendance.create');
+    Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    
+    // Session-specific routes with 3 parameters
+    Route::get('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::get('attendance/{date}/{classId}/{scheduleId}/edit', [AttendanceController::class, 'edit'])->name('attendance.edit');
+    Route::put('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'update'])->name('attendance.update');
+    Route::delete('attendance/{date}/{classId}/{scheduleId}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
     
     // Homework (Only for teacher's classes)
-    Route::resource('homework', HomeworkController::class);
+    Route::get('homework/{homework}/download', [HomeworkController::class, 'download'])
+    ->name('homework.download');
     Route::post('homework/{homework}/grade', [HomeworkController::class, 'grade'])->name('homework.grade');
     Route::get('homework/{homework}/submissions', [HomeworkController::class, 'submissions'])->name('homework.submissions');
+    Route::resource('homework', HomeworkController::class);
     
     // Progress Sheets (Only for teacher's classes)
     Route::get('progress-sheets/get-students', [ProgressSheetController::class, 'getStudents'])

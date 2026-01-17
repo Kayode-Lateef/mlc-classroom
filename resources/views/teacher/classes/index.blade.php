@@ -389,18 +389,22 @@
                     </div>
                     @else
                     <!-- Empty State -->
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="empty-state">
-                                <i class="ti-blackboard"></i>
-                                <h3 class="mb-3">No Classes Found</h3>
-                                <p class="text-muted mb-4">Get started by adding your first class.</p>
-                                <a href="" class="btn btn-primary">
-                                    <i class="ti-plus"></i> Add Class
-                                </a>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card alert">
+                                    <div class="card-body text-center py-5">
+                                        <i class="ti-blackboard" style="font-size: 5rem; color: #cbd5e0;"></i>
+                                        <h3 class="mt-3 mb-2">No Classes Found</h3>
+                                        <p class="text-muted mb-4">
+                                            You don't have any classes registered in the system yet.
+                                        </p>
+                                        <p class="text-muted">
+                                            Please contact the school administrator to create your classes.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
                     @endif
 
                     <!-- Footer -->

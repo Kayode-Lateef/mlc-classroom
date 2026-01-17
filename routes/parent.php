@@ -31,6 +31,8 @@ use App\Http\Controllers\Parent\ResourceController;
     Route::get('homework', [HomeworkController::class, 'index'])->name('homework.index');
     Route::get('homework/{homework}', [HomeworkController::class, 'show'])->name('homework.show');
     Route::post('homework/{homework}/submit', [HomeworkController::class, 'submit'])->name('homework.submit');
+        Route::get('homework/{homework}/download', [HomeworkController::class, 'download'])
+    ->name('homework.download');
     
     
     // Progress Reports (View only for parent's children)

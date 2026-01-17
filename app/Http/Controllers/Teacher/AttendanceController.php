@@ -271,15 +271,22 @@ class AttendanceController extends Controller
             ? round(($stats['present'] / $stats['total']) * 100, 1)
             : 0;
 
+        // Get marked by and marked at info
+        $firstRecord = $attendanceRecords->first();
+        $markedBy = $firstRecord ? $firstRecord->markedBy : null;
+        $markedAt = $firstRecord ? $firstRecord->created_at : null;
+
         return view('teacher.attendance.show', compact(
             'class',
             'schedule',
             'attendanceDate',
             'attendanceRecords',
-            'stats'
+            'stats',
+            'markedBy',
+            'markedAt'
         ));
     }
-
+    
     /**
      * Show the form for editing attendance
      */

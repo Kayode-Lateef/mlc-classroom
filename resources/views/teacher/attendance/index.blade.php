@@ -9,13 +9,13 @@
             align-items: center;
             padding: 4px 10px;
             border-radius: 4px;
-            font-size: 1rem;
+            font-size: 0.875rem;
             font-weight: 600;
         }
 
         .status-badge i {
             margin-right: 4px;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .filter-card {
@@ -42,14 +42,119 @@
             font-weight: bold;
             font-size: 0.875rem;
             background-color: #e7f3ff;
-            color: #007bff;
+            color: #3386f7;
         }
 
         .quick-actions {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            margin-top: 20px;
+        }
+
+        .session-card {
+            border-left: 4px solid #3386f7;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .session-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .session-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .session-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .attendance-summary {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-widget-three {
+            padding: 20px;
+        }
+
+        .stat-widget-three .stat-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1.5rem;
+        }
+
+        .stat-widget-three .stat-content {
+            margin-left: 70px;
+        }
+
+        .stat-widget-three .stat-digit {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .stat-widget-three .stat-text {
+            font-size: 0.875rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .attendance-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            color: #cbd5e0;
+            margin-bottom: 20px;
+        }
+
+        .btn-mark-attendance {
+            background-color: #3386f7;
+            color: white;
+            border: none;
+        }
+
+        .btn-mark-attendance:hover {
+            background-color: #2c75d6;
+            color: white;
         }
     </style>
 @endpush
@@ -66,7 +171,7 @@
                                 <h1>Attendance Records</h1>
                             </div>
                         </div>
-                        <span class="text-muted">View and manage system-wide attendance</span>
+                        <span class="text-muted">View and manage attendance for your classes</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
@@ -85,37 +190,33 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="quick-actions">
-                               
-                                <a href="{{ route('teacher.attendance.create') }}" class="btn btn-success">
+                                <a href="{{ route('teacher.attendance.create') }}" class="btn btn-mark-attendance">
                                     <i class="ti-plus"></i> Mark Attendance
                                 </a>
-                               
                             </div>
                         </div>
                     </div>
 
-
-
                     <!-- Statistics Cards -->
                     <div class="row">
-                        <div class="col-lg-2">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
-                                    <div class="stat-icon bg-primary">
-                                        <i class="ti-clipboard"></i>
+                                    <div class="stat-icon" style="background-color: #e3f2fd;">
+                                        <i class="ti-clipboard" style="color: #3386f7;"></i>
                                     </div>
                                     <div class="stat-content">
                                         <div class="stat-digit">{{ number_format($stats['total_records']) }}</div>
-                                        <div class="stat-text" style="font-size: 1.1rem">Total Records</div>
+                                        <div class="stat-text">Total Records</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
-                                    <div class="stat-icon bg-danger">
-                                        <i class="ti-check"></i>
+                                    <div class="stat-icon" style="background-color: #e8f5e9;">
+                                        <i class="ti-check" style="color: #4caf50;"></i>
                                     </div>
                                     <div class="stat-content">
                                         <div class="stat-digit">{{ number_format($stats['present']) }}</div>
@@ -124,11 +225,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
-                                    <div class="stat-icon bg-success">
-                                        <i class="ti-close"></i>
+                                    <div class="stat-icon" style="background-color: #ffebee;">
+                                        <i class="ti-close" style="color: #f44336;"></i>
                                     </div>
                                     <div class="stat-content">
                                         <div class="stat-digit">{{ number_format($stats['absent']) }}</div>
@@ -137,11 +238,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
-                                    <div class="stat-icon bg-info">
-                                        <i class="ti-time"></i>
+                                    <div class="stat-icon" style="background-color: #fff3e0;">
+                                        <i class="ti-time" style="color: #ff9800;"></i>
                                     </div>
                                     <div class="stat-content">
                                         <div class="stat-digit">{{ number_format($stats['late']) }}</div>
@@ -150,24 +251,24 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
-                                    <div class="stat-icon bg-warning">
-                                        <i class="ti-alert"></i>
+                                    <div class="stat-icon" style="background-color: #fce4ec;">
+                                        <i class="ti-alert" style="color: #e91e63;"></i>
                                     </div>
                                     <div class="stat-content">
                                         <div class="stat-digit">{{ number_format($stats['unauthorized']) }}</div>
-                                        <div class="stat-text" style="font-size: 1.2rem">Unauthorized</div>
+                                        <div class="stat-text">Unauthorized</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="card p-0">
                                 <div class="stat-widget-three">
-                                    <div class="stat-icon bg-pink">
-                                        <i class="ti-stats-up"></i>
+                                    <div class="stat-icon" style="background-color: #f3e5f5;">
+                                        <i class="ti-stats-up" style="color: #9c27b0;"></i>
                                     </div>
                                     <div class="stat-content">
                                         <div class="stat-digit">{{ $stats['attendance_rate'] }}%</div>
@@ -178,7 +279,6 @@
                         </div>
                     </div>
 
-
                     <!-- Filters -->
                     <div class="row">
                         <div class="col-lg-12">
@@ -186,7 +286,7 @@
                                 <form method="GET" action="{{ route('teacher.attendance.index') }}">
                                     <div class="row">
                                         <!-- Date From -->
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label>Date From</label>
                                                 <input 
@@ -199,7 +299,7 @@
                                         </div>
 
                                         <!-- Date To -->
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label>Date To</label>
                                                 <input 
@@ -213,19 +313,19 @@
                                         </div>
 
                                         <!-- Class -->
-                                        {{-- <div class="col-md-2">
+                                        <div class="col-md-2">
                                             <div class="form-group">
                                                 <label>Class</label>
                                                 <select name="class_id" class="form-control">
                                                     <option value="">All Classes</option>
-                                                    @foreach($classes as $class)
+                                                    @foreach($myClasses as $class)
                                                     <option value="{{ $class->id }}" {{ request('class_id') == $class->id ? 'selected' : '' }}>
                                                         {{ $class->name }}
                                                     </option>
                                                     @endforeach
                                                 </select>
                                             </div>
-                                        </div> --}}
+                                        </div>
 
                                         <!-- Status -->
                                         <div class="col-md-2">
@@ -241,32 +341,14 @@
                                             </div>
                                         </div>
 
-                                        <!-- Teacher -->
-                                        {{-- <div class="col-md-2">
-                                            <div class="form-group">
-                                                <label>Marked By</label>
-                                                <select name="teacher_id" class="form-control">
-                                                    <option value="">All Teachers</option>
-                                                    @foreach($teachers as $teacher)
-                                                    <option value="{{ $teacher->id }}" {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
-                                                        {{ $teacher->name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div> --}}
-
-                                        <!-- Search -->
+                                        <!-- Sort -->
                                         <div class="col-md-2">
                                             <div class="form-group">
-                                                <label>Search Student</label>
-                                                <input 
-                                                    type="text" 
-                                                    name="search" 
-                                                    value="{{ request('search') }}" 
-                                                    placeholder="Student name..."
-                                                    class="form-control"
-                                                >
+                                                <label>Sort By</label>
+                                                <select name="sort_by" class="form-control">
+                                                    <option value="date" {{ request('sort_by', 'date') == 'date' ? 'selected' : '' }}>Date</option>
+                                                    <option value="created_at" {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>Marked At</option>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
@@ -284,142 +366,183 @@
                         </div>
                     </div>
 
-              
-
-                    <!-- Attendance Records Table -->
-                    {{-- <div class="row">
+                    <!-- Attendance Sessions -->
+                    <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-header">
-                                    <h4>Attendance Records ({{ $attendance->total() }})</h4>
+                                    <h4>Attendance Sessions ({{ $attendanceRecords->total() }})</h4>
                                     <div class="card-header-right-icon">
                                         <span class="badge badge-primary">
-                                            Showing {{ $attendance->firstItem() ?? 0 }} - {{ $attendance->lastItem() ?? 0 }} of {{ $attendance->total() }}
+                                            Showing {{ $attendanceRecords->firstItem() ?? 0 }} - {{ $attendanceRecords->lastItem() ?? 0 }} of {{ $attendanceRecords->total() }}
                                         </span>
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    @if($attendance->count() > 0)
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Student</th>
-                                                    <th>Class</th>
-                                                    <th>Status</th>
-                                                    <th>Time</th>
-                                                    <th>Marked By</th>
-                                                    <th>Notes</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($attendance as $record)
-                                                <tr>
-                                                    <td>
-                                                        <strong>{{ \Carbon\Carbon::parse($record->date)->format('d M Y') }}</strong><br>
-                                                        <small class="text-muted">{{ \Carbon\Carbon::parse($record->date)->format('l') }}</small>
-                                                    </td>
-                                                    <td>
-                                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                    @if($attendanceRecords->count() > 0)
+                                        @php
+                                            // Group records by session (date + class + schedule)
+                                            $sessions = $attendanceRecords->groupBy(function($record) {
+                                                return $record->date . '-' . $record->class_id . '-' . $record->schedule_id;
+                                            });
+                                        @endphp
+
+                                        @foreach($sessions as $sessionKey => $sessionRecords)
+                                            @php
+                                                $firstRecord = $sessionRecords->first();
+                                                $sessionStats = [
+                                                    'total' => $sessionRecords->count(),
+                                                    'present' => $sessionRecords->where('status', 'present')->count(),
+                                                    'absent' => $sessionRecords->where('status', 'absent')->count(),
+                                                    'late' => $sessionRecords->where('status', 'late')->count(),
+                                                    'unauthorized' => $sessionRecords->where('status', 'unauthorized')->count(),
+                                                ];
+                                                $sessionStats['rate'] = $sessionStats['total'] > 0 
+                                                    ? round(($sessionStats['present'] / $sessionStats['total']) * 100, 1)
+                                                    : 0;
+                                            @endphp
+
+                                            <div class="session-card card mb-3">
+                                                <div class="session-header">
+                                                    <div class="session-meta">
+                                                        <div>
+                                                            <h5 class="mb-1">
+                                                                <strong>{{ $firstRecord->class->name }}</strong>
+                                                            </h5>
+                                                            <div class="text-muted">
+                                                                <i class="ti-calendar"></i> {{ \Carbon\Carbon::parse($firstRecord->date)->format('l, d M Y') }}
+                                                                @if($firstRecord->schedule)
+                                                                    <span class="ml-3">
+                                                                        <i class="ti-time"></i>
+                                                                        {{ \Carbon\Carbon::parse($firstRecord->schedule->start_time)->format('H:i') }} - 
+                                                                        {{ \Carbon\Carbon::parse($firstRecord->schedule->end_time)->format('H:i') }}
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="attendance-summary">
+                                                            <div class="summary-item">
+                                                                <span class="badge badge-success">
+                                                                    <i class="ti-check"></i> {{ $sessionStats['present'] }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-item">
+                                                                <span class="badge badge-danger">
+                                                                    <i class="ti-close"></i> {{ $sessionStats['absent'] }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-item">
+                                                                <span class="badge badge-warning">
+                                                                    <i class="ti-time"></i> {{ $sessionStats['late'] }}
+                                                                </span>
+                                                            </div>
+                                                            @if($sessionStats['unauthorized'] > 0)
+                                                            <div class="summary-item">
+                                                                <span class="badge badge-orange">
+                                                                    <i class="ti-alert"></i> {{ $sessionStats['unauthorized'] }}
+                                                                </span>
+                                                            </div>
+                                                            @endif
+                                                            <div class="summary-item">
+                                                                <strong>{{ $sessionStats['rate'] }}%</strong>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <a href="{{ route('teacher.attendance.show', [$firstRecord->date, $firstRecord->class_id, $firstRecord->schedule_id]) }}" 
+                                                               class="btn btn-sm btn-info" 
+                                                               title="View Details">
+                                                                <i class="ti-eye"></i> View
+                                                            </a>
+                                                            <a href="{{ route('teacher.attendance.edit', [$firstRecord->date, $firstRecord->class_id, $firstRecord->schedule_id]) }}" 
+                                                               class="btn btn-sm btn-success" 
+                                                               title="Edit Session">
+                                                                <i class="ti-pencil-alt"></i> Edit
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Student Grid (Collapsible) -->
+                                                <div class="collapse" id="session-{{ $loop->index }}">
+                                                    <div class="attendance-grid">
+                                                        @foreach($sessionRecords as $record)
+                                                        <div class="attendance-item">
                                                             @if($record->student->profile_photo)
-                                                                <img src="{{ asset('storage/' . $record->student->profile_photo) }}" alt="{{ $record->student->full_name }}" class="student-avatar">
+                                                                <img src="{{ asset('storage/' . $record->student->profile_photo) }}" 
+                                                                     alt="{{ $record->student->full_name }}" 
+                                                                     class="student-avatar">
                                                             @else
                                                                 <div class="student-initial">
                                                                     {{ strtoupper(substr($record->student->first_name, 0, 1)) }}{{ strtoupper(substr($record->student->last_name, 0, 1)) }}
                                                                 </div>
                                                             @endif
-                                                            <div>
-                                                                <strong>{{ $record->student->full_name }}</strong><br>
-                                                                <small class="text-muted">ID: {{ $record->student->id }}</small>
+                                                            <div style="flex: 1;">
+                                                                <strong>{{ $record->student->full_name }}</strong>
                                                             </div>
+                                                            @switch($record->status)
+                                                                @case('present')
+                                                                    <span class="badge badge-success">
+                                                                        <i class="ti-check"></i>
+                                                                    </span>
+                                                                    @break
+                                                                @case('absent')
+                                                                    <span class="badge badge-danger">
+                                                                        <i class="ti-close"></i>
+                                                                    </span>
+                                                                    @break
+                                                                @case('late')
+                                                                    <span class="badge badge-warning">
+                                                                        <i class="ti-time"></i>
+                                                                    </span>
+                                                                    @break
+                                                                @case('unauthorized')
+                                                                    <span class="badge badge-orange">
+                                                                        <i class="ti-alert"></i>
+                                                                    </span>
+                                                                    @break
+                                                            @endswitch
                                                         </div>
-                                                    </td>
-                                                    <td>
-                                                        <strong>{{ $record->class->name }}</strong><br>
-                                                        @if($record->schedule)
-                                                        <small class="text-muted">
-                                                            {{ \Carbon\Carbon::parse($record->schedule->start_time)->format('H:i') }} - 
-                                                            {{ \Carbon\Carbon::parse($record->schedule->end_time)->format('H:i') }}
-                                                        </small>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        @switch($record->status)
-                                                            @case('present')
-                                                                <span class="status-badge badge-success">
-                                                                    <i class="ti-check"></i> Present
-                                                                </span>
-                                                                @break
-                                                            @case('absent')
-                                                                <span class="status-badge badge-danger">
-                                                                    <i class="ti-close"></i> Absent
-                                                                </span>
-                                                                @break
-                                                            @case('late')
-                                                                <span class="status-badge badge-warning">
-                                                                    <i class="ti-time"></i> Late
-                                                                </span>
-                                                                @break
-                                                            @case('unauthorized')
-                                                                <span class="status-badge badge-orange">
-                                                                    <i class="ti-alert"></i> Unauthorized
-                                                                </span>
-                                                                @break
-                                                        @endswitch
-                                                    </td>
-                                                    <td>
-                                                        <small class="text-muted">{{ $record->created_at->format('H:i') }}</small>
-                                                    </td>
-                                                    <td>
-                                                        <strong>{{ $record->markedBy->name }}</strong><br>
-                                                        <small class="text-muted">{{ $record->created_at->diffForHumans() }}</small>
-                                                    </td>
-                                                    <td>
-                                                        @if($record->notes)
-                                                            <span title="{{ $record->notes }}">{{ Str::limit($record->notes, 30) }}</span>
-                                                        @else
-                                                            <span class="text-muted">-</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        <a href="{{ route('teacher.attendance.show', [$record->date, $record->class_id, $record->schedule_id]) }}" 
-                                                           class="btn btn-sm btn-info" 
-                                                           title="View Session">
-                                                            <i class="ti-eye"></i>
-                                                        </a>
-                                                        <a href="{{ route('teacher.attendance.edit', [$record->date, $record->class_id, $record->schedule_id]) }}" 
-                                                           class="btn btn-sm btn-success" 
-                                                           title="Edit Session">
-                                                            <i class="ti-pencil-alt"></i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
 
-                                    <!-- Pagination -->
-                                    <div class="mt-4">
-                                        {{ $attendance->appends(request()->query())->links() }}
-                                    </div>
+                                                <!-- Toggle Button -->
+                                                <div class="card-footer text-center" style="background-color: #f8f9fa; padding: 10px;">
+                                                    <button class="btn btn-sm btn-link" 
+                                                            type="button" 
+                                                            data-toggle="collapse" 
+                                                            data-target="#session-{{ $loop->index }}"
+                                                            style="text-decoration: none; color: #3386f7;">
+                                                        <span class="when-collapsed">
+                                                            <i class="ti-angle-down"></i> Show Students ({{ $sessionStats['total'] }})
+                                                        </span>
+                                                        <span class="when-expanded" style="display: none;">
+                                                            <i class="ti-angle-up"></i> Hide Students
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+
+                                        <!-- Pagination -->
+                                        <div class="mt-4">
+                                            {{ $attendanceRecords->appends(request()->query())->links() }}
+                                        </div>
                                     @else
-                                    <!-- Empty State -->
-                                    <div class="text-center py-5">
-                                        <i class="ti-clipboard" style="font-size: 4rem; color: #cbd5e0;"></i>
-                                        <h3 class="mt-3 mb-2">No attendance records found</h3>
-                                        <p class="text-muted mb-4">Try adjusting your filters or date range.</p>
-                                        <a href="{{ route('teacher.attendance.create') }}" class="btn btn-primary">
-                                            <i class="ti-plus"></i> Mark Attendance
-                                        </a>
-                                    </div>
+                                        <!-- Empty State -->
+                                        <div class="empty-state">
+                                            <i class="ti-clipboard" style="font-size: 4rem;"></i>
+                                            <h3 class="mt-3 mb-2">No attendance records found</h3>
+                                            <p class="text-muted mb-4">Try adjusting your filters or date range.</p>
+                                            <a href="{{ route('teacher.attendance.create') }}" class="btn btn-mark-attendance">
+                                                <i class="ti-plus"></i> Mark Attendance
+                                            </a>
+                                        </div>
                                     @endif
                                 </div>
                             </div>
                         </div>
-                    </div> --}}
+                    </div>
 
                     <!-- Footer -->
                     <div class="row">
@@ -434,3 +557,20 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Toggle collapse button text
+    $(document).ready(function() {
+        $('.collapse').on('show.bs.collapse', function() {
+            $(this).siblings('.card-footer').find('.when-collapsed').hide();
+            $(this).siblings('.card-footer').find('.when-expanded').show();
+        });
+        
+        $('.collapse').on('hide.bs.collapse', function() {
+            $(this).siblings('.card-footer').find('.when-collapsed').show();
+            $(this).siblings('.card-footer').find('.when-expanded').hide();
+        });
+    });
+</script>
+@endpush

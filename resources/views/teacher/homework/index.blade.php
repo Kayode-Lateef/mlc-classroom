@@ -126,13 +126,13 @@
                             <div class="filter-card">
                                 <form method="GET" action="{{ route('teacher.homework.index') }}">
                                     <div class="row">
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label style="font-weight: 500;">Date From</label>
                                                 <input type="date" name="date_from" value="{{ $dateFrom }}" class="form-control">
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label style="font-weight: 500;">Date To</label>
                                                 <input type="date" name="date_to" value="{{ $dateTo }}" class="form-control">
@@ -151,19 +151,6 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        {{-- <div class="col-md-2">
-                                            <div class="form-group">
-                                                <label style="font-weight: 500;">Teacher</label>
-                                                <select name="teacher_id" class="form-control">
-                                                    <option value="">All Teachers</option>
-                                                    @foreach($teachers as $teacher)
-                                                    <option value="{{ $teacher->id }}" {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
-                                                        {{ $teacher->name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div> --}}
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label style="font-weight: 500;">Status</label>
@@ -251,8 +238,10 @@
                                                 <span style="font-size: 1rem; color: #6c757d;">({{ $assignment->due_date->diffForHumans() }})</span>
                                             </div>
                                             <div style="margin-bottom: 10px;">
-                                                <i class="ti-user" style="color: #6c757d; margin-right: 8px;"></i>
-                                                <span style="color: #495057;">{{ $assignment->teacher->name }}</span>
+                                                <i class="ti-calendar" style="color: #6c757d; margin-right: 8px;"></i>
+                                                <span style="color: #495057;">
+                                                    <strong>Created:</strong> {{ $assignment->created_at->format('d M Y') }}
+                                                </span>
                                             </div>
                                             @if($assignment->file_path)
                                             <div>
@@ -330,7 +319,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="empty-state">
-                                <i class="ti-book"></i>
+                                <i class="ti-book" style="font-size: 5rem; color: #cbd5e0;"></i>
                                 <h3 class="mb-3">No Homework Assignments Found</h3>
                                 <p class="text-muted mb-4">Get started by creating your first homework assignment.</p>
                                 <a href="{{ route('teacher.homework.create') }}" class="btn btn-primary">

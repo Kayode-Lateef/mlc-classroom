@@ -29,6 +29,12 @@
             border: 1px solid #e9ecef;
             border-radius: 6px;
             margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .student-row:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #3386f7;
         }
 
         .student-avatar {
@@ -48,7 +54,7 @@
             font-weight: bold;
             font-size: 1.2rem;
             background-color: #e7f3ff;
-            color: #007bff;
+            color: #3386f7;
         }
 
         .status-badge-large {
@@ -56,6 +62,18 @@
             padding: 6px 12px;
             border-radius: 4px;
             font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 @endpush
@@ -97,7 +115,7 @@
                                         <h2 style="margin: 0 0 10px; color: white;">
                                             <i class="ti-blackboard"></i> {{ $class->name }}
                                         </h2>
-                                        <p style="margin: 0; font-size: 1.1rem; opacity: 0.9;  color: white;">
+                                        <p style="margin: 0; font-size: 1.1rem; opacity: 0.9; color: white;">
                                             <i class="ti-calendar"></i> {{ $attendanceDate->format('l, d F Y') }}
                                             &nbsp;&nbsp;|&nbsp;&nbsp;
                                             <i class="ti-time"></i> {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
@@ -105,7 +123,7 @@
                                         <p style="margin: 10px 0 0; opacity: 0.9; color: white;">
                                             <i class="ti-user"></i> Teacher: {{ $class->teacher->name ?? 'Not assigned' }}
                                             &nbsp;&nbsp;|&nbsp;&nbsp;
-                                            <i class="ti-home"></i> Room: {{ $class->room_number ?? 'N/A' }}
+                                            <i class="ti-home"></i> Room: {{ $class->room ?? 'N/A' }}
                                         </p>
                                     </div>
                                     <div class="col-md-4 text-right">
@@ -118,7 +136,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     <!-- Statistics Cards -->
                     <div class="row">
@@ -155,7 +172,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-3 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
@@ -167,30 +183,44 @@
                                 </div>
                             </div>
                         </div>
-                      
                     </div>
 
-                    <!-- Session Info -->
+                    <!-- Session Info & Actions -->
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-body">
-                                    <div class="row">
+                                    <div class="row align-items-center">
                                         <div class="col-md-4">
-                                            <strong>Marked By:</strong><br>
-                                            {{ $markedBy->name ?? 'Unknown' }}
+                                            <strong><i class="ti-user"></i> Marked By:</strong><br>
+                                            <span class="text-muted">{{ $markedBy->name ?? 'Unknown' }}</span>
                                         </div>
                                         <div class="col-md-4">
-                                            <strong>Marked At:</strong><br>
-                                            {{ $markedAt ? $markedAt->format('d M Y, H:i') : 'Unknown' }}
+                                            <strong><i class="ti-time"></i> Marked At:</strong><br>
+                                            <span class="text-muted">{{ $markedAt ? $markedAt->format('d M Y, H:i') : 'Unknown' }}</span>
+                                            @if($markedAt)
+                                            <br><small class="text-muted">{{ $markedAt->diffForHumans() }}</small>
+                                            @endif
                                         </div>
-                                        <div class="col-md-4 text-right">
-                                            <a href="{{ route('teacher.attendance.edit', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" class="btn btn-success">
-                                                <i class="ti-pencil-alt"></i> Edit Session
-                                            </a>
-                                            <a href="{{ route('teacher.attendance.index') }}" class="btn btn-info">
-                                                <i class="ti-back-left"></i> Back to List
-                                            </a>
+                                        <div class="col-md-4">
+                                            <div class="action-buttons">
+                                                <a href="{{ route('teacher.attendance.index') }}" class="btn btn-secondary">
+                                                    <i class="ti-arrow-left"></i> Back
+                                                </a>
+                                                <a href="{{ route('teacher.attendance.edit', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" class="btn btn-success">
+                                                    <i class="ti-pencil-alt"></i> Edit
+                                                </a>
+                                                <form method="POST" 
+                                                      action="{{ route('teacher.attendance.destroy', [$attendanceDate->format('Y-m-d'), $class->id, $schedule->id]) }}" 
+                                                      style="display: inline;"
+                                                      onsubmit="return confirm('Are you sure you want to delete this attendance session? This action cannot be undone.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="ti-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -204,16 +234,36 @@
                             <div class="card alert">
                                 <div class="card-header mb-4">
                                     <h4><i class="ti-list"></i> Student Attendance ({{ $attendanceRecords->count() }})</h4>
+                                    @if($attendanceRecords->count() > 0)
+                                    <div class="card-header-right-icon">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary active" onclick="filterStatus('all')">
+                                                All ({{ $stats['total'] }})
+                                            </button>
+                                            <button class="btn btn-outline-success" onclick="filterStatus('present')">
+                                                Present ({{ $stats['present'] }})
+                                            </button>
+                                            <button class="btn btn-outline-danger" onclick="filterStatus('absent')">
+                                                Absent ({{ $stats['absent'] }})
+                                            </button>
+                                            <button class="btn btn-outline-warning" onclick="filterStatus('late')">
+                                                Late ({{ $stats['late'] }})
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
                                 </div>
                                 <div class="card-body">
                                     @if($attendanceRecords->count() > 0)
                                         @foreach($attendanceRecords as $record)
-                                        <div class="student-row">
+                                        <div class="student-row" data-status="{{ $record->status }}">
                                             <div class="row align-items-center">
                                                 <div class="col-md-5">
                                                     <div style="display: flex; align-items: center; gap: 15px;">
                                                         @if($record->student->profile_photo)
-                                                            <img src="{{ asset('storage/' . $record->student->profile_photo) }}" alt="{{ $record->student->full_name }}" class="student-avatar">
+                                                            <img src="{{ asset('storage/' . $record->student->profile_photo) }}" 
+                                                                 alt="{{ $record->student->full_name }}" 
+                                                                 class="student-avatar">
                                                         @else
                                                             <div class="student-initial">
                                                                 {{ strtoupper(substr($record->student->first_name, 0, 1)) }}{{ strtoupper(substr($record->student->last_name, 0, 1)) }}
@@ -221,7 +271,12 @@
                                                         @endif
                                                         <div>
                                                             <strong>{{ $record->student->full_name }}</strong><br>
-                                                            <small class="text-muted">Student ID: {{ $record->student->id }}</small>
+                                                            <small class="text-muted">
+                                                                <i class="ti-id-badge"></i> ID: {{ $record->student->id }}
+                                                                @if($record->student->parent)
+                                                                &nbsp;|&nbsp; <i class="ti-user"></i> {{ $record->student->parent->name }}
+                                                                @endif
+                                                            </small>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -253,14 +308,20 @@
 
                                                 <div class="col-md-4">
                                                     @if($record->notes)
-                                                        <small><strong>Notes:</strong> {{ $record->notes }}</small>
+                                                        <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px;">
+                                                            <small><strong><i class="ti-comment"></i> Notes:</strong></small><br>
+                                                            <small>{{ $record->notes }}</small>
+                                                        </div>
                                                     @else
                                                         <small class="text-muted">No notes</small>
                                                     @endif
                                                 </div>
 
                                                 <div class="col-md-1 text-right">
-                                                    <small class="text-muted">{{ $record->created_at->format('H:i') }}</small>
+                                                    <small class="text-muted">
+                                                        <i class="ti-time"></i><br>
+                                                        {{ $record->created_at->format('H:i') }}
+                                                    </small>
                                                 </div>
                                             </div>
                                         </div>
@@ -270,6 +331,10 @@
                                             <i class="ti-clipboard" style="font-size: 4rem; color: #cbd5e0;"></i>
                                             <h4 class="mt-3">No Attendance Records</h4>
                                             <p class="text-muted">No attendance has been marked for this session.</p>
+                                            <a href="{{ route('teacher.attendance.create', ['date' => $attendanceDate->format('Y-m-d'), 'class_id' => $class->id, 'schedule_id' => $schedule->id]) }}" 
+                                               class="btn btn-primary mt-3">
+                                                <i class="ti-plus"></i> Mark Attendance
+                                            </a>
                                         </div>
                                     @endif
                                 </div>
@@ -290,3 +355,30 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    function filterStatus(status) {
+        const rows = document.querySelectorAll('.student-row');
+        const buttons = document.querySelectorAll('.btn-group button');
+        
+        // Update active button
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+            if ((status === 'all' && btn.textContent.includes('All')) ||
+                (status !== 'all' && btn.textContent.toLowerCase().includes(status))) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Filter rows
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = 'block';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+@endpush

@@ -149,13 +149,13 @@
                             <div class="filter-card">
                                 <form method="GET" action="{{ route('teacher.resources.index') }}">
                                     <div class="row">
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label style="font-weight: 500;">Search</label>
                                                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Title..." class="form-control">
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label style="font-weight: 500;">Type</label>
                                                 <select name="resource_type" class="form-control">
@@ -168,7 +168,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label style="font-weight: 500;">Subject</label>
                                                 <select name="subject" class="form-control">
@@ -194,19 +194,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        {{-- <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label style="font-weight: 500;">Uploaded By</label>
-                                                <select name="uploaded_by" class="form-control">
-                                                    <option value="">All Teachers</option>
-                                                    @foreach($teachers as $teacher)
-                                                    <option value="{{ $teacher->id }}" {{ request('uploaded_by') == $teacher->id ? 'selected' : '' }}>
-                                                        {{ $teacher->name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div> --}}
+                                      
                                     </div>
                                     <div class="text-right">
                                         <a href="{{ route('teacher.resources.index') }}" class="btn btn-secondary btn-sm">

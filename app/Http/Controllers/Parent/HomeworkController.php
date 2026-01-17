@@ -324,4 +324,38 @@ class HomeworkController extends Controller
                 ->with('error', 'Failed to submit homework. Please try again.');
         }
     }
+
+       /**
+     * Download homework file
+     */
+    public function download(HomeworkAssignment $homework)
+    {
+        $teacher = auth()->user();
+
+        // Verify homework belongs to teacher
+        if ($homework->teacher_id !== $teacher->id) {
+            abort(403, 'You do not have permission to download this file.');
+        }
+
+        if (!$homework->file_path || !Storage::disk('public')->exists($homework->file_path)) {
+            return redirect()->back()
+                ->with('error', 'File not found.');
+        }
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => $teacher->id,
+            'action' => 'downloaded_homework',
+            'model_type' => 'HomeworkAssignment',
+            'model_id' => $homework->id,
+            'description' => "Downloaded homework file: {$homework->title}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return Storage::disk('public')->download(
+            $homework->file_path,
+            $homework->title . '.' . pathinfo($homework->file_path, PATHINFO_EXTENSION)
+        );
+    }
 }

@@ -82,7 +82,6 @@
         }
 
         .empty-state i {
-            font-size: 4rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -192,7 +191,7 @@
                         <div class="filter-card">
                             <form method="GET" action="{{ route('teacher.progress-sheets.index') }}">
                                 <div class="row">
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label>Date From</label>
                                             <input 
@@ -204,7 +203,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label>Date To</label>
                                             <input 
@@ -229,23 +228,9 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                    </div>
+                                    </div>                           
 
-                                    {{-- <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label>Teacher</label>
-                                            <select name="teacher_id" class="form-control">
-                                                <option value="">All Teachers</option>
-                                                @foreach($teachers as $teacher)
-                                                <option value="{{ $teacher->id }}" {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
-                                                    {{ $teacher->name }}
-                                                </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div> --}}
-
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label>Search</label>
                                             <input 
@@ -378,7 +363,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="empty-state">
-                                <i class="ti-clipboard"></i>
+                                <i class="ti-clipboard" style="font-size: 4rem;"></i>
                                 <h3 class="mb-3">No Progress Sheets Found</h3>
                                 <p class="text-muted mb-4">Get started by creating your first progress sheet.</p>
                                 <a href="{{ route('teacher.progress-sheets.create') }}" class="btn btn-primary">

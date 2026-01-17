@@ -275,6 +275,9 @@
                                             <small class="text-muted">
                                                 <i class="ti-calendar"></i> Due: {{ $submission->homeworkAssignment->due_date->format('d M Y') }}
                                             </small>
+                                            {{-- <a href="{{ route('parent.homework.show', ['child_id' => $child->id]) }}" class="btn btn-sm btn-info">
+                                                <i class="ti-eye"></i> View
+                                            </a> --}}
                                             <a href="{{ route('parent.homework.show', [$selectedChild, $submission]) }}" class="btn btn-sm btn-info">
                                                 <i class="ti-eye"></i> View
                                             </a>

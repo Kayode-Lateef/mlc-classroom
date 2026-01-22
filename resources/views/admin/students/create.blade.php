@@ -160,7 +160,7 @@
                                                             class="form-control @error('date_of_birth') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-calendar"></i> Student's date of birth (must be in the past)
+                                                            <i class="ti-calendar"></i> Student must be between 6-18 years old
                                                         </small>
                                                         @error('date_of_birth')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -201,7 +201,7 @@
                                             <h4 class="mb-3"><i class="ti-book"></i> Enrollment Information</h4>
                                             <div class="row">
                                                 <!-- Enrollment Date -->
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="enrollment_date" class="required-field">Enrollment Date</label>
                                                         <input 
@@ -221,8 +221,40 @@
                                                     </div>
                                                 </div>
 
+                                                <!-- Weekly Hours - NEW FIELD -->
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="weekly_hours" class="required-field">Weekly Hours</label>
+                                                        <select 
+                                                            name="weekly_hours" 
+                                                            id="weekly_hours" 
+                                                            required
+                                                            class="form-control @error('weekly_hours') is-invalid @enderror"
+                                                        >
+                                                            <option value="">Select Hours</option>
+                                                            @php
+                                                                $hours = [];
+                                                                for ($i = 0.5; $i <= 15; $i += 0.5) {
+                                                                    $hours[] = number_format($i, 1);
+                                                                }
+                                                            @endphp
+                                                            @foreach($hours as $hour)
+                                                                <option value="{{ $hour }}" {{ old('weekly_hours', '2.0') == $hour ? 'selected' : '' }}>
+                                                                    {{ $hour }} {{ $hour == '1.0' ? 'hour' : 'hours' }}/week
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        <small class="form-text text-muted">
+                                                            <i class="ti-time"></i> Total teaching hours per week (30-min increments)
+                                                        </small>
+                                                        @error('weekly_hours')
+                                                        <span class="invalid-feedback">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
                                                 <!-- Status -->
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="status" class="required-field">Status</label>
                                                         <select 
@@ -282,7 +314,7 @@
                                                             name="emergency_phone" 
                                                             id="emergency_phone" 
                                                             value="{{ old('emergency_phone') }}"
-                                                            placeholder="+234 800 000 0000"
+                                                            placeholder="+44 20 1234 5678 or 020 1234 5678"
                                                             maxlength="20"
                                                             pattern="[+]?[0-9\s\-\(\)]+"
                                                             class="form-control @error('emergency_phone') is-invalid @enderror"

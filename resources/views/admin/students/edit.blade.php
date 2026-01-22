@@ -210,7 +210,7 @@
                                             <h4 class="mb-3"><i class="ti-book"></i> Enrollment Information</h4>
                                             <div class="row">
                                                 <!-- Enrollment Date -->
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="enrollment_date" class="required-field">Enrollment Date</label>
                                                         <input 
@@ -230,8 +230,28 @@
                                                     </div>
                                                 </div>
 
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="weekly_hours" class="required-field">Weekly Hours</label>
+                                                        <select name="weekly_hours" id="weekly_hours" required class="form-control">
+                                                            <option value="">Select Hours</option>
+                                                            @for ($hours = 0.5; $hours <= 15; $hours += 0.5)
+                                                                <option value="{{ number_format($hours, 1) }}" 
+                                                                    {{ old('weekly_hours', $student->weekly_hours ?? '') == number_format($hours, 1) ? 'selected' : '' }}>
+                                                                    {{ number_format($hours, 1) }} hours
+                                                                    @if ($hours == 0.5) (30 minutes) @endif
+                                                                    @if ($hours == 1.0) (1 hour) @endif
+                                                                </option>
+                                                            @endfor
+                                                        </select>
+                                                        <small class="form-text text-muted">
+                                                            <i class="ti-time"></i> Total teaching hours per week for this student
+                                                        </small>
+                                                    </div>
+                                                </div>
+
                                                 <!-- Status -->
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="status" class="required-field">Status</label>
                                                         <select 

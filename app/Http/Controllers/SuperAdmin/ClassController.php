@@ -10,6 +10,8 @@ use App\Models\ActivityLog;
 use App\Models\ClassEnrollment;
 use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ClassController extends Controller
 {
@@ -285,67 +287,168 @@ class ClassController extends Controller
      */
     public function enrollStudent(Request $request, ClassModel $class)
     {
+
+        // ✅ ENHANCED: Comprehensive validation with custom messages
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'enrollment_date' => 'required|date',
+            'enrollment_date' => 'required|date|before_or_equal:today',
+        ], [
+            'student_id.required' => 'Please select a student to enroll.',
+            'student_id.exists' => 'Selected student does not exist.',
+            'enrollment_date.required' => 'Enrollment date is required.',
+            'enrollment_date.date' => 'Please enter a valid enrollment date.',
+            'enrollment_date.before_or_equal' => 'Enrollment date cannot be in the future.',
         ]);
 
-        // Check if class is full
-        if ($class->isFull()) {
-            return back()->with('error', 'Class is at full capacity!');
-        }
-
-        // Check if already enrolled
-        if ($class->students()->where('student_id', $validated['student_id'])->wherePivot('status', 'active')->exists()) {
-            return back()->with('error', 'Student is already enrolled in this class!');
-        }
-
-        ClassEnrollment::create([
-            'student_id' => $validated['student_id'],
-            'class_id' => $class->id,
-            'enrollment_date' => $validated['enrollment_date'],
-            'status' => 'active',
-        ]);
-
-        $student = Student::find($validated['student_id']);
-        // Check class capacity after enrollment
-        $enrollmentCount = $class->enrollments()->where('status', 'active')->count();
+        // ✅ ADDED: Database transaction for data integrity
+        DB::beginTransaction();
         
-        // Check if class is at 90% capacity
-        if ($enrollmentCount >= ($class->capacity * 0.9)) {
-            $message = $enrollmentCount >= $class->capacity 
-                ? "Class {$class->name} is now at full capacity ({$enrollmentCount}/{$class->capacity})"
-                : "Class {$class->name} is at {$enrollmentCount}/{$class->capacity} capacity (90%+ full)";
+        try {
+            // ✅ ENHANCED: Verify student is active
+            $student = Student::find($validated['student_id']);
+            if (!$student || $student->status !== 'active') {
+                return back()->with('error', 'Selected student is not active.');
+            }
+
+            // ✅ ENHANCED: Check if class is full with explicit count
+            $currentEnrollment = $class->enrollments()->where('status', 'active')->count();
+            if ($currentEnrollment >= $class->capacity) {
+                return back()->with('error', 'Class is at full capacity!');
+            }
+
+            // ✅ ENHANCED: Check if already enrolled with proper relationship
+            $existingEnrollment = $class->enrollments()
+                ->where('student_id', $validated['student_id'])
+                ->where('status', 'active')
+                ->first();
+                
+            if ($existingEnrollment) {
+                return back()->with('error', 'Student is already enrolled in this class!');
+            }
+
+            // ✅ Create enrollment
+            $enrollment = ClassEnrollment::create([
+                'student_id' => $validated['student_id'],
+                'class_id' => $class->id,
+                'enrollment_date' => $validated['enrollment_date'],
+                'status' => 'active',
+            ]);
+
+            // ✅ ENHANCED: Activity log with proper model_id reference
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'enrolled_student',
+                'model_type' => 'ClassEnrollment',
+                'model_id' => $enrollment->id, // ✅ Reference the enrollment, not the class
+                'description' => "Enrolled {$student->first_name} {$student->last_name} in class: {$class->name}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            DB::commit();
+
+            // ✅ ENHANCED: Comprehensive notifications after successful enrollment
+            try {
+                // Notify parent with email
+                if ($student->parent) {
+                    NotificationHelper::notifyUser(
+                        $student->parent,
+                        'Student Enrolled in Class',
+                        "{$student->full_name} has been enrolled in {$class->name} ({$class->subject})",
+                        'enrollment',
+                        [
+                            'student_id' => $student->id,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'teacher' => $class->teacher ? $class->teacher->name : 'TBA',
+                            'enrolled_by' => auth()->user()->name,
+                            'enrolled_at' => now()->format('d M Y, H:i'),
+                            'url' => route('parent.students.show', $student->id)
+                        ],
+                        true // ✅ Send email immediately
+                    );
+                }
+
+                // Notify teacher
+                if ($class->teacher) {
+                    NotificationHelper::notifyUser(
+                        $class->teacher,
+                        'New Student Enrolled',
+                        "{$student->full_name} has been enrolled in your class: {$class->name}",
+                        'enrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'enrolled_by' => auth()->user()->name,
+                            'enrolled_at' => now()->format('d M Y, H:i'),
+                            'url' => route('teacher.classes.show', $class->id)
+                        ],
+                        true // ✅ Send email immediately
+                    );
+                }
+
+                // ✅ ENHANCED: Capacity alert - Notify ALL admins (including SuperAdmins)
+                $enrollmentCount = $class->enrollments()->where('status', 'active')->count();
+                
+                if ($enrollmentCount >= ($class->capacity * 0.9)) {
+                    $message = $enrollmentCount >= $class->capacity 
+                        ? "Class {$class->name} is now at full capacity ({$enrollmentCount}/{$class->capacity})"
+                        : "Class {$class->name} is at {$enrollmentCount}/{$class->capacity} capacity (90%+ full)";
+                    
+                    // Notify SuperAdmins
+                    NotificationHelper::notifySuperAdmins(
+                        'Class Capacity Alert',
+                        $message,
+                        'capacity_alert', // ✅ Changed from 'schedule_change' to 'capacity_alert'
+                        [
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'current_enrollment' => $enrollmentCount,
+                            'capacity' => $class->capacity,
+                            'percentage' => round(($enrollmentCount / $class->capacity) * 100),
+                            'enrolled_student' => $student->full_name,
+                            'url' => route('superadmin.classes.show', $class->id)
+                        ]
+                    );
+
+                    // ✅ ADDED: Also notify regular admins
+                    NotificationHelper::notifyAdmins(
+                        'Class Capacity Alert',
+                        $message,
+                        'capacity_alert',
+                        [
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'current_enrollment' => $enrollmentCount,
+                            'capacity' => $class->capacity,
+                            'percentage' => round(($enrollmentCount / $class->capacity) * 100),
+                            'enrolled_student' => $student->full_name,
+                            'url' => route('admin.classes.show', $class->id)
+                        ]
+                    );
+                }
+                
+            } catch (\Exception $e) {
+                Log::error('Failed to send enrollment notifications: ' . $e->getMessage());
+                // ✅ Don't fail the entire enrollment if notifications fail
+            }
+
+            return back()->with('success', 'Student enrolled successfully!');
             
-            // USE HELPER FUNCTION
-            NotificationHelper::notifySuperAdmins(
-                'Class Capacity Alert',
-                $message,
-                'schedule_change',
-                [
-                    'class_id' => $class->id,
-                    'class_name' => $class->name,
-                    'current_enrollment' => $enrollmentCount,
-                    'capacity' => $class->capacity,
-                    'percentage' => round(($enrollmentCount / $class->capacity) * 100),
-                    'url' => route('superadmin.classes.show', $class->id) 
-                ]
-            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Error enrolling student: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'class_id' => $class->id,
+                'student_id' => $validated['student_id']
+            ]);
+            
+            return back()->with('error', 'Failed to enroll student. Please try again.');
         }
-    
-
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'enrolled_student',
-            'model_type' => 'ClassEnrollment',
-            'model_id' => $class->id,
-            'description' => "Enrolled {$student->first_name} {$student->last_name} in class: {$class->name}",
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
-
-        return back()->with('success', 'Student enrolled successfully!');
     }
 
 
@@ -354,32 +457,150 @@ class ClassController extends Controller
      */
     public function unenrollStudent(ClassModel $class, Student $student)
     {
-        $enrollment = $class->enrollments()
-            ->where('student_id', $student->id)
-            ->where('status', 'active')
-            ->first();
+
+        // ✅ ADDED: Database transaction for data integrity
+        DB::beginTransaction();
         
-        if (!$enrollment) {
-            return back()->with('error', 'Student is not actively enrolled in this class!');
+        try {
+            $enrollment = $class->enrollments()
+                ->where('student_id', $student->id)
+                ->where('status', 'active')
+                ->first();
+            
+            if (!$enrollment) {
+                return back()->with('error', 'Student is not actively enrolled in this class!');
+            }
+
+            // ✅ ENHANCED: Set dropped date when unenrolling
+            $enrollment->update([
+                'status' => 'dropped',
+                'dropped_date' => now(),
+            ]);
+
+            // ✅ ENHANCED: Activity log with proper model_id reference
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'unenrolled_student',
+                'model_type' => 'ClassEnrollment',
+                'model_id' => $enrollment->id, // ✅ Reference the enrollment, not the class
+                'description' => "Removed {$student->first_name} {$student->last_name} from class: {$class->name}",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            DB::commit();
+
+            // ✅ ENHANCED: Comprehensive notifications after successful unenrollment
+            try {
+                // Notify parent with email
+                if ($student->parent) {
+                    NotificationHelper::notifyUser(
+                        $student->parent,
+                        'Student Removed from Class',
+                        "{$student->full_name} has been removed from {$class->name} ({$class->subject})",
+                        'unenrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
+                            'url' => route('parent.students.show', $student->id)
+                        ],
+                        true // ✅ Send email immediately
+                    );
+                }
+
+                // Notify teacher with email
+                if ($class->teacher) {
+                    NotificationHelper::notifyUser(
+                        $class->teacher,
+                        'Student Removed from Class',
+                        "{$student->full_name} has been removed from your class: {$class->name}",
+                        'unenrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
+                            'url' => route('teacher.classes.show', $class->id)
+                        ],
+                        true // ✅ Send email immediately
+                    );
+                }
+
+                // ✅ ADDED: Notify other SuperAdmins about the unenrollment
+                $otherSuperAdmins = User::where('role', 'superadmin')
+                    ->where('status', 'active')
+                    ->where('id', '!=', auth()->id())
+                    ->get();
+                
+                foreach ($otherSuperAdmins as $superAdmin) {
+                    NotificationHelper::notifyUser(
+                        $superAdmin,
+                        'Student Removed from Class',
+                        "{$student->full_name} has been removed from {$class->name} by " . auth()->user()->name,
+                        'unenrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
+                            'url' => route('superadmin.classes.show', $class->id)
+                        ]
+                        // ✅ No immediate email for other admins (will be batched)
+                    );
+                }
+
+                // ✅ ADDED: Also notify regular admins
+                $admins = User::where('role', 'admin')
+                    ->where('status', 'active')
+                    ->get();
+                
+                foreach ($admins as $admin) {
+                    NotificationHelper::notifyUser(
+                        $admin,
+                        'Student Removed from Class',
+                        "{$student->full_name} has been removed from {$class->name} by " . auth()->user()->name,
+                        'unenrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
+                            'url' => route('admin.classes.show', $class->id)
+                        ]
+                        // ✅ No immediate email for admins (will be batched)
+                    );
+                }
+                
+            } catch (\Exception $e) {
+                Log::error('Failed to send unenrollment notifications: ' . $e->getMessage());
+                // ✅ Don't fail the entire unenrollment if notifications fail
+            }
+
+            return back()->with('success', "Student '{$student->full_name}' has been removed from '{$class->name}' successfully!");
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Error unenrolling student: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'class_id' => $class->id,
+                'student_id' => $student->id
+            ]);
+            
+            return back()->with('error', 'Failed to remove student from class. Please try again.');
         }
-
-        // Update status and set dropped date
-        $enrollment->update([
-            'status' => 'dropped',
-            'dropped_date' => now(),
-        ]);
-
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'unenrolled_student',
-            'model_type' => 'ClassEnrollment',
-            'model_id' => $class->id,
-            'description' => "Removed {$student->first_name} {$student->last_name} from class: {$class->name}",
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
-
-        return back()->with('success', "Student '{$student->full_name}' has been removed from '{$class->name}' successfully!");
     }
 }

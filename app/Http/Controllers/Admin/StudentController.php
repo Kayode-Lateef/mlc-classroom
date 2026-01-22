@@ -124,9 +124,8 @@ class StudentController extends Controller
             'date_of_birth' => [
                 'required',
                 'date',
-                'before:today',
-                'after:' . now()->subYears(18)->format('Y-m-d'),
-                'before:' . now()->subYears(4)->format('Y-m-d')
+                'after:' . now()->subYears(18)->format('Y-m-d'),  // Must be born after this date (< 18 years old)
+                'before:' . now()->subYears(6)->format('Y-m-d'),   // Must be born before this date (> 6 years old)
             ],
             'parent_id' => 'required|exists:users,id',
             'enrollment_date' => 'required|date|before_or_equal:today',
@@ -147,8 +146,8 @@ class StudentController extends Controller
             'last_name.required' => 'Last name is required.',
             'date_of_birth.required' => 'Date of birth is required.',
             'date_of_birth.before' => 'Date of birth must be in the past.',
-            'date_of_birth.after' => 'Student must be at least 4 years old.',
-            'date_of_birth.before' => 'Student must be under 18 years old.',
+            'date_of_birth.after' => 'Student must be under 18 years old.',
+            'date_of_birth.before' => 'Student must be at least 6 years old.',
             'parent_id.required' => 'Please select a parent/guardian.',
             'parent_id.exists' => 'Selected parent does not exist.',
             'enrollment_date.required' => 'Enrollment date is required.',
@@ -222,7 +221,7 @@ class StudentController extends Controller
 
             DB::commit();
 
-            // ✅ ADDED: Notifications to admins and parent
+            // ✅ Notify admins and parent - WITH EMAIL
             try {
                 // Notify other admins
                 $admins = User::whereIn('role', ['superadmin', 'admin'])
@@ -231,33 +230,37 @@ class StudentController extends Controller
                     ->get();
                 
                 foreach ($admins as $admin) {
-                    $admin->notify(new GeneralNotification([
-                        'type' => 'general',
-                        'title' => 'New Student Enrolled',
-                        'message' => "{$student->full_name} has been enrolled by {$student->parent->name} ({$student->weekly_hours} hours/week)",
-                        'sent_by' => auth()->user()->name,
-                        'sent_at' => now()->format('d M Y, H:i'),
-                        'data' => [
+                    \App\Helpers\NotificationHelper::notifyUser(
+                        $admin,
+                        'New Student Enrolled',
+                        "{$student->full_name} has been enrolled by {$student->parent->name} ({$student->weekly_hours} hours/week)",
+                        'general',
+                        [
                             'student_id' => $student->id,
                             'parent_id' => $student->parent_id,
                             'weekly_hours' => $student->weekly_hours,
+                            'sent_by' => auth()->user()->name,
+                            'sent_at' => now()->format('d M Y, H:i'),
                             'url' => route('admin.students.show', $student->id)
-                        ]
-                    ]));
+                        ],
+                        true  // ✅ Send email immediately (1-3 recipients)
+                    );
                 }
 
-                // Notify parent
-                $parent->notify(new GeneralNotification([
-                    'type' => 'general',
-                    'title' => 'Student Profile Created',
-                    'message' => "A student profile has been created for {$student->full_name} with {$student->weekly_hours} hours per week",
-                    'sent_by' => auth()->user()->name,
-                    'sent_at' => now()->format('d M Y, H:i'),
-                    'data' => [
+                // ✅ Notify parent with email
+                \App\Helpers\NotificationHelper::notifyUser(
+                    $parent,
+                    'Student Profile Created',
+                    "A student profile has been created for {$student->full_name} with {$student->weekly_hours} hours per week",
+                    'general',
+                    [
                         'student_id' => $student->id,
+                        'sent_by' => auth()->user()->name,
+                        'sent_at' => now()->format('d M Y, H:i'),
                         'url' => route('parent.students.show', $student->id)
-                    ]
-                ]));
+                    ],
+                    true  // ✅ Send email immediately
+                );
                 
             } catch (\Exception $e) {
                 Log::error('Failed to send student creation notifications: ' . $e->getMessage());
@@ -390,7 +393,7 @@ class StudentController extends Controller
                 'date',
                 'before:today',
                 'after:' . now()->subYears(18)->format('Y-m-d'),
-                'before:' . now()->subYears(4)->format('Y-m-d')
+                'before:' . now()->subYears(6)->format('Y-m-d')
             ],
             'parent_id' => 'required|exists:users,id',
             'enrollment_date' => 'required|date|before_or_equal:today',
@@ -411,7 +414,7 @@ class StudentController extends Controller
             'last_name.required' => 'Last name is required.',
             'date_of_birth.required' => 'Date of birth is required.',
             'date_of_birth.before' => 'Date of birth must be in the past.',
-            'date_of_birth.after' => 'Student must be at least 4 years old.',
+            'date_of_birth.after' => 'Student must be at least 6 years old.',
             'parent_id.required' => 'Please select a parent/guardian.',
             'parent_id.exists' => 'Selected parent does not exist.',
             'enrollment_date.required' => 'Enrollment date is required.',

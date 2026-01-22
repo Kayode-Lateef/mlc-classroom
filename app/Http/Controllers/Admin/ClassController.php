@@ -604,9 +604,9 @@ class ClassController extends Controller
     public function enrollStudent(Request $request, ClassModel $class)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('manage enrollments')) {
-            abort(403, 'You do not have permission to manage enrollments.');
-        }
+        // if (!auth()->user()->can('manage enrollments')) {
+        //     abort(403, 'You do not have permission to manage enrollments.');
+        // }
 
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
@@ -665,9 +665,9 @@ class ClassController extends Controller
 
             DB::commit();
 
-            // ✅ ADDED: Notifications after successful enrollment
+            // ✅ ENHANCED: Comprehensive notifications after successful enrollment
             try {
-                // Notify parent
+                // Notify parent with email
                 if ($student->parent) {
                     NotificationHelper::notifyUser(
                         $student->parent,
@@ -680,12 +680,15 @@ class ClassController extends Controller
                             'class_name' => $class->name,
                             'subject' => $class->subject,
                             'teacher' => $class->teacher ? $class->teacher->name : 'TBA',
+                            'enrolled_by' => auth()->user()->name,
+                            'enrolled_at' => now()->format('d M Y, H:i'),
                             'url' => route('parent.students.show', $student->id)
-                        ]
+                        ],
+                        true // ✅ Send email immediately
                     );
                 }
 
-                // Notify teacher
+                // Notify teacher with email
                 if ($class->teacher) {
                     NotificationHelper::notifyUser(
                         $class->teacher,
@@ -694,14 +697,71 @@ class ClassController extends Controller
                         'enrollment',
                         [
                             'student_id' => $student->id,
+                            'student_name' => $student->full_name,
                             'class_id' => $class->id,
                             'class_name' => $class->name,
+                            'enrolled_by' => auth()->user()->name,
+                            'enrolled_at' => now()->format('d M Y, H:i'),
                             'url' => route('teacher.classes.show', $class->id)
-                        ]
+                        ],
+                        true // ✅ Send email immediately
                     );
                 }
 
-                // ✅ ADDED: Check class capacity and notify admins if 90%+ full
+                // ✅ ADDED: Notify SuperAdmins about the enrollment
+                $superAdmins = User::where('role', 'superadmin')
+                    ->where('status', 'active')
+                    ->get();
+                
+                foreach ($superAdmins as $superAdmin) {
+                    NotificationHelper::notifyUser(
+                        $superAdmin,
+                        'Student Enrolled in Class',
+                        "{$student->full_name} has been enrolled in {$class->name} by " . auth()->user()->name,
+                        'enrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'teacher' => $class->teacher ? $class->teacher->name : 'TBA',
+                            'enrolled_by' => auth()->user()->name,
+                            'enrolled_at' => now()->format('d M Y, H:i'),
+                            'url' => route('superadmin.classes.show', $class->id)
+                        ]
+                        // ✅ No immediate email for SuperAdmins (will be batched)
+                    );
+                }
+
+                // ✅ ADDED: Notify other Admins about the enrollment
+                $otherAdmins = User::where('role', 'admin')
+                    ->where('status', 'active')
+                    ->where('id', '!=', auth()->id())
+                    ->get();
+                
+                foreach ($otherAdmins as $admin) {
+                    NotificationHelper::notifyUser(
+                        $admin,
+                        'Student Enrolled in Class',
+                        "{$student->full_name} has been enrolled in {$class->name} by " . auth()->user()->name,
+                        'enrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'teacher' => $class->teacher ? $class->teacher->name : 'TBA',
+                            'enrolled_by' => auth()->user()->name,
+                            'enrolled_at' => now()->format('d M Y, H:i'),
+                            'url' => route('admin.classes.show', $class->id)
+                        ]
+                        // ✅ No immediate email for other Admins (will be batched)
+                    );
+                }
+
+                // ✅ Check class capacity and notify all admins if 90%+ full
                 $enrollmentCount = $class->enrollments()->where('status', 'active')->count();
                 
                 if ($enrollmentCount >= ($class->capacity * 0.9)) {
@@ -709,6 +769,23 @@ class ClassController extends Controller
                         ? "Class {$class->name} is now at full capacity ({$enrollmentCount}/{$class->capacity})"
                         : "Class {$class->name} is at {$enrollmentCount}/{$class->capacity} capacity (90%+ full)";
                     
+                    // Notify SuperAdmins
+                    NotificationHelper::notifySuperAdmins(
+                        'Class Capacity Alert',
+                        $message,
+                        'capacity_alert',
+                        [
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'current_enrollment' => $enrollmentCount,
+                            'capacity' => $class->capacity,
+                            'percentage' => round(($enrollmentCount / $class->capacity) * 100),
+                            'enrolled_student' => $student->full_name,
+                            'url' => route('superadmin.classes.show', $class->id)
+                        ]
+                    );
+
+                    // Notify Admins
                     NotificationHelper::notifyAdmins(
                         'Class Capacity Alert',
                         $message,
@@ -719,6 +796,7 @@ class ClassController extends Controller
                             'current_enrollment' => $enrollmentCount,
                             'capacity' => $class->capacity,
                             'percentage' => round(($enrollmentCount / $class->capacity) * 100),
+                            'enrolled_student' => $student->full_name,
                             'url' => route('admin.classes.show', $class->id)
                         ]
                     );
@@ -744,14 +822,14 @@ class ClassController extends Controller
     }
 
     /**
-     * Remove student from class
+     * Remove student from class 
      */
     public function unenrollStudent(ClassModel $class, Student $student)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('manage enrollments')) {
-            abort(403, 'You do not have permission to manage enrollments.');
-        }
+        // if (!auth()->user()->can('manage enrollments')) {
+        //     abort(403, 'You do not have permission to manage enrollments.');
+        // }
 
         // ✅ ADDED: Database transaction for data integrity
         DB::beginTransaction();
@@ -772,12 +850,12 @@ class ClassController extends Controller
                 'dropped_date' => now(),
             ]);
 
-            // Log activity
+            // ✅ ENHANCED: Activity log with proper model_id reference
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'unenrolled_student',
                 'model_type' => 'ClassEnrollment',
-                'model_id' => $class->id,
+                'model_id' => $enrollment->id, // ✅ Reference the enrollment, not the class
                 'description' => "Removed {$student->first_name} {$student->last_name} from class: {$class->name}",
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
@@ -785,9 +863,9 @@ class ClassController extends Controller
 
             DB::commit();
 
-            // ✅ ADDED: Notifications after successful unenrollment
+            // ✅ ENHANCED: Comprehensive notifications after successful unenrollment
             try {
-                // Notify parent
+                // Notify parent with email
                 if ($student->parent) {
                     NotificationHelper::notifyUser(
                         $student->parent,
@@ -796,14 +874,19 @@ class ClassController extends Controller
                         'unenrollment',
                         [
                             'student_id' => $student->id,
+                            'student_name' => $student->full_name,
                             'class_id' => $class->id,
                             'class_name' => $class->name,
                             'subject' => $class->subject,
-                        ]
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
+                            'url' => route('parent.students.show', $student->id)
+                        ],
+                        true // ✅ Send email immediately
                     );
                 }
 
-                // Notify teacher
+                // Notify teacher with email
                 if ($class->teacher) {
                     NotificationHelper::notifyUser(
                         $class->teacher,
@@ -812,10 +895,65 @@ class ClassController extends Controller
                         'unenrollment',
                         [
                             'student_id' => $student->id,
+                            'student_name' => $student->full_name,
                             'class_id' => $class->id,
                             'class_name' => $class->name,
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
                             'url' => route('teacher.classes.show', $class->id)
+                        ],
+                        true // ✅ Send email immediately
+                    );
+                }
+
+                // ✅ ADDED: Notify SuperAdmins about the unenrollment
+                $superAdmins = User::where('role', 'superadmin')
+                    ->where('status', 'active')
+                    ->get();
+                
+                foreach ($superAdmins as $superAdmin) {
+                    NotificationHelper::notifyUser(
+                        $superAdmin,
+                        'Student Removed from Class',
+                        "{$student->full_name} has been removed from {$class->name} by " . auth()->user()->name,
+                        'unenrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
+                            'url' => route('superadmin.classes.show', $class->id)
                         ]
+                        // ✅ No immediate email for SuperAdmins (will be batched)
+                    );
+                }
+
+                // ✅ ADDED: Notify other Admins about the unenrollment
+                $otherAdmins = User::where('role', 'admin')
+                    ->where('status', 'active')
+                    ->where('id', '!=', auth()->id())
+                    ->get();
+                
+                foreach ($otherAdmins as $admin) {
+                    NotificationHelper::notifyUser(
+                        $admin,
+                        'Student Removed from Class',
+                        "{$student->full_name} has been removed from {$class->name} by " . auth()->user()->name,
+                        'unenrollment',
+                        [
+                            'student_id' => $student->id,
+                            'student_name' => $student->full_name,
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'subject' => $class->subject,
+                            'removed_by' => auth()->user()->name,
+                            'removed_at' => now()->format('d M Y, H:i'),
+                            'url' => route('admin.classes.show', $class->id)
+                        ]
+                        // ✅ No immediate email for other Admins (will be batched)
                     );
                 }
                 

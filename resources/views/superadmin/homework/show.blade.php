@@ -61,34 +61,96 @@
         margin-top: 20px;
     }
 
+    /* ========================================
+       MODAL STYLES - PERFECTLY CENTERED
+       ======================================== */
     .modal {
-        display: none;
         position: fixed;
-        z-index: 1050;
-        left: 0;
         top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.5);
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 9999;
+        display: none;
+        overflow-x: hidden;
+        overflow-y: auto;
+        outline: 0;
+        /* Flexbox for perfect centering */
+        align-items: center;
+        justify-content: center;
     }
 
     .modal.show {
-        display: block;
+        display: flex !important; /* Use flex to enable centering */
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 9998;
+        background-color: #000;
+        opacity: 0.5;
     }
 
     .modal-dialog {
         position: relative;
-        margin: 5% auto;
+        width: 90%;
         max-width: 500px;
+        margin: 0; /* No margin needed with flexbox */
+        z-index: 9999;
     }
 
     .modal-content {
+        position: relative;
         background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        border: 1px solid rgba(0,0,0,.2);
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0,0,0,.5);
+        background-clip: padding-box;
+        outline: 0;
+        animation: modalZoomIn 0.3s ease-out;
     }
 
+    /* Zoom in animation for centered modal */
+    @keyframes modalZoomIn {
+        from {
+            opacity: 0;
+            transform: scale(0.7);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Close button styling */
+    .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+        color: #000;
+        opacity: 0.4;
+        cursor: pointer;
+        z-index: 10;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        transition: opacity 0.2s;
+    }
+
+    .modal-close:hover,
+    .modal-close:focus {
+        opacity: 0.8;
+        outline: none;
+    }
 
     .progress-custom {
         height: 12px;
@@ -147,7 +209,6 @@
                             </div>
                         </div>
                     @endif
-
 
                     <div class="row">
                         <!-- Main Content -->
@@ -236,7 +297,6 @@
                                                     <div class="stat-digit">{{ $stats['total_students'] }}</div>
                                                     <div class="stat-text">Total Students</div>
                                                 </div>
-                                                
                                             </div>
                                         </div>
                                     </div>
@@ -247,7 +307,6 @@
                                                     <div class="stat-digit">{{ $stats['submitted'] }}</div>
                                                     <div class="stat-text">Submitted</div>
                                                 </div>
-                                                
                                             </div>
                                         </div>
                                     </div>
@@ -258,7 +317,6 @@
                                                     <div class="stat-digit">{{ $stats['graded'] }}</div>
                                                     <div class="stat-text">Graded</div>
                                                 </div>
-                                                
                                             </div>
                                         </div>
                                     </div>
@@ -269,7 +327,6 @@
                                                     <div class="stat-digit">{{ $stats['pending'] }}</div>
                                                     <div class="stat-text">Pending</div>
                                                 </div>
-                                                
                                             </div>
                                         </div>
                                     </div>                                   
@@ -305,9 +362,7 @@
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-                               
 
                             <!-- Student Submissions -->
                             <div class="card alert">
@@ -333,7 +388,7 @@
                                             <div style="flex: 1;">
                                                 <h5 style="margin: 0 0 5px 0; font-weight: 600;">{{ $submission->student->full_name }}</h5>
                                                 <p style="margin: 0 0 8px 0; color: #6c757d;">
-                                                    Parent: {{ $submission->student->parent->name }}
+                                                    Parent: {{ $submission->student->parent->name ?? 'No parent assigned' }}
                                                 </p>
 
                                                 @if($submission->submitted_date)
@@ -386,10 +441,9 @@
                                                 @if(in_array($submission->status, ['submitted', 'late']))
                                                 <div style="margin-top: 8px;">
                                                     <button 
-                                                        onclick="openGradeModal({{ $submission->id }}, '{{ $submission->student->full_name }}')"
+                                                        onclick="openGradeModal({{ $submission->id }}, '{{ addslashes($submission->student->full_name) }}')"
                                                         class="btn btn-sm btn-success"
                                                         style="font-size: 1rem;"
-                                                        title="Grade Submission"
                                                     >
                                                         <i class="ti-pencil"></i> Grade
                                                     </button>
@@ -488,104 +542,133 @@
         </div>
     </div>
 
-  <!-- Bootstrap 3 Grade Modal -->
-<div class="modal fade" id="gradeModal" tabindex="-1" role="dialog" aria-labelledby="gradeModalLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <!-- Grade Modal - BOOTSTRAP 3 STRUCTURE WITH PERFECT CENTERING -->
+    <div id="gradeModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <button type="button" class="modal-close" onclick="closeGradeModal()" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
-                <h4 class="modal-title" id="gradeModalLabel">
-                    <i class="ti-pencil-alt"></i> Grade Homework
-                </h4>
+                
+                <div class="card alert" style="margin: 0; border: none; border-radius: 6px;">
+                    <div class="card-header">
+                        <h4 style="margin: 0;"><i class="ti-pencil"></i> Grade Homework</h4>
+                    </div>
+                    <div class="card-body">
+                        <p style="margin-bottom: 15px; font-size: 0.9375rem;">
+                            Student: <strong id="modalStudentName"></strong>
+                        </p>
+                        
+                        <form id="gradeForm" method="POST">
+                            @csrf
+                            <input type="hidden" name="submission_id" id="modalSubmissionId">
+                            
+                            <div class="form-group">
+                                <label class="required-field">Grade</label>
+                                <input 
+                                    type="text" 
+                                    name="grade" 
+                                    required
+                                    maxlength="50"
+                                    placeholder="e.g., A+, 95%, Excellent"
+                                    class="form-control"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label>Teacher Comments</label>
+                                <textarea 
+                                    name="teacher_comments" 
+                                    rows="3"
+                                    maxlength="1000"
+                                    placeholder="Optional feedback for the student..."
+                                    class="form-control"
+                                ></textarea>
+                                <small class="form-text text-muted">
+                                    <span id="commentCount">0</span>/1000 characters
+                                </small>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                                <button type="button" onclick="closeGradeModal()" class="btn btn-secondary">
+                                    <i class="ti-close"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="ti-check"></i> Submit Grade
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <form id="gradeForm" method="POST" action="">
-                @csrf
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label><i class="ti-user"></i> Student:</label>
-                        <p class="form-control-static" id="modalStudentName"></p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="grade">Grade <span class="text-danger">*</span></label>
-                        <input type="number" 
-                               class="form-control" 
-                               id="grade" 
-                               name="grade" 
-                               min="0" 
-                               max="100" 
-                               placeholder="Enter grade (0-100)"
-                               required>
-                        <span class="help-block">Enter a grade between 0 and 100</span>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="teacher_comments">Teacher Comments</label>
-                        <textarea class="form-control" 
-                                  id="teacher_comments" 
-                                  name="teacher_comments" 
-                                  rows="4" 
-                                  placeholder="Add feedback for the student (optional)"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
-                        <i class="ti-close"></i> Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="ti-check"></i> Submit Grade
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
+    <div id="gradeModalBackdrop" class="modal-backdrop" style="display: none;"></div>
 @endsection
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // Open grade modal function
-    window.openGradeModal = function(submissionId, studentName) {
-        // Set student name
-        $('#modalStudentName').text(studentName);
-        
-        // Set form action
-        $('#gradeForm').attr('action', '/superadmin/homework/submissions/' + submissionId + '/grade');
-        
-        // Show modal (Bootstrap 3 way)
-        $('#gradeModal').modal('show');
-    };
+function openGradeModal(submissionId, studentName) {
+    document.getElementById('modalStudentName').textContent = studentName;
+    document.getElementById('modalSubmissionId').value = submissionId;
+    document.getElementById('gradeForm').action = '/superadmin/homework/submissions/' + submissionId + '/grade';
     
-    // Reset form when modal is closed
-    $('#gradeModal').on('hidden.bs.modal', function () {
-        $('#gradeForm')[0].reset();
-    });
+    // Show modal and backdrop
+    document.getElementById('gradeModal').classList.add('show');
+    document.getElementById('gradeModalBackdrop').style.display = 'block';
     
-    // Optional: Form validation
-    $('#gradeForm').on('submit', function(e) {
-        const grade = parseInt($('#grade').val());
-        
-        if (isNaN(grade) || grade < 0 || grade > 100) {
-            e.preventDefault();
-            swal({
-                title: "Invalid Grade!",
-                text: "Please enter a grade between 0 and 100.",
-                type: "error",
-                confirmButtonText: "OK"
-            }, function() {
-                $('#grade').focus();
-            });
-            return false;
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = '15px'; // Prevent content shift
+}
+
+function closeGradeModal() {
+    document.getElementById('gradeModal').classList.remove('show');
+    document.getElementById('gradeModalBackdrop').style.display = 'none';
+    document.getElementById('gradeForm').reset();
+    document.getElementById('commentCount').textContent = '0';
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+}
+
+// Close modal when clicking backdrop
+document.getElementById('gradeModalBackdrop').addEventListener('click', function() {
+    closeGradeModal();
+});
+
+// Character count for comments
+document.addEventListener('DOMContentLoaded', function() {
+    const commentField = document.querySelector('textarea[name="teacher_comments"]');
+    const commentCount = document.getElementById('commentCount');
+    
+    if (commentField && commentCount) {
+        commentField.addEventListener('input', function() {
+            commentCount.textContent = this.value.length;
+        });
+    }
+});
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' || event.keyCode === 27) {
+        if (document.getElementById('gradeModal').classList.contains('show')) {
+            closeGradeModal();
         }
-        
-        // Optional: Disable submit button to prevent double submission
-        $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Submitting...');
-        
-        return true;
-    });
+    }
+});
+
+// Prevent form submission if already submitting
+document.getElementById('gradeForm').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    if (submitBtn.disabled) {
+        e.preventDefault();
+        return false;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ti-reload"></i> Submitting...';
 });
 </script>
 @endpush

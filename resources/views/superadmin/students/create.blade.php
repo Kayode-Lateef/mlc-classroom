@@ -164,7 +164,7 @@
                                                             class="form-control @error('date_of_birth') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-calendar"></i> Student must be between 4-18 years old
+                                                            <i class="ti-calendar"></i> Student must be between 6-18 years old
                                                         </small>
                                                         @error('date_of_birth')
                                                         <span class="invalid-feedback">{{ $message }}</span>

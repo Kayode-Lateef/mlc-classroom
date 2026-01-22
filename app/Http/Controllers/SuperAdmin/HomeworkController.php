@@ -27,7 +27,7 @@ class HomeworkController extends Controller
 
         // Date range filter
         $dateFrom = $request->get('date_from', now()->subDays(30)->format('Y-m-d'));
-        $dateTo = $request->get('date_to', now()->addDays(30)->format('Y-m-d'));
+        $dateTo = $request->get('date_to', now()->format('Y-m-d'));
 
         $query->whereBetween('assigned_date', [$dateFrom, $dateTo]);
 

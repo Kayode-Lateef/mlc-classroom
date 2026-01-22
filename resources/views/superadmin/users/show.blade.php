@@ -316,14 +316,14 @@
                                                                 </div>
                                                                 <div class="email-content">
                                                                     <span class="contact-title">Email Address:</span>
-                                                                    <span class="contact-email">{{ $user->email }}
+                                                                    <span class="contact-email">{{ $user->email }} 
                                                                         @if($user->email_verified_at)
                                                                             <span class="verification-badge badge-success">
-                                                                                <i class="ti-check"></i> Verified
+                                                                                <i class="ti-check"></i>  Verified
                                                                             </span>
                                                                         @else
                                                                             <span class="verification-badge badge-warning">
-                                                                                <i class="ti-alert"></i> Not Verified
+                                                                                <i class="ti-alert"></i>  Not Verified
                                                                             </span>
                                                                         @endif
                                                                     </span>
@@ -600,7 +600,7 @@
                             <div class="row mt-4">
                                 <div class="col-lg-12">
                                     <div class="card alert">
-                                        <div class="card-header">
+                                        <div class="card-header mb-3">
                                             <h4><i class="ti-briefcase"></i> Assigned Classes</h4>
                                         </div>
                                         <div class="card-body">
@@ -690,7 +690,7 @@
                             <div class="row mt-4">
                                 <div class="col-lg-12">
                                     <div class="card alert">
-                                        <div class="card-header">
+                                        <div class="card-header mb-3">
                                             <h4><i class="ti-user"></i> Children</h4>
                                         </div>
                                         <div class="card-body">

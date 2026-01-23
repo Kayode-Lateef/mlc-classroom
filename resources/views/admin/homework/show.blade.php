@@ -452,11 +452,11 @@
                                     </a>
                                     @endif
 
-                                    <form action="{{ route('admin.homework.destroy', $homework) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this homework? All {{ $homework->submissions->count() }} submissions will be deleted.');">
+                                    <form action="{{ route('admin.homework.destroy', $homework) }}" method="POST" id="deleteHomeworkForm">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-block">
-                                            <i class="ti-trash"></i> Delete
+                                        <button type="button" class="btn btn-danger btn-block" onclick="confirmDeleteHomework({{ $homework->submissions->count() }})">
+                                            <i class="ti-trash"></i> Delete Homework
                                         </button>
                                     </form>
                                 </div>
@@ -585,67 +585,197 @@
 
 @push('scripts')
 <script>
-function openGradeModal(submissionId, studentName) {
-    document.getElementById('modalStudentName').textContent = studentName;
-    document.getElementById('modalSubmissionId').value = submissionId;
-    document.getElementById('gradeForm').action = '/admin/homework/submissions/' + submissionId + '/grade';
-    
-    // Show modal and backdrop
-    document.getElementById('gradeModal').classList.add('show');
-    document.getElementById('gradeModalBackdrop').style.display = 'block';
-    
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-    document.body.style.paddingRight = '15px'; // Prevent content shift
-}
-
-function closeGradeModal() {
-    document.getElementById('gradeModal').classList.remove('show');
-    document.getElementById('gradeModalBackdrop').style.display = 'none';
-    document.getElementById('gradeForm').reset();
-    document.getElementById('commentCount').textContent = '0';
-    
-    // Restore body scroll
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-}
-
-// Close modal when clicking backdrop
-document.getElementById('gradeModalBackdrop').addEventListener('click', function() {
-    closeGradeModal();
-});
-
-// Character count for comments
-document.addEventListener('DOMContentLoaded', function() {
-    const commentField = document.querySelector('textarea[name="teacher_comments"]');
-    const commentCount = document.getElementById('commentCount');
-    
-    if (commentField && commentCount) {
-        commentField.addEventListener('input', function() {
-            commentCount.textContent = this.value.length;
+    // ==========================================
+    // ✅ DELETE HOMEWORK CONFIRMATION
+    // ==========================================
+    function confirmDeleteHomework(submissionCount) {
+        let warningMessage = '';
+        let confirmButtonText = 'Yes, delete it!';
+        
+        if (submissionCount > 0) {
+            warningMessage = `This homework has ${submissionCount} submission(s) from students.\n\n` +
+                           `⚠️ All submissions will be permanently deleted!\n\n` +
+                           `This action cannot be undone!`;
+            confirmButtonText = `Delete (${submissionCount} submissions)`;
+        } else {
+            warningMessage = 'This homework has no submissions yet.\n\n' +
+                           'Are you sure you want to delete it?\n\n' +
+                           'This action cannot be undone!';
+        }
+        
+        swal({
+            title: "Delete Homework?",
+            text: warningMessage,
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: "No, keep it",
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true
+        }, function(isConfirm) {
+            if (isConfirm) {
+                // Show loading state
+                swal({
+                    title: "Deleting...",
+                    text: "Please wait while we delete the homework and all submissions",
+                    type: "info",
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                });
+                
+                // Submit the delete form
+                setTimeout(function() {
+                    document.getElementById('deleteHomeworkForm').submit();
+                }, 500);
+            }
         });
     }
-});
 
-// Close modal on ESC key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape' || event.keyCode === 27) {
-        if (document.getElementById('gradeModal').classList.contains('show')) {
-            closeGradeModal();
+    // ==========================================
+    // ✅ GRADE MODAL FUNCTIONS
+    // ==========================================
+    function openGradeModal(submissionId, studentName) {
+        document.getElementById('modalStudentName').textContent = studentName;
+        document.getElementById('modalSubmissionId').value = submissionId;
+        document.getElementById('gradeForm').action = '/admin/homework/submissions/' + submissionId + '/grade';
+        
+        // Show modal and backdrop
+        const modal = document.getElementById('gradeModal');
+        const backdrop = document.getElementById('gradeModalBackdrop');
+        
+        if (modal && backdrop) {
+            modal.classList.add('show');
+            backdrop.style.display = 'block';
+            
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = '15px'; // Prevent content shift
         }
     }
-});
 
-// Prevent form submission if already submitting
-document.getElementById('gradeForm').addEventListener('submit', function(e) {
-    const submitBtn = this.querySelector('button[type="submit"]');
-    if (submitBtn.disabled) {
-        e.preventDefault();
-        return false;
+    function closeGradeModal() {
+        const modal = document.getElementById('gradeModal');
+        const backdrop = document.getElementById('gradeModalBackdrop');
+        const form = document.getElementById('gradeForm');
+        const commentCount = document.getElementById('commentCount');
+        
+        if (modal) modal.classList.remove('show');
+        if (backdrop) backdrop.style.display = 'none';
+        if (form) form.reset();
+        if (commentCount) commentCount.textContent = '0';
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
     }
-    
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="ti-reload"></i> Submitting...';
-});
+
+    // ==========================================
+    // ✅ DOCUMENT READY HANDLERS
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ✅ Character count for grade comments
+        const commentField = document.querySelector('textarea[name="teacher_comments"]');
+        const commentCount = document.getElementById('commentCount');
+        
+        if (commentField && commentCount) {
+            commentField.addEventListener('input', function() {
+                const length = this.value.length;
+                commentCount.textContent = length;
+                
+                // Warn if approaching limit (if you have a max length)
+                if (this.hasAttribute('maxlength')) {
+                    const maxLength = parseInt(this.getAttribute('maxlength'));
+                    if (length > maxLength * 0.9) {
+                        commentCount.style.color = '#f0ad4e'; // Warning color
+                    } else {
+                        commentCount.style.color = '';
+                    }
+                }
+            });
+        }
+
+        // ✅ Close modal when clicking backdrop
+        const backdrop = document.getElementById('gradeModalBackdrop');
+        if (backdrop) {
+            backdrop.addEventListener('click', function() {
+                closeGradeModal();
+            });
+        }
+
+        // ✅ Prevent grade form double submission
+        const gradeForm = document.getElementById('gradeForm');
+        if (gradeForm) {
+            gradeForm.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                
+                // Check if already submitting
+                if (submitBtn && submitBtn.disabled) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Validate grade input
+                const gradeInput = this.querySelector('input[name="grade"]');
+                if (gradeInput && gradeInput.value) {
+                    const grade = parseFloat(gradeInput.value);
+                    const maxGrade = parseFloat(gradeInput.getAttribute('max') || 100);
+                    
+                    if (grade < 0 || grade > maxGrade) {
+                        e.preventDefault();
+                        swal({
+                            title: "Invalid Grade!",
+                            text: `Grade must be between 0 and ${maxGrade}`,
+                            type: "error",
+                            confirmButtonText: "OK"
+                        });
+                        return false;
+                    }
+                }
+                
+                // Disable submit button and show loading
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="ti-reload fa-spin"></i> Submitting Grade...';
+                }
+            });
+        }
+
+        // ✅ Grade input validation (real-time)
+        const gradeInput = document.querySelector('input[name="grade"]');
+        if (gradeInput) {
+            gradeInput.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                const max = parseFloat(this.getAttribute('max') || 100);
+                
+                if (value < 0) {
+                    this.value = 0;
+                } else if (value > max) {
+                    this.value = max;
+                }
+            });
+        }
+    });
+
+    // ==========================================
+    // ✅ KEYBOARD SHORTCUTS
+    // ==========================================
+    document.addEventListener('keydown', function(event) {
+        // Close modal on ESC key
+        if (event.key === 'Escape' || event.keyCode === 27) {
+            const modal = document.getElementById('gradeModal');
+            if (modal && modal.classList.contains('show')) {
+                closeGradeModal();
+            }
+        }
+    });
 </script>
 @endpush
+
+
+
+
+
+

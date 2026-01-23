@@ -481,6 +481,24 @@
                     $('#role').removeClass('is-invalid');
                 }
 
+                // Validate Password
+                if ($('#password').val().length < 8) {
+                    isValid = false;
+                    errors.push('• Password must be at least 8 characters');
+                    $('#password').addClass('is-invalid');
+                } else {
+                    $('#password').removeClass('is-invalid');
+                }
+
+                // Validate Password Confirmation
+                if ($('#password').val() !== $('#password_confirmation').val()) {
+                    isValid = false;
+                    errors.push('• Password confirmation does not match');
+                    $('#password_confirmation').addClass('is-invalid');
+                } else {
+                    $('#password_confirmation').removeClass('is-invalid');
+                }
+
                 // If not valid, show SweetAlert with errors
                 if (!isValid) {
                     swal({

@@ -94,26 +94,65 @@ class ScheduleController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'class_id' => 'required|exists:classes,id',
             'day_of_week' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'recurring' => 'boolean',
+        ], [
+            'class_id.required' => 'Please select a class.',
+            'class_id.exists' => 'Selected class does not exist.',
+            'day_of_week.required' => 'Please select a day of the week.',
+            'day_of_week.in' => 'Invalid day selected. Please choose a valid day.',
+            'start_time.required' => 'Start time is required.',
+            'start_time.date_format' => 'Start time must be in HH:MM format (e.g., 09:00).',
+            'end_time.required' => 'End time is required.',
+            'end_time.date_format' => 'End time must be in HH:MM format (e.g., 14:00).',
+            'end_time.after' => 'End time must be after start time.',
         ]);
 
-        if ($validator->fails()) {
+        // ✅ FIXED: Pre-validation checks BEFORE transaction starts
+        // This allows proper error messages to be shown via Toastr/SweetAlert
+
+        // ✅ ENHANCED: Verify class exists and has active teacher
+        $class = ClassModel::with('teacher')->find($validated['class_id']);
+        
+        if (!$class) {
             return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Class not found. Please select a valid class.');
+        }
+        
+        if (!$class->teacher) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Cannot create schedule: Class has no assigned teacher. Please assign a teacher to this class first.');
         }
 
-        // Check for conflicts
+        if ($class->teacher->status !== 'active') {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Cannot create schedule: The assigned teacher (' . $class->teacher->name . ') is not active.');
+        }
+
+        // ✅ ENHANCED: Time validation - minimum 30 minutes duration
+        $startTime = Carbon::createFromFormat('H:i', $validated['start_time']);
+        $endTime = Carbon::createFromFormat('H:i', $validated['end_time']);
+        $durationMinutes = $startTime->diffInMinutes($endTime);
+
+        if ($durationMinutes < 30) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Schedule duration must be at least 30 minutes. Current duration: ' . $durationMinutes . ' minutes.');
+        }
+
+        // ✅ FIXED: Check for conflicts BEFORE starting transaction
         $conflict = $this->checkScheduleConflict(
-            $request->class_id,
-            $request->day_of_week,
-            $request->start_time,
-            $request->end_time
+            $validated['class_id'],
+            $validated['day_of_week'],
+            $validated['start_time'],
+            $validated['end_time']
         );
 
         if ($conflict) {
@@ -122,28 +161,110 @@ class ScheduleController extends Controller
                 ->with('error', 'Schedule conflict detected: ' . $conflict);
         }
 
-        // Create schedule with proper time format
-        $schedule = Schedule::create([
-            'class_id' => $request->class_id,
-            'day_of_week' => $request->day_of_week,
-            'start_time' => Carbon::createFromFormat('H:i', $request->start_time)->format('H:i:s'),
-            'end_time' => Carbon::createFromFormat('H:i', $request->end_time)->format('H:i:s'),
-            'recurring' => $request->has('recurring') ? true : false,
-        ]);
+        // ✅ NOW start the database transaction (only for actual creation)
+        DB::beginTransaction();
 
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'created_schedule',
-            'model_type' => 'Schedule',
-            'model_id' => $schedule->id,
-            'description' => "Created schedule for class: {$schedule->class->name} on {$schedule->day_of_week}",
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        try {
+            // Create schedule with proper time format
+            $schedule = Schedule::create([
+                'class_id' => $validated['class_id'],
+                'day_of_week' => $validated['day_of_week'],
+                'start_time' => $startTime->format('H:i:s'),
+                'end_time' => $endTime->format('H:i:s'),
+                'recurring' => $request->has('recurring') ? true : false,
+            ]);
 
-        return redirect()->route('superadmin.schedules.index')
-            ->with('success', 'Schedule created successfully!');
+            // ✅ ENHANCED: Activity log with duration details
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'created_schedule',
+                'model_type' => 'Schedule',
+                'model_id' => $schedule->id,
+                'description' => "Created schedule for class: {$class->name} on {$schedule->day_of_week} ({$startTime->format('H:i')} - {$endTime->format('H:i')}, {$durationMinutes} minutes)",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            // ✅ FIXED: Commit transaction BEFORE sending notifications
+            // This ensures the schedule is saved even if notifications fail
+            DB::commit();
+
+            // ✅ ADDED: Notify teacher and enrolled students' parents
+            // Do this AFTER commit so transaction doesn't interfere
+            try {
+                // Notify teacher
+                if ($class->teacher) {
+                    NotificationHelper::notifyUser(
+                        $class->teacher,
+                        'New Schedule Created',
+                        "A new schedule has been created for {$class->name} on {$schedule->day_of_week} from {$startTime->format('H:i')} to {$endTime->format('H:i')}",
+                        'schedule_created',
+                        [
+                            'class_id' => $class->id,
+                            'class_name' => $class->name,
+                            'schedule_id' => $schedule->id,
+                            'day_of_week' => $schedule->day_of_week,
+                            'start_time' => $startTime->format('H:i'),
+                            'end_time' => $endTime->format('H:i'),
+                            'url' => route('teacher.classes.show', $class->id)
+                        ]
+                    );
+                }
+
+                // ✅ ADDED: Notify enrolled students' parents
+                $enrolledStudents = $class->students()
+                    ->wherePivot('status', 'active')
+                    ->with('parent')
+                    ->get();
+
+                $parentsNotified = 0;
+                foreach ($enrolledStudents as $student) {
+                    if ($student->parent) {
+                        NotificationHelper::notifyUser(
+                            $student->parent,
+                            'New Class Schedule',
+                            "{$class->name} now meets on {$schedule->day_of_week}s from {$startTime->format('H:i')} to {$endTime->format('H:i')}",
+                            'schedule_created',
+                            [
+                                'class_id' => $class->id,
+                                'class_name' => $class->name,
+                                'student_id' => $student->id,
+                                'student_name' => $student->full_name,
+                                'day_of_week' => $schedule->day_of_week,
+                                'start_time' => $startTime->format('H:i'),
+                                'end_time' => $endTime->format('H:i'),
+                                'url' => route('parent.students.show', $student->id)
+                            ]
+                        );
+                        $parentsNotified++;
+                    }
+                }
+
+                Log::info("Schedule notifications sent for {$class->name} - {$schedule->day_of_week}: Teacher + {$parentsNotified} parents");
+
+            } catch (\Exception $e) {
+                Log::error('Failed to send schedule creation notifications: ' . $e->getMessage());
+                // Don't fail the request if notifications fail - schedule is already created
+            }
+
+            // ✅ FIXED: Use 'success' key for Toastr success message
+            return redirect()->route('superadmin.schedules.index')
+                ->with('success', 'Schedule created successfully! Teacher and parents have been notified.');
+
+        } catch (\Exception $e) {
+            // ✅ FIXED: Rollback only happens if schedule creation fails
+            DB::rollBack();
+            
+            Log::error('Error creating schedule: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'data' => $validated
+            ]);
+            
+            // ✅ FIXED: Use redirect()->back() with 'error' key for Toastr
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create schedule. Please try again. Error: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -277,38 +398,105 @@ class ScheduleController extends Controller
             ->with('success', 'Schedule updated and notifications sent!');
     }
 
+
     /**
      * Remove the specified schedule
      */
     public function destroy(Schedule $schedule)
     {
-        // Check if schedule has attendance records
+        // ✅ ENHANCED: Check attendance BEFORE starting transaction
         $attendanceCount = $schedule->attendance()->count();
         
         if ($attendanceCount > 0) {
             return redirect()->back()
-                ->with('error', "Cannot delete schedule with {$attendanceCount} attendance records. Please archive instead.");
+                ->with('error', "Cannot delete schedule with {$attendanceCount} attendance record(s). Historical data must be preserved.");
         }
 
-        $className = $schedule->class->name;
-        $dayOfWeek = $schedule->day_of_week;
-        $scheduleId = $schedule->id;
+        // ✅ ADDED: Database transaction for data integrity
+        DB::beginTransaction();
 
-        $schedule->delete();
+        try {
+            $className = $schedule->class->name;
+            $dayOfWeek = $schedule->day_of_week;
+            $scheduleId = $schedule->id;
+            $teacher = $schedule->class->teacher;
 
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'deleted_schedule',
-            'model_type' => 'Schedule',
-            'model_id' => $scheduleId,
-            'description' => "Deleted schedule for class: {$className} on {$dayOfWeek}",
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+            // ✅ ADDED: Get enrolled students before deletion for notifications
+            $enrolledStudents = $schedule->class->students()
+                ->wherePivot('status', 'active')
+                ->with('parent')
+                ->get();
 
-        return redirect()->route('superadmin.schedules.index')
-            ->with('success', 'Schedule deleted successfully!');
+            $schedule->delete();
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'deleted_schedule',
+                'model_type' => 'Schedule',
+                'model_id' => $scheduleId,
+                'description' => "Deleted schedule for class: {$className} on {$dayOfWeek}",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            DB::commit();
+
+            // ✅ ADDED: Send notifications AFTER successful commit
+            try {
+                // Notify teacher
+                if ($teacher) {
+                    NotificationHelper::notifyUser(
+                        $teacher,
+                        'Schedule Deleted',
+                        "The {$dayOfWeek} schedule for {$className} has been deleted",
+                        'schedule_deleted',
+                        [
+                            'class_name' => $className,
+                            'day_of_week' => $dayOfWeek
+                        ]
+                    );
+                }
+
+                // Notify enrolled students' parents
+                foreach ($enrolledStudents as $student) {
+                    if ($student->parent) {
+                        NotificationHelper::notifyUser(
+                            $student->parent,
+                            'Class Schedule Removed',
+                            "The {$dayOfWeek} schedule for {$className} has been removed",
+                            'schedule_deleted',
+                            [
+                                'class_name' => $className,
+                                'student_name' => $student->full_name,
+                                'day_of_week' => $dayOfWeek,
+                                'url' => route('parent.students.show', $student->id)
+                            ]
+                        );
+                    }
+                }
+
+                Log::info("Schedule deletion notifications sent for {$className} - {$dayOfWeek}");
+
+            } catch (\Exception $e) {
+                Log::error('Failed to send schedule deletion notifications: ' . $e->getMessage());
+                // Don't fail the deletion if notifications fail
+            }
+
+            return redirect()->route('superadmin.schedules.index')
+                ->with('success', 'Schedule deleted successfully! Notifications sent to affected parties.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Error deleting schedule: ' . $e->getMessage(), [
+                'schedule_id' => $schedule->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Failed to delete schedule. Please try again.');
+        }
     }
 
     /**

@@ -115,7 +115,6 @@
         }
 
         .class-card:hover, .child-card:hover {
-            /* border-color: #007bff; */
             box-shadow: 0 3px 10px rgba(0,123,255,0.1);
         }
 
@@ -393,7 +392,7 @@
                          <!-- /# column -->
                         <div class="col-lg-4">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                    <h4><i class="ti-time"></i> Recent Activity</h4>
                                 </div>
                                 <div class="card-body">
@@ -548,8 +547,8 @@
                                                 <div class="stat-icon bg-primary text-white">
                                                     <i class="ti-briefcase"></i>
                                                 </div>
-                                                <div class="stat-text">{{ $userStats['students'] ?? 0 }}</div>
-                                                <div class="stat-digit">Assigned Classes</div>
+                                                <div class="stat-text">Assigned Classes</div>
+                                                <div class="stat-digit">{{ $userStats['students'] ?? 0 }}</div>
                                             </div>
                                         </div>
                                     </div>

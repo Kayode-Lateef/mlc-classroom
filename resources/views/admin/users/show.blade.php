@@ -67,7 +67,7 @@
         .verification-badge {
             display: inline-flex;
             align-items: center;
-            font-size: 0.8rem;
+            font-size: 1rem;
             margin-top: 5px;
             padding: 3px 8px;
             border-radius: 4px;
@@ -123,7 +123,6 @@
             padding: 15px;
             background-color: #f8f9fa;
             border-radius: 6px;
-            border-left: 3px solid #007bff;
             margin-bottom: 10px;
         }
 
@@ -194,7 +193,10 @@
                                     <i class="ti-pencil-alt"></i> Edit User
                                 </a>
                                 @if($user->id !== auth()->id())
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
+                                <form action="{{ route('admin.users.destroy', $user) }}" 
+                                    method="POST" 
+                                    style="display: inline-block;"
+                                    id="deleteUserForm">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">
@@ -312,7 +314,7 @@
                          <!-- /# column -->
                         <div class="col-lg-4">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                    <h4><i class="ti-time"></i> Recent Activity</h4>
                                 </div>
                                 <div class="card-body">
@@ -361,8 +363,8 @@
                                                 <div class="stat-icon bg-primary text-white">
                                                     <i class="ti-briefcase"></i>
                                                 </div>
-                                                <div class="stat-text">{{ $userStats['students'] ?? 0 }}</div>
-                                                <div class="stat-digit">Assigned Classes</div>
+                                                <div class="stat-text">Assigned Classes</div>
+                                                <div class="stat-digit">{{ $userStats['students'] ?? 0 }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -413,7 +415,7 @@
                             <div class="row mt-4">
                                 <div class="col-lg-12">
                                     <div class="card alert">
-                                        <div class="card-header">
+                                        <div class="card-header mb-3">
                                             <h4><i class="ti-briefcase"></i> Assigned Classes</h4>
                                         </div>
                                         <div class="card-body">
@@ -503,7 +505,7 @@
                             <div class="row mt-4">
                                 <div class="col-lg-12">
                                     <div class="card alert">
-                                        <div class="card-header">
+                                        <div class="card-header mb-3">
                                             <h4><i class="ti-user"></i> Children</h4>
                                         </div>
                                         <div class="card-body">
@@ -576,7 +578,35 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Add any custom JavaScript here if needed
+            // Handle user deletion with SweetAlert
+            $('#deleteUserForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const userName = "{{ $user->name }}";
+                const userEmail = "{{ $user->email }}";
+                const userRole = "{{ $user->roles->first()->name ?? 'No role' }}";
+                
+                swal({
+                    title: "Delete User?",
+                    text: "Are you sure you want to delete this user?\n\nName: " + userName + "\nEmail: " + userEmail + "\nRole: " + userRole + "\n\nThis action cannot be undone!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete user!",
+                    cancelButtonText: "No, cancel",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
+
         });
     </script>
 @endpush

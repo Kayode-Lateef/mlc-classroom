@@ -504,7 +504,7 @@ class StudentController extends Controller
 
             DB::commit();
 
-            // Send notifications after successful update (existing code...)
+            // Send notifications after successful update
             try {
                 // Notify parent if status changed or parent changed
                 if ($oldStatus !== $validated['status'] || $oldParentId !== $validated['parent_id']) {

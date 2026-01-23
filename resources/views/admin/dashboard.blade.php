@@ -166,7 +166,7 @@
                     <!-- Today's Class Schedule -->
                     <div class="col-lg-8">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-calendar"></i> Today's Class Schedule - {{ date('l, F d, Y') }}</h4>
                                 <div class="card-header-right-icon">
                                     <ul>
@@ -304,7 +304,7 @@
                     <!-- Notifications & Alerts -->
                     <div class="col-lg-6">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-3">
                                 <h4><i class="ti-bell"></i> Notifications & Alerts <span class="badge badge-warning">{{ count($notifications) }}</span></h4>
                             </div>
                             <div class="card-body" style="max-height: 400px; overflow-y: auto;">
@@ -326,7 +326,7 @@
                 </div>
 
                 <!-- Student Performance Overview -->
-                <div class="row">
+                {{-- <div class="row">
                     <div class="col-lg-12">
                         <div class="card alert">
                             <div class="card-header">
@@ -389,7 +389,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Footer -->
                 <div class="row">

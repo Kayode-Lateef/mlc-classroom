@@ -146,7 +146,7 @@ class ScheduleController extends Controller
         }
     }
 
-    /**
+/**
      * Store a newly created schedule
      */
     public function store(Request $request)
@@ -174,50 +174,59 @@ class ScheduleController extends Controller
             'end_time.after' => 'End time must be after start time.',
         ]);
 
-        // ✅ ADDED: Database transaction for data integrity
+        // ✅ FIXED: Pre-validation checks BEFORE transaction starts
+        // This allows proper error messages to be shown via Toastr/SweetAlert
+
+        // ✅ ENHANCED: Verify class exists and has active teacher
+        $class = ClassModel::with('teacher')->find($validated['class_id']);
+        
+        if (!$class) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Class not found. Please select a valid class.');
+        }
+        
+        if (!$class->teacher) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Cannot create schedule: Class has no assigned teacher. Please assign a teacher to this class first.');
+        }
+
+        if ($class->teacher->status !== 'active') {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Cannot create schedule: The assigned teacher (' . $class->teacher->name . ') is not active.');
+        }
+
+        // ✅ ENHANCED: Time validation - minimum 30 minutes duration
+        $startTime = Carbon::createFromFormat('H:i', $validated['start_time']);
+        $endTime = Carbon::createFromFormat('H:i', $validated['end_time']);
+        $durationMinutes = $startTime->diffInMinutes($endTime);
+
+        if ($durationMinutes < 30) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Schedule duration must be at least 30 minutes. Current duration: ' . $durationMinutes . ' minutes.');
+        }
+
+        // ✅ FIXED: Check for conflicts BEFORE starting transaction
+        $conflict = $this->checkScheduleConflict(
+            $validated['class_id'],
+            $validated['day_of_week'],
+            $validated['start_time'],
+            $validated['end_time']
+        );
+
+        if ($conflict) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Schedule conflict detected: ' . $conflict);
+        }
+
+        // ✅ NOW start the database transaction (only for actual creation)
         DB::beginTransaction();
 
         try {
-            // ✅ ENHANCED: Verify class exists and has active teacher
-            $class = ClassModel::with('teacher')->findOrFail($validated['class_id']);
-            
-            if (!$class->teacher) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Cannot create schedule: Class has no assigned teacher.');
-            }
-
-            if ($class->teacher->status !== 'active') {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Cannot create schedule: Teacher is not active.');
-            }
-
-            // ✅ ENHANCED: Time validation - minimum 30 minutes duration
-            $startTime = Carbon::createFromFormat('H:i', $validated['start_time']);
-            $endTime = Carbon::createFromFormat('H:i', $validated['end_time']);
-            $durationMinutes = $startTime->diffInMinutes($endTime);
-
-            if ($durationMinutes < 30) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Schedule duration must be at least 30 minutes.');
-            }
-
-            // Check for conflicts
-            $conflict = $this->checkScheduleConflict(
-                $validated['class_id'],
-                $validated['day_of_week'],
-                $validated['start_time'],
-                $validated['end_time']
-            );
-
-            if ($conflict) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Schedule conflict detected: ' . $conflict);
-            }
-
             // Create schedule with proper time format
             $schedule = Schedule::create([
                 'class_id' => $validated['class_id'],
@@ -238,9 +247,12 @@ class ScheduleController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
+            // ✅ FIXED: Commit transaction BEFORE sending notifications
+            // This ensures the schedule is saved even if notifications fail
             DB::commit();
 
             // ✅ ADDED: Notify teacher and enrolled students' parents
+            // Do this AFTER commit so transaction doesn't interfere
             try {
                 // Notify teacher
                 if ($class->teacher) {
@@ -256,7 +268,7 @@ class ScheduleController extends Controller
                             'day_of_week' => $schedule->day_of_week,
                             'start_time' => $startTime->format('H:i'),
                             'end_time' => $endTime->format('H:i'),
-                            'url' => route('teacher.schedules.index')
+                            'url' => route('teacher.classes.show', $class->id)
                         ]
                     );
                 }
@@ -267,6 +279,7 @@ class ScheduleController extends Controller
                     ->with('parent')
                     ->get();
 
+                $parentsNotified = 0;
                 foreach ($enrolledStudents as $student) {
                     if ($student->parent) {
                         NotificationHelper::notifyUser(
@@ -285,20 +298,23 @@ class ScheduleController extends Controller
                                 'url' => route('parent.students.show', $student->id)
                             ]
                         );
+                        $parentsNotified++;
                     }
                 }
 
-                Log::info("Schedule notifications sent for {$class->name} - {$schedule->day_of_week}");
+                Log::info("Schedule notifications sent for {$class->name} - {$schedule->day_of_week}: Teacher + {$parentsNotified} parents");
 
             } catch (\Exception $e) {
                 Log::error('Failed to send schedule creation notifications: ' . $e->getMessage());
-                // Don't fail the request if notifications fail
+                // Don't fail the request if notifications fail - schedule is already created
             }
 
+            // ✅ FIXED: Use 'success' key for Toastr success message
             return redirect()->route('admin.schedules.index')
-                ->with('success', 'Schedule created successfully! Notifications sent to teacher and parents.');
+                ->with('success', 'Schedule created successfully! Teacher and parents have been notified.');
 
         } catch (\Exception $e) {
+            // ✅ FIXED: Rollback only happens if schedule creation fails
             DB::rollBack();
             
             Log::error('Error creating schedule: ' . $e->getMessage(), [
@@ -306,9 +322,10 @@ class ScheduleController extends Controller
                 'data' => $validated
             ]);
             
-            return back()
-                ->withErrors(['error' => 'Failed to create schedule. Please try again.'])
-                ->withInput();
+            // ✅ FIXED: Use redirect()->back() with 'error' key for Toastr
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create schedule. Please try again. Error: ' . $e->getMessage());
         }
     }
 
@@ -627,7 +644,7 @@ class ScheduleController extends Controller
         }
     }
 
-    /**
+/**
      * Remove the specified schedule
      */
     public function destroy(Schedule $schedule)
@@ -637,19 +654,19 @@ class ScheduleController extends Controller
             abort(403, 'You do not have permission to delete schedules.');
         }
 
-        // ✅ ADDED: Database transaction for data integrity
+        // ✅ FIXED: Check attendance BEFORE starting transaction
+        $attendanceCount = $schedule->attendance()->count();
+        
+        if ($attendanceCount > 0) {
+            // ✅ FIXED: Use redirect()->back() instead of back()
+            return redirect()->back()
+                ->with('error', "Cannot delete schedule with {$attendanceCount} attendance record(s). Historical data must be preserved. Please contact SuperAdmin if deletion is absolutely necessary.");
+        }
+
+        // ✅ NOW start transaction only if we're actually deleting
         DB::beginTransaction();
 
         try {
-            // ✅ ENHANCED: Check if schedule has attendance records
-            $attendanceCount = $schedule->attendance()->count();
-            
-            if ($attendanceCount > 0) {
-                return back()->with('error', 
-                    "Cannot delete schedule with {$attendanceCount} attendance record(s). " .
-                    "Historical data must be preserved. Please contact SuperAdmin if deletion is absolutely necessary.");
-            }
-
             $className = $schedule->class->name;
             $dayOfWeek = $schedule->day_of_week;
             $scheduleId = $schedule->id;
@@ -676,7 +693,7 @@ class ScheduleController extends Controller
 
             DB::commit();
 
-            // ✅ ADDED: Send notifications
+            // ✅ ADDED: Send notifications AFTER commit
             try {
                 // Notify teacher
                 if ($teacher) {
@@ -726,7 +743,8 @@ class ScheduleController extends Controller
                 'schedule_id' => $schedule->id
             ]);
             
-            return back()->with('error', 'Failed to delete schedule. Please try again.');
+            return redirect()->back()
+                ->with('error', 'Failed to delete schedule. Please try again.');
         }
     }
 

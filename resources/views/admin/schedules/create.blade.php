@@ -94,7 +94,7 @@
                                     <h4><i class="ti-calendar"></i> Schedule Details</h4>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST" action="{{ route('admin.schedules.store') }}">
+                                    <form method="POST" action="{{ route('admin.schedules.store') }}" id="scheduleForm">
                                         @csrf
 
                                         <!-- Class Selection -->
@@ -216,7 +216,7 @@
                                             <a href="{{ route('admin.schedules.index') }}" class="btn btn-secondary">
                                                 <i class="ti-close"></i> Cancel
                                             </a>
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" id="submitBtn" class="btn btn-primary">
                                                 <i class="ti-check"></i> Create Schedule
                                             </button>
                                         </div>
@@ -347,14 +347,20 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Time validation
+            // Time validation with SweetAlert
             $('#end_time').on('change', function() {
                 const startTime = $('#start_time').val();
                 const endTime = $(this).val();
                 
                 if (startTime && endTime && endTime <= startTime) {
-                    alert('End time must be after start time!');
-                    $(this).val('');
+                    swal({
+                        title: "Invalid Time!",
+                        text: "End time must be after start time.\n\nPlease select a later time.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#end_time').val('').focus();
+                    });
                 }
             });
 
@@ -377,16 +383,133 @@
                 }
             });
 
-            // Form submission validation
-            $('form').on('submit', function(e) {
+            // Form submission validation with SweetAlert
+            $('#scheduleForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const classId = $('#class_id').val();
+                const dayOfWeek = $('#day_of_week').val();
                 const startTime = $('#start_time').val();
                 const endTime = $('#end_time').val();
-                
-                if (endTime <= startTime) {
-                    e.preventDefault();
-                    alert('End time must be after start time!');
+
+                // Validate class selection
+                if (!classId) {
+                    swal({
+                        title: "Class Required!",
+                        text: "Please select a class for this schedule.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#class_id').focus();
+                    });
                     return false;
                 }
+
+                // Validate day of week
+                if (!dayOfWeek) {
+                    swal({
+                        title: "Day Required!",
+                        text: "Please select a day of the week.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#day_of_week').focus();
+                    });
+                    return false;
+                }
+
+                // Validate start time
+                if (!startTime) {
+                    swal({
+                        title: "Start Time Required!",
+                        text: "Please select a start time.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#start_time').focus();
+                    });
+                    return false;
+                }
+
+                // Validate end time
+                if (!endTime) {
+                    swal({
+                        title: "End Time Required!",
+                        text: "Please select an end time.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#end_time').focus();
+                    });
+                    return false;
+                }
+
+                // Validate time order
+                if (endTime <= startTime) {
+                    swal({
+                        title: "Invalid Time Range!",
+                        text: "End time must be after start time.\n\nStart: " + startTime + "\nEnd: " + endTime + "\n\nPlease adjust the times.",
+                        type: "error",
+                        confirmButtonText: "OK"
+                    }, function() {
+                        $('#end_time').focus();
+                    });
+                    return false;
+                }
+
+                // Calculate duration and warn if too long or too short
+                const start = new Date('2000-01-01 ' + startTime);
+                const end = new Date('2000-01-01 ' + endTime);
+                const durationMinutes = (end - start) / (1000 * 60);
+
+                if (durationMinutes < 30) {
+                    swal({
+                        title: "Very Short Class!",
+                        text: "This class is only " + durationMinutes + " minutes long.\n\nAre you sure this is correct?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, create schedule",
+                        cancelButtonText: "No, let me change",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Creating Schedule...');
+                            form.submit();
+                        } else {
+                            $('#start_time').focus();
+                        }
+                    });
+                    return false;
+                }
+
+                if (durationMinutes > 240) { // More than 4 hours
+                    swal({
+                        title: "Very Long Class!",
+                        text: "This class is " + (durationMinutes / 60).toFixed(1) + " hours long.\n\nAre you sure this is correct?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#f0ad4e",
+                        confirmButtonText: "Yes, create schedule",
+                        cancelButtonText: "No, let me change",
+                        closeOnConfirm: false
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Creating Schedule...');
+                            form.submit();
+                        } else {
+                            $('#end_time').focus();
+                        }
+                    });
+                    return false;
+                }
+
+                // If all validations pass, submit form
+                $('#submitBtn').prop('disabled', true).html('<i class="ti-reload fa-spin"></i> Creating Schedule...');
+                form.submit();
+                
+                return true;
             });
         });
     </script>

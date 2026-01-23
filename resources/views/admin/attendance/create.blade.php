@@ -258,7 +258,7 @@
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="card alert">
-                                    <div class="card-header">
+                                    <div class="card-header mb-3">
                                         <h4><i class="ti-user"></i> Mark Attendance ({{ $students->count() }} Students)</h4>
                                     </div>
                                     <div class="card-body">

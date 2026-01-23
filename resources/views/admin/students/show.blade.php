@@ -151,7 +151,11 @@
                                 <a href="{{ route('admin.students.edit', $student) }}" class="btn btn-primary">
                                     <i class="ti-pencil-alt"></i> Edit Student
                                 </a>
-                                <form action="{{ route('admin.students.destroy', $student) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this student? This action cannot be undone.');">
+                              
+                                <form action="{{ route('admin.students.destroy', $student) }}" 
+                                    method="POST" 
+                                    style="display: inline-block;"
+                                    id="deleteStudentForm">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">
@@ -517,8 +521,41 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Tab functionality is handled by Bootstrap
-            // Additional custom JavaScript can be added here if needed
+            // Handle student deletion with SweetAlert
+            $('#deleteStudentForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const studentName = "{{ $student->first_name }} {{ $student->last_name }}";
+                const classCount = {{ $student->classes->count() ?? 0 }}; // Number of enrolled classes
+                
+                let warningText = "You want to delete student '" + studentName + "'?\n\n";
+                
+                if (classCount > 0) {
+                    warningText += "⚠️ This student is currently enrolled in " + classCount + " class(es).\n\n";
+                }
+                
+                warningText += "This action cannot be undone!";
+                
+                swal({
+                    title: "Are you sure?",
+                    text: warningText,
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete student!",
+                    cancelButtonText: "No, cancel!",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

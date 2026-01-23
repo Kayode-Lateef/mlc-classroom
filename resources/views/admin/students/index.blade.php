@@ -272,6 +272,7 @@
                                                     <th>Parent</th>
                                                     <th>Date of Birth</th>
                                                     <th>Enrollment</th>
+                                                    <th>Weekly Hour</th>
                                                     <th>Status</th>
                                                     <th>Classes</th>
                                                     <th>Actions</th>
@@ -310,6 +311,11 @@
                                                         </td>
                                                         <td>{{ $student->enrollment_date->format('d M Y') }}</td>
                                                         <td>
+                                                            <span class="badge badge-info">
+                                                                <i class="ti-time"></i> {{ number_format($student->weekly_hours, 1) }} hrs/week
+                                                            </span>
+                                                        </td>
+                                                        <td>
                                                             @if($student->status === 'active')
                                                                 <span class="badge badge-success role-badge">Active</span>
                                                             @elseif($student->status === 'inactive')
@@ -333,11 +339,14 @@
                                                             <a href="{{ route('admin.students.edit', $student) }}" class="btn btn-sm btn-success" title="Edit">
                                                                 <i class="ti-pencil-alt"></i>
                                                             </a>
-                                                            
+                                                        
                                                             <form action="{{ route('admin.students.destroy', $student) }}" 
                                                                 method="POST" 
                                                                 style="display: inline-block;"
-                                                                onsubmit="return confirm('Are you sure you want to delete {{ $student->full_name }}? This action cannot be undone.');">
+                                                                class="delete-student-form"
+                                                                data-student-name="{{ $student->full_name }}"
+                                                                data-student-id="{{ $student->id }}"
+                                                                data-class-count="{{ $student->classes->count() ?? 0 }}">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-danger" title="Delete">
@@ -388,7 +397,42 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Add any custom JavaScript here if needed
+            // Handle student deletion with SweetAlert
+            $('.delete-student-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission
+                
+                const form = this;
+                const studentName = $(this).data('student-name');
+                const studentId = $(this).data('student-id');
+                const classCount = $(this).data('class-count');
+                
+                let warningText = "You want to delete student '" + studentName + "'?\n\n";
+                
+                if (classCount > 0) {
+                    warningText += "⚠️ This student is currently enrolled in " + classCount + " class(es).\n\n";
+                }
+                
+                warningText += "This action cannot be undone!";
+                
+                swal({
+                    title: "Are you sure?",
+                    text: warningText,
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit(); // Submit the form
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

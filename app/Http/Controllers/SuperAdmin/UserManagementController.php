@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ActivityLog;
 use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -364,31 +365,101 @@ class UserManagementController extends Controller
             }
         }
 
-        $userName = $user->name;
-        $userRole = $user->role;
-        $userId = $user->id;
+        // ✅ NEW: Check for dependent records with detailed feedback
+        $blockingReasons = [];
 
-        // Delete profile photo if exists
-        if ($user->profile_photo) {
-            Storage::disk('public')->delete($user->profile_photo);
+        if ($user->isParent()) {
+            $childrenCount = $user->children()->count();
+            if ($childrenCount > 0) {
+                $blockingReasons[] = "{$childrenCount} student(s) enrolled under this parent";
+            }
         }
 
-        // Delete user
-        $user->delete();
+        if ($user->isTeacher()) {
+            $classesCount = $user->teachingClasses()->count();
+            if ($classesCount > 0) {
+                $blockingReasons[] = "{$classesCount} class(es) assigned to this teacher";
+            }
+            
+            $resourcesCount = $user->uploadedResources()->count();
+            if ($resourcesCount > 0) {
+                $blockingReasons[] = "{$resourcesCount} learning resource(s) created by this teacher";
+            }
+        }
 
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'deleted_user',
-            'model_type' => 'User',
-            'model_id' => $userId,
-            'description' => "Deleted user: {$userName} ({$userRole})",
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        if (!empty($blockingReasons)) {
+            return redirect()->route('superadmin.users.index')
+                ->with('error', 'Cannot delete user account. Blocking reasons: ' . 
+                    implode('; ', $blockingReasons) . '. Please reassign or remove these records first.');
+        }
 
-        return redirect()->route('superadmin.users.index')
-            ->with('success', 'User deleted successfully!');
+        // ✅ NEW: Database transaction for data integrity
+        DB::beginTransaction();
+
+        try {
+            $userName = $user->name;
+            $userEmail = $user->email;
+            $userRole = $user->role;
+            $userId = $user->id;
+
+            // Delete profile photo if exists
+            if ($user->profile_photo) {
+                try {
+                    Storage::disk('public')->delete($user->profile_photo);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to delete profile photo: ' . $e->getMessage());
+                }
+            }
+
+            // Delete user
+            $user->delete();
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'deleted_user',
+                'model_type' => 'User',
+                'model_id' => $userId,
+                'description' => "Deleted user: {$userName} ({$userRole}) - Email: {$userEmail}",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            DB::commit();
+
+            // ✅ NEW: Notify other SuperAdmins about user deletion (WITH EMAIL)
+            try {
+                NotificationHelper::notifySuperAdmins(
+                    'User Account Deleted',
+                    "User account deleted: {$userName} ({$userRole}) by " . auth()->user()->name,
+                    'user_deleted',
+                    [
+                        'user_name' => $userName,
+                        'user_email' => $userEmail,
+                        'user_role' => $userRole,
+                        'deleted_by' => auth()->user()->name,
+                        'deleted_at' => now()->format('d M Y, H:i'),
+                    ]
+                );
+
+                \Log::info("User deletion notification sent to SuperAdmins for {$userEmail}");
+
+            } catch (\Exception $e) {
+                \Log::error('Failed to send user deletion notification: ' . $e->getMessage());
+            }
+
+            return redirect()->route('superadmin.users.index')
+                ->with('success', "User '{$userName}' deleted successfully!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            \Log::error('Error deleting user: ' . $e->getMessage(), [
+                'user_id' => $user->id
+            ]);
+            
+            return back()->with('error', 'Failed to delete user. Please try again.');
+        }
     }
 
     /**

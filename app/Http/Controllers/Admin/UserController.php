@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Auth\Events\Registered;
+
+
 
 class UserController extends Controller
 {
@@ -121,7 +124,7 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
-    /**
+   /**
      * Store a newly created user
      * Admin can create: admin, teacher, parent (NOT superadmin)
      */
@@ -132,15 +135,7 @@ class UserController extends Controller
             abort(403, 'You do not have permission to create users.');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => ['required', 'confirmed', Password::min(8)],
-            'role' => 'required|in:admin,teacher,parent', // CANNOT create superadmin
-            'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
-            'status' => 'required|in:active,inactive',
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ], [
+        $messages = [
             'name.required' => 'User name is required.',
             'email.required' => 'Email address is required.',
             'email.email' => 'Please provide a valid email address.',
@@ -157,7 +152,28 @@ class UserController extends Controller
             'profile_photo.image' => 'Profile photo must be an image file.',
             'profile_photo.mimes' => 'Profile photo must be a JPEG, PNG, JPG, or GIF file.',
             'profile_photo.max' => 'Profile photo must not exceed 2MB.',
-        ]);
+            'requires_verification.required' => 'Please select email verification option.',
+            'requires_verification.boolean' => 'Invalid verification option selected.',
+        ];
+
+        // ✅ UPDATED: Added 'suspended', 'banned' and email verification
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => ['required', 'confirmed', Password::min(8)],
+            'role' => 'required|in:admin,teacher,parent', // CANNOT create superadmin
+            'phone' => ['nullable', 'regex:/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'max:20'],
+            'status' => 'required|in:active,inactive,suspended,banned', // ✅ SYNCED WITH DATABASE
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'requires_verification' => 'required|boolean', // ✅ NEW: Email verification option
+        ], $messages);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Please fix the errors below.');
+        }
 
         // ✅ ADDED: Database transaction for data integrity
         DB::beginTransaction();
@@ -165,14 +181,20 @@ class UserController extends Controller
         try {
             // Prepare user data
             $userData = [
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'role' => $validated['role'],
-                'phone' => $validated['phone'],
-                'status' => $validated['status'],
-                'email_verified_at' => now(), // Auto-verify admin-created accounts
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'phone' => $request->phone,
+                'status' => $request->status,
             ];
+
+            // ✅ NEW: Handle email verification option
+            if (!$request->requires_verification) {
+                // Auto-verify if admin chooses immediate access
+                $userData['email_verified_at'] = now();
+            }
+            // If requires_verification = true, email_verified_at stays NULL
 
             // ✅ ENHANCED: Handle profile photo upload with error handling
             if ($request->hasFile('profile_photo')) {
@@ -203,23 +225,18 @@ class UserController extends Controller
 
             DB::commit();
 
-            // ✅ ADDED: Send notifications
+            // ✅ NEW: Send appropriate notification based on verification requirement
             try {
-                // Notify the new user (Welcome email with credentials)
-                NotificationHelper::notifyUser(
-                    $user,
-                    'Welcome to MLC Classroom',
-                    "Your {$user->role} account has been created. You can login with your email: {$user->email}",
-                    'account_created',
-                    [
-                        'role' => $user->role,
-                        'email' => $user->email,
-                        'login_url' => route('login'),
-                        'created_by' => auth()->user()->name
-                    ]
-                );
+                if ($request->requires_verification) {
+                    // Send verification email
+                    event(new Registered($user));
+                    $this->notifyNewUserWithVerification($user);
+                } else {
+                    // Send welcome email with credentials (immediate access)
+                    $this->notifyNewUserWithCredentials($user, $request->password);
+                }
 
-                // ✅ ADDED: Notify other admins of new user creation
+                // ✅ ADDED: Notify other admins and superadmins of new user creation
                 NotificationHelper::notifyAdmins(
                     'New User Created',
                     "A new {$user->role} account has been created: {$user->name} ({$user->email})",
@@ -242,8 +259,12 @@ class UserController extends Controller
                 // Don't fail the request if notifications fail
             }
 
+            $successMessage = $request->requires_verification 
+                ? 'User created successfully! Verification email has been sent.'
+                : 'User created successfully! Welcome email with credentials has been sent.';
+
             return redirect()->route('admin.users.index')
-                ->with('success', 'User created successfully! Welcome email sent to ' . $user->email);
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -255,7 +276,7 @@ class UserController extends Controller
             
             Log::error('Error creating user: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'data' => $validated
+                'data' => $request->all()
             ]);
             
             return back()
@@ -263,6 +284,69 @@ class UserController extends Controller
                 ->withInput();
         }
     }
+
+
+       /**
+     * ✅ NEW: Notify new user with verification email
+     */
+    private function notifyNewUserWithVerification(User $user)
+    {
+        try {
+            $message = "Your account has been created. Please verify your email address to access the system. ";
+            $message .= "Role: " . ucfirst($user->role) . ". ";
+            $message .= "Check your email for the verification link.";
+
+            NotificationHelper::notifyUser(
+                $user,
+                'Account Created - Verify Email',
+                $message,
+                'general',
+                [
+                    'role' => $user->role,
+                    'created_by' => auth()->user()->name,
+                    'requires_verification' => true,
+                    'url' => route('login')
+                ]
+            );
+
+            \Log::info("Verification email sent to: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to send verification email to {$user->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ NEW: Notify new user with their credentials (immediate access)
+     */
+    private function notifyNewUserWithCredentials(User $user, $temporaryPassword)
+    {
+        try {
+            $message = "Your account has been created with immediate access. ";
+            $message .= "Role: " . ucfirst($user->role) . ". ";
+            $message .= "Please login and change your password.";
+
+            NotificationHelper::notifyUser(
+                $user,
+                'Account Created - Immediate Access',
+                $message,
+                'general',
+                [
+                    'role' => $user->role,
+                    'created_by' => auth()->user()->name,
+                    'temporary_password' => $temporaryPassword,
+                    'requires_verification' => false,
+                    'url' => route('login')
+                ]
+            );
+
+            \Log::info("Welcome email sent to: {$user->email}");
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to notify new user {$user->id}: " . $e->getMessage());
+        }
+    }
+
 
     /**
      * Display the specified user
@@ -281,55 +365,35 @@ class UserController extends Controller
         }
 
         try {
-            // ✅ ENHANCED: Get comprehensive user statistics based on role
+            // ✅ SIMPLIFIED: Match SuperAdmin's working approach
             $userStats = [];
             
             if ($user->isTeacher()) {
                 $userStats = [
                     'classes' => $user->teachingClasses()->count(),
-                    'active_classes' => $user->teachingClasses()
-                        ->where('status', 'active')
-                        ->count(),
                     'students' => $user->teachingClasses()
                         ->withCount('enrollments')
                         ->get()
                         ->sum('enrollments_count'),
                     'resources' => $user->uploadedResources()->count(),
-                    'schedules' => $user->teachingClasses()
-                        ->withCount('schedules')
-                        ->get()
-                        ->sum('schedules_count'),
                 ];
             } elseif ($user->isParent()) {
                 $userStats = [
                     'children' => $user->children()->count(),
-                    'active_children' => $user->children()
-                        ->where('status', 'active')
-                        ->count(),
-                    'total_classes' => $user->children()
-                        ->with('classes')
-                        ->get()
-                        ->pluck('classes')
-                        ->flatten()
-                        ->unique('id')
-                        ->count(),
                 ];
             } elseif ($user->isAdmin()) {
                 $userStats = [
                     'actions_count' => ActivityLog::where('user_id', $user->id)->count(),
-                    'recent_logins' => ActivityLog::where('user_id', $user->id)
-                        ->where('action', 'login')
-                        ->count(),
                 ];
             }
 
-            // ✅ ENHANCED: Recent activity with more details
+            // Recent activity
             $recentActivity = ActivityLog::where('user_id', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->limit(15)
                 ->get();
 
-            // ✅ ADDED: Account age and last activity
+            // Account age and last activity
             $accountAge = $user->created_at->diffForHumans();
             $lastActivity = ActivityLog::where('user_id', $user->id)
                 ->latest('created_at')
@@ -345,7 +409,9 @@ class UserController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error loading user details: ' . $e->getMessage(), [
-                'user_id' => $user->id
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'trace' => $e->getTraceAsString(),
             ]);
             
             return back()->with('error', 'An error occurred while loading user details.');
@@ -710,25 +776,50 @@ class UserController extends Controller
 
             DB::commit();
 
-            // ✅ ADDED: Notify admins of user deletion
+            // ✅ ENHANCED: Notify both SuperAdmins AND Admins of user deletion (WITH EMAIL)
             try {
-                NotificationHelper::notifyAdmins(
-                    'User Account Deleted',
-                    "User account deleted: {$userName} ({$userRole}) - {$userEmail}",
+                // Notify SuperAdmins (they should know about all deletions)
+                NotificationHelper::notifySuperAdmins(
+                    'User Account Deleted by Admin',
+                    "User account deleted: {$userName} ({$userRole}) by Admin " . auth()->user()->name,
                     'user_deleted',
                     [
                         'user_name' => $userName,
                         'user_email' => $userEmail,
                         'user_role' => $userRole,
                         'deleted_by' => auth()->user()->name,
-                    ],
-                    auth()->id()
+                        'deleted_by_role' => 'Admin',
+                        'deleted_at' => now()->format('d M Y, H:i'),
+                    ]
                 );
 
-                Log::info("User deletion notification sent for {$userEmail}");
+                // Notify other Admins (excluding current admin)
+                $otherAdmins = User::where('role', 'admin')
+                    ->where('status', 'active')
+                    ->where('id', '!=', auth()->id())
+                    ->get();
+
+                foreach ($otherAdmins as $admin) {
+                    NotificationHelper::notifyUser(
+                        $admin,
+                        'User Account Deleted',
+                        "User account deleted: {$userName} ({$userRole}) by " . auth()->user()->name,
+                        'user_deleted',
+                        [
+                            'user_name' => $userName,
+                            'user_email' => $userEmail,
+                            'user_role' => $userRole,
+                            'deleted_by' => auth()->user()->name,
+                            'deleted_at' => now()->format('d M Y, H:i'),
+                        ],
+                        true  // ✅ Send email immediately
+                    );
+                }
+
+                \Log::info("User deletion notifications sent for {$userEmail}");
 
             } catch (\Exception $e) {
-                Log::error('Failed to send user deletion notification: ' . $e->getMessage());
+                \Log::error('Failed to send user deletion notification: ' . $e->getMessage());
             }
 
             return redirect()->route('admin.users.index')

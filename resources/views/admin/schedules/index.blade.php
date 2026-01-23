@@ -152,7 +152,6 @@
                         </div>
                     </div>
 
-
                     <!-- View Toggle & Filters Card -->
                     <div class="row">
                         <div class="col-lg-12">
@@ -301,11 +300,17 @@
                                                             <a href="{{ route('admin.schedules.edit', $schedule) }}" class="btn btn-sm btn-success mr-1">
                                                                 <i class="ti-pencil"></i>
                                                             </a>
-                                                            <form method="POST" action="{{ route('admin.schedules.destroy', $schedule) }}" style="display: inline-block;" onsubmit="return confirm('Delete this schedule?');">
+                                                            <form action="{{ route('admin.schedules.destroy', $schedule) }}" 
+                                                                method="POST" 
+                                                                style="display: inline-block;"
+                                                                class="delete-schedule-form"
+                                                                data-class-name="{{ $schedule->class->name }}"
+                                                                data-day="{{ $schedule->day_of_week }}"
+                                                                data-time="{{ $schedule->start_time->format('H:i') }} - {{ $schedule->end_time->format('H:i') }}">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-danger">
-                                                                    <i class="ti-trash"></i>
+                                                                    <i class="ti-trash"></i> Delete
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -383,12 +388,18 @@
                                                         <a href="{{ route('admin.schedules.edit', $schedule) }}" class="btn btn-sm btn-success" title="Edit">
                                                             <i class="ti-pencil"></i>
                                                         </a>
-                                                        <form method="POST" action="{{ route('admin.schedules.destroy', $schedule) }}" style="display: inline-block;" onsubmit="return confirm('Delete this schedule?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                                                <i class="ti-trash"></i>
-                                                            </button>
+                                                        <form action="{{ route('admin.schedules.destroy', $schedule) }}" 
+                                                                method="POST" 
+                                                                style="display: inline-block;"
+                                                                class="delete-schedule-form"
+                                                                data-class-name="{{ $schedule->class->name }}"
+                                                                data-day="{{ $schedule->day_of_week }}"
+                                                                data-time="{{ $schedule->start_time->format('H:i') }} - {{ $schedule->end_time->format('H:i') }}">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                                    <i class="ti-trash"></i> Delete
+                                                                </button>
                                                         </form>
                                                     </td>
                                                 </tr>
@@ -444,6 +455,35 @@
                     $(this).removeClass('shadow');
                 }
             );
+
+            // ✅ FIXED: Single unified delete handler for both calendar and list views
+            $('.delete-schedule-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const form = this;
+                const className = $(this).data('class-name');
+                const dayOfWeek = $(this).data('day');
+                const time = $(this).data('time');
+                
+                swal({
+                    title: "Delete Schedule?",
+                    text: "Are you sure you want to delete this schedule?\n\nClass: " + className + "\nDay: " + dayOfWeek + "\nTime: " + time + "\n\nThis action cannot be undone!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit();
+                    }
+                });
+                
+                return false;
+            });
         });
     </script>
 @endpush

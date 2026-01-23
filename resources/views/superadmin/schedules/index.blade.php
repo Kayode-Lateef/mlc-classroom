@@ -242,27 +242,6 @@
                         </div>
                     </div>
 
-                    @if(session('success'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-success alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-check"></i> {{ session('success') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
 
                     <!-- Calendar View -->
                     @if($viewType === 'calendar')
@@ -319,19 +298,19 @@
                                                             <a href="{{ route('superadmin.schedules.edit', $schedule) }}" class="btn btn-sm btn-success mr-1">
                                                                 <i class="ti-pencil"></i>
                                                             </a>
-                                                            <form action="{{ route('superadmin.schedules.destroy', $schedule) }}" 
+                                                       <form action="{{ route('superadmin.schedules.destroy', $schedule) }}" 
                                                                 method="POST" 
                                                                 style="display: inline-block;"
                                                                 class="delete-schedule-form"
                                                                 data-class-name="{{ $schedule->class->name }}"
                                                                 data-day="{{ $schedule->day_of_week }}"
-                                                                data-time="{{ $schedule->start_time }} - {{ $schedule->end_time }}">
+                                                                data-time="{{ $schedule->start_time->format('H:i') }} - {{ $schedule->end_time->format('H:i') }}">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-danger">
                                                                     <i class="ti-trash"></i> Delete
                                                                 </button>
-                                                            </form>
+                                                        </form>
                                                         </div>
                                                     </div>
                                                     @endforeach
@@ -407,12 +386,18 @@
                                                         <a href="{{ route('superadmin.schedules.edit', $schedule) }}" class="btn btn-sm btn-success" title="Edit">
                                                             <i class="ti-pencil"></i>
                                                         </a>
-                                                        <form method="POST" action="{{ route('superadmin.schedules.destroy', $schedule) }}" style="display: inline-block;" onsubmit="return confirm('Delete this schedule?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                                                <i class="ti-trash"></i>
-                                                            </button>
+                                                       <form action="{{ route('superadmin.schedules.destroy', $schedule) }}" 
+                                                                method="POST" 
+                                                                style="display: inline-block;"
+                                                                class="delete-schedule-form"
+                                                                data-class-name="{{ $schedule->class->name }}"
+                                                                data-day="{{ $schedule->day_of_week }}"
+                                                                data-time="{{ $schedule->start_time->format('H:i') }} - {{ $schedule->end_time->format('H:i') }}">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                                    <i class="ti-trash"></i> Delete
+                                                                </button>
                                                         </form>
                                                     </td>
                                                 </tr>
@@ -469,7 +454,7 @@
                 }
             );
 
-              // Handle schedule deletion
+            // ✅ FIXED: Single unified delete handler for both calendar and list views
             $('.delete-schedule-form').on('submit', function(e) {
                 e.preventDefault();
                 

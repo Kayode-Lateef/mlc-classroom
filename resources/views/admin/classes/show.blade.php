@@ -154,7 +154,10 @@
                                 <a href="{{ route('admin.classes.edit', $class) }}" class="btn btn-primary">
                                     <i class="ti-pencil-alt"></i> Edit Class
                                 </a>
-                                <form action="{{ route('admin.classes.destroy', $class) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this class? This action cannot be undone.');">
+                                 <form action="{{ route('admin.classes.destroy', $class) }}" 
+                                    method="POST" 
+                                    style="display: inline-block;"
+                                    id="deleteClassForm">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">

@@ -474,41 +474,56 @@
 function handleDelete(event, userName) {
     event.preventDefault(); // Stop the form from submitting immediately
     
-    console.log('Delete clicked for:', userName);
+    var form = event.target; // Get the form element
     
-    if (confirm('Are you sure you want to delete ' + userName + '? This action cannot be undone.')) {
-        console.log('Delete confirmed, submitting form');
-        event.target.submit(); // Submit the form if confirmed
-        return true;
-    } else {
-        console.log('Delete cancelled');
-        return false;
-    }
+    swal({
+        title: "Are you sure?",
+        text: "You want to delete " + userName + "? This action cannot be undone!",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, cancel!",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    },
+    function(isConfirm){
+        if (isConfirm) {
+            form.submit(); // Submit the form immediately
+        }
+    });
+    
+    return false;
 }
 
 function handleSuspend(userId, userName, isActive) {
     var action = isActive ? 'suspend' : 'activate';
     
-    console.log('Suspend/Activate clicked:', userId, userName, action);
-    
-    if (!confirm('Are you sure you want to ' + action + ' ' + userName + '?')) {
-        console.log('Action cancelled');
-        return false;
-    }
-    
-    console.log('Action confirmed, submitting form');
-    
     var form = document.getElementById('suspendForm_' + userId);
     
     if (!form) {
-        console.error('Form not found:', 'suspendForm_' + userId);
-        alert('Error: Form not found. Please refresh the page.');
+        swal("Error!", "Form not found. Please refresh the page.", "error");
         return false;
     }
     
-    console.log('Submitting form to:', form.action);
-    form.submit();
-    return true;
+    swal({
+        title: "Are you sure?",
+        text: "You want to " + action + " " + userName + "?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: isActive ? "#DD6B55" : "#28a745",
+        confirmButtonText: "Yes, " + action + "!",
+        cancelButtonText: "No, cancel!",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    },
+    function(isConfirm){
+        if (isConfirm) {
+            form.submit();
+        }
+    });
+    
+    return false;
 }
 
 // jQuery initialization

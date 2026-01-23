@@ -320,7 +320,7 @@
                                                             class="form-control @error('emergency_phone') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-mobile"></i> Emergency contact phone number
+                                                            <i class="ti-mobile"></i>UK phone number format: +44 20 1234 5678 or 020 1234 5678
                                                         </small>
                                                         @error('emergency_phone')
                                                         <span class="invalid-feedback">{{ $message }}</span>

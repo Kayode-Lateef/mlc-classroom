@@ -102,7 +102,8 @@
                                         </p>
                                     </div>
 
-                                    <form method="POST" action="{{ route('superadmin.schedules.update', $schedule) }}">
+                                    <form method="POST" action="{{ route('superadmin.schedules.update', $schedule) }}" id="edit-schedule-form">
+                                       
                                         @csrf
                                         @method('PUT')
 
@@ -318,7 +319,12 @@
                                         <i class="ti-blackboard"></i> View Class
                                     </a>
                                     @if($schedule->attendance()->count() === 0)
-                                    <form action="{{ route('superadmin.schedules.destroy', $schedule) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this schedule?');">
+                                   <form action="{{ route('superadmin.schedules.destroy', $schedule) }}" 
+                                        method="POST" 
+                                        class="delete-schedule-form"
+                                        data-class-name="{{ $schedule->class->name }}"
+                                        data-day="{{ $schedule->day_of_week }}"
+                                        data-time="{{ $schedule->start_time->format('H:i') }} - {{ $schedule->end_time->format('H:i') }}">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-block">
@@ -390,8 +396,37 @@
                 }
             });
 
+            // Handle schedule deletion
+            $('.delete-schedule-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const form = this;
+                const className = $(this).data('class-name');
+                const dayOfWeek = $(this).data('day');
+                const time = $(this).data('time');
+                
+                swal({
+                    title: "Delete Schedule?",
+                    text: "Are you sure you want to delete this schedule?\n\nClass: " + className + "\nDay: " + dayOfWeek + "\nTime: " + time + "\n\nThis action cannot be undone!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        form.submit();
+                    }
+                });
+                
+                return false;
+            });
+
             // Form submission validation with SweetAlert
-            $('form').on('submit', function(e) {
+            $('#edit-schedule-form').on('submit', function(e) {
                 e.preventDefault(); // Prevent default submission
                 
                 const form = this;

@@ -23,17 +23,15 @@ class NotificationHelper
                 return false;
             }
 
-            // ✅ Select template based on type
-            $template = self::selectEmailTemplate($data['type'] ?? 'general', $data);
-            
-            Mail::send($template, array_merge([
+            Mail::send('emails.notification', [
                 'title' => $title,
-                'content' => $messageText,
+                'content' => $messageText, 
                 'url' => $data['url'] ?? null,
+                'data' => $data,
                 'type' => $data['type'] ?? 'general',
-            ], $data), function ($mail) use ($user, $title) {
+            ], function ($mail) use ($user, $title) {
                 $mail->to($user->email, $user->name)
-                    ->subject($title);
+                     ->subject($title);
             });
 
             Log::info("Email sent immediately to: {$user->email}");
@@ -45,29 +43,6 @@ class NotificationHelper
         }
     }
 
-    // ✅ NEW: Template selector
-    private static function selectEmailTemplate($type, $data)
-    {
-        // Use specialized templates when available
-        $specializedTemplates = [
-            'enrollment' => 'emails.student.enrolled',
-            'student_enrolled' => 'emails.student.enrolled',
-            'account_created' => 'emails.user.account_created',
-            'homework_assigned' => 'emails.homework.assigned',
-        ];
-        
-        // Check if specialized template exists
-        if (isset($specializedTemplates[$type])) {
-            $templatePath = str_replace('.', '/', $specializedTemplates[$type]) . '.blade.php';
-            if (view()->exists($specializedTemplates[$type])) {
-                return $specializedTemplates[$type];
-            }
-        }
-        
-        // Fall back to general notification template
-        return 'emails.notification';
-    }
-    
     /**
      * ✅ QUEUE EMAIL FOR CRON PROCESSING (for bulk operations)
      */

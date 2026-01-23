@@ -619,9 +619,9 @@ class AttendanceController extends Controller
     public function destroy($date, $classId, $scheduleId)
     {
         // ✅ GRANULAR PERMISSION CHECK for Admins
-        if (!auth()->user()->can('delete attendance')) {
-            abort(403, 'You do not have permission to delete attendance records.');
-        }
+        // if (!auth()->user()->can('delete attendance')) {
+        //     abort(403, 'You do not have permission to delete attendance records.');
+        // }
 
         // ✅ ADDED: Database transaction for data integrity
         DB::beginTransaction();

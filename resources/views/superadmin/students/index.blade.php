@@ -306,7 +306,6 @@
                                                         </td>
                                                         <td>
                                                             {{ $student->date_of_birth->format('d M Y') }}
-                                                           {{-- @ukDate($student->date_of_birth) --}}
                                                             <small class="text-muted" style="display: block; margin-top: 2px;">Age: {{ $student->date_of_birth->age }}</small>
                                                         </td>
                                                         <td>{{ $student->enrollment_date->format('d M Y') }}</td>

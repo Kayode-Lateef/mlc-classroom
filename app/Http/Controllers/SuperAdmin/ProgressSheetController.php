@@ -392,34 +392,50 @@ class ProgressSheetController extends Controller
                 ->with('error', 'Failed to delete progress sheet. Please try again.');
         }
     }
-
+    
     /**
      * Get students for a class (AJAX endpoint)
      */
     public function getStudents(Request $request)
     {
-        $classId = $request->get('class_id');
-        
-        if (!$classId) {
-            return response()->json(['error' => 'Class ID is required'], 400);
+
+        try {
+            $classId = $request->get('class_id');
+            
+            if (!$classId) {
+                return response()->json(['error' => 'Class ID is required'], 400);
+            }
+
+            // ✅ FIXED: Use enrollments relationship (more reliable than classes)
+            $students = Student::where('status', 'active')
+                ->whereHas('enrollments', function($q) use ($classId) {
+                    $q->where('class_id', $classId)
+                      ->where('status', 'active');  // Only active enrollments
+                })
+                ->orderBy('first_name')
+                ->orderBy('last_name')
+                ->get(['id', 'first_name', 'last_name', 'profile_photo']);
+
+            // ✅ Get schedules for the class
+            $schedules = Schedule::where('class_id', $classId)
+                ->orderBy('day_of_week')
+                ->orderBy('start_time')
+                ->get(['id', 'day_of_week', 'start_time', 'end_time']);
+
+            return response()->json([
+                'students' => $students,
+                'schedules' => $schedules,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching students for admin: ' . $e->getMessage(), [
+                'admin_id' => auth()->id(),
+                'class_id' => $classId ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json(['error' => 'Failed to load students'], 500);
         }
-
-        $students = Student::where('status', 'active')
-            ->whereHas('classes', function($q) use ($classId) {
-                $q->where('classes.id', $classId);
-            })
-            ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name', 'profile_photo']);
-
-        $schedules = Schedule::where('class_id', $classId)
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->get();
-
-        return response()->json([
-            'students' => $students,
-            'schedules' => $schedules,
-        ]);
     }
 
     /**

@@ -721,10 +721,16 @@ class ProgressSheetController extends Controller
     }
 
     /**
+ /**
      * Get students for a class (AJAX endpoint)
      */
     public function getStudents(Request $request)
     {
+        // ✅ GRANULAR PERMISSION CHECK for Admins
+        // if (!auth()->user()->can('view progress sheets')) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
         try {
             $classId = $request->get('class_id');
             
@@ -732,17 +738,21 @@ class ProgressSheetController extends Controller
                 return response()->json(['error' => 'Class ID is required'], 400);
             }
 
+            // ✅ FIXED: Use enrollments relationship (more reliable than classes)
             $students = Student::where('status', 'active')
-                ->whereHas('classes', function($q) use ($classId) {
-                    $q->where('classes.id', $classId);
+                ->whereHas('enrollments', function($q) use ($classId) {
+                    $q->where('class_id', $classId)
+                      ->where('status', 'active');  // Only active enrollments
                 })
                 ->orderBy('first_name')
+                ->orderBy('last_name')
                 ->get(['id', 'first_name', 'last_name', 'profile_photo']);
 
+            // ✅ Get schedules for the class
             $schedules = Schedule::where('class_id', $classId)
                 ->orderBy('day_of_week')
                 ->orderBy('start_time')
-                ->get();
+                ->get(['id', 'day_of_week', 'start_time', 'end_time']);
 
             return response()->json([
                 'students' => $students,
@@ -750,7 +760,12 @@ class ProgressSheetController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error fetching students: ' . $e->getMessage());
+            Log::error('Error fetching students for admin: ' . $e->getMessage(), [
+                'admin_id' => auth()->id(),
+                'class_id' => $classId ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json(['error' => 'Failed to load students'], 500);
         }
     }

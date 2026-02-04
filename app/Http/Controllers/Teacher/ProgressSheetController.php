@@ -447,37 +447,62 @@ class ProgressSheetController extends Controller
         }
     }
 
-    /**
+   /**
      * AJAX endpoint - Get students for a class
      */
     public function getStudents(Request $request)
     {
-        $teacher = auth()->user();
+        try {
+            $teacher = auth()->user();
 
-        if (!$request->has('class_id')) {
-            return response()->json(['error' => 'Class ID required'], 400);
+            if (!$request->has('class_id')) {
+                return response()->json(['error' => 'Class ID required'], 400);
+            }
+
+            $classId = $request->class_id;
+
+            // ✅ FIXED: Verify class belongs to teacher
+            $class = ClassModel::where('id', $classId)
+                ->where('teacher_id', $teacher->id)
+                ->first();
+
+            if (!$class) {
+                return response()->json(['error' => 'Unauthorized - Class not assigned to you'], 403);
+            }
+
+            // ✅ FIXED: Get students with profile_photo field (needed for avatar display)
+            $students = Student::where('status', 'active')
+                ->whereHas('enrollments', function($q) use ($classId) {
+                    $q->where('class_id', $classId)
+                      ->where('status', 'active');  // Only active enrollments
+                })
+                ->orderBy('first_name')
+                ->orderBy('last_name')
+                ->get(['id', 'first_name', 'last_name', 'profile_photo']);  // ✅ Added profile_photo
+
+            // ✅ FIXED: Get schedules for the class
+            $schedules = Schedule::where('class_id', $classId)
+                ->orderBy('day_of_week')
+                ->orderBy('start_time')
+                ->get(['id', 'day_of_week', 'start_time', 'end_time']);
+
+            // ✅ FIXED: Return in same format as admin (with 'students' and 'schedules' keys)
+            return response()->json([
+                'students' => $students,
+                'schedules' => $schedules,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching students for teacher: ' . $e->getMessage(), [
+                'teacher_id' => auth()->id(),
+                'class_id' => $request->class_id ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json(['error' => 'Failed to load students'], 500);
         }
-
-        // Verify class belongs to teacher
-        $class = ClassModel::where('id', $request->class_id)
-            ->where('teacher_id', $teacher->id)
-            ->first();
-
-        if (!$class) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $students = Student::where('status', 'active')
-            ->whereHas('classes', function($q) use ($request) {
-                $q->where('classes.id', $request->class_id)
-                  ->where('class_enrollments.status', 'active');
-            })
-            ->orderBy('first_name')
-            ->orderBy('last_name')
-            ->get(['id', 'first_name', 'last_name']);
-
-        return response()->json($students);
     }
+
 
     /**
      * Notify parents of progress sheet

@@ -378,7 +378,8 @@
                                 <div class="card-body">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div>
-                                            <button type="button" class="btn btn-danger" onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this progress sheet? This action cannot be undone.')) { document.getElementById('delete-form').submit(); }">
+                                            {{-- ✅ UPDATED: Remove onclick, add proper function call --}}
+                                            <button type="button" class="btn btn-danger" onclick="confirmDeleteProgressSheet()">
                                                 <i class="ti-trash"></i> Delete Progress Sheet
                                             </button>
                                         </div>
@@ -386,7 +387,7 @@
                                             <a href="{{ route('superadmin.progress-sheets.show', $progressSheet) }}" class="btn btn-secondary">
                                                 <i class="ti-close"></i> Cancel
                                             </a>
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn btn-primary" id="updateBtn">
                                                 <i class="ti-check"></i> Update Progress Sheet
                                             </button>
                                         </div>
@@ -489,7 +490,6 @@ $(document).ready(function() {
             error: function(xhr) {
                 console.error('Failed to load students:', xhr);
                 
-                // CHANGED: alert() replaced with SweetAlert
                 swal({
                     title: "Failed to Load Students",
                     text: "Unable to fetch students. Please try again.",
@@ -563,6 +563,115 @@ $(document).ready(function() {
 
         $('#students-container').html(html);
     }
+
+    // ==========================================
+    // ✅ FORM SUBMISSION HANDLER (Prevent double submit)
+    // ==========================================
+    $('#progressSheetEditForm').on('submit', function(e) {
+        const submitBtn = $('#updateBtn');
+        
+        // Prevent double submission
+        if (submitBtn.prop('disabled')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Disable button and show loading
+        submitBtn.prop('disabled', true)
+            .html('<i class="ti-reload fa-spin"></i> Updating...');
+    });
+
+    // ==========================================
+    // ✅ TOASTR NOTIFICATIONS (Flash Messages)
+    // ==========================================
+    @if(session('success'))
+        toastr.success("{{ session('success') }}", "Success", {
+            closeButton: true,
+            progressBar: true,
+            timeOut: 5000,
+            positionClass: "toast-top-right"
+        });
+    @endif
+
+    @if(session('error'))
+        toastr.error("{{ session('error') }}", "Error", {
+            closeButton: true,
+            progressBar: true,
+            timeOut: 8000,
+            positionClass: "toast-top-right"
+        });
+    @endif
+
+    @if(session('warning'))
+        toastr.warning("{{ session('warning') }}", "Warning", {
+            closeButton: true,
+            progressBar: true,
+            timeOut: 6000,
+            positionClass: "toast-top-right"
+        });
+    @endif
+
+    @if($errors->any())
+        @foreach($errors->all() as $error)
+            toastr.error("{{ $error }}", "Validation Error", {
+                closeButton: true,
+                progressBar: true,
+                timeOut: 6000,
+                positionClass: "toast-top-right"
+            });
+        @endforeach
+    @endif
 });
+
+// ==========================================
+// ✅ DELETE PROGRESS SHEET CONFIRMATION
+// ==========================================
+function confirmDeleteProgressSheet() {
+    const studentNotesCount = {{ $progressSheet->progressNotes->count() }};
+    const className = "{{ $progressSheet->class->name }}";
+    const topic = "{{ $progressSheet->topic }}";
+    const date = "{{ $progressSheet->date->format('d M Y') }}";
+    
+    let warningMessage = `Class: ${className}\nTopic: ${topic}\nDate: ${date}\n\n`;
+    
+    if (studentNotesCount > 0) {
+        warningMessage += `⚠️ This progress sheet has ${studentNotesCount} student note(s).\n\n` +
+                         `All student progress notes will be permanently deleted!\n\n` +
+                         `This action cannot be undone!`;
+    } else {
+        warningMessage += `This progress sheet has no student notes yet.\n\n` +
+                         `Are you sure you want to delete it?\n\n` +
+                         `This action cannot be undone!`;
+    }
+    
+    swal({
+        title: "Delete Progress Sheet?",
+        text: warningMessage,
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: studentNotesCount > 0 ? `Delete (${studentNotesCount} notes)` : "Yes, delete it!",
+        cancelButtonText: "No, keep it",
+        closeOnConfirm: false,
+        showLoaderOnConfirm: true
+    }, function(isConfirm) {
+        if (isConfirm) {
+            // Show loading state
+            swal({
+                title: "Deleting...",
+                text: "Please wait while we delete the progress sheet and all related notes",
+                type: "info",
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+            
+            // Submit the delete form
+            setTimeout(function() {
+                document.getElementById('delete-form').submit();
+            }, 500);
+        }
+    });
+}
 </script>
 @endpush

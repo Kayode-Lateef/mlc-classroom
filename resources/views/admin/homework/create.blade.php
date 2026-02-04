@@ -147,6 +147,29 @@
                                         @enderror
                                     </div>
 
+                                    
+                                    <!-- Topics Selection -->
+                                    <div class="form-group">
+                                        <label for="topic_ids">
+                                            <i class="ti-bookmark-alt"></i> Topics 
+                                            <span class="text-muted">(Select one or more)</span>
+                                        </label>
+                                        <select name="topic_ids[]" id="topic_ids" class="form-control select2" multiple>
+                                            <option value="">-- Select Topics --</option>
+                                            @foreach($topics as $topic)
+                                                <option value="{{ $topic->id }}">
+                                                    {{ $topic->name }} 
+                                                    @if($topic->subject)
+                                                        <small>({{ $topic->subject }})</small>
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            You can select multiple topics that this homework covers.
+                                        </small>
+                                    </div>
+
                                     <!-- Description -->
                                     <div class="form-group">
                                         <label>Description</label>
@@ -197,6 +220,7 @@
                                             </div>
                                         </div>
                                     </div>
+
 
                                     <!-- Progress Sheet Link (Optional) -->
                                     <div class="form-group">
@@ -265,10 +289,6 @@
                                         <i class="ti-check"></i>
                                         <span style="color: #495057;">Parents will be notified when homework is assigned</span>
                                     </div>
-                                    <div class="guideline-item">
-                                        <i class="ti-check"></i>
-                                        <span style="color: #495057;">Submissions will be created automatically for all enrolled students</span>
-                                    </div>
                                 </div>
                             </div>
 
@@ -289,10 +309,6 @@
                                     <div class="step-item">
                                         <div class="step-number">3</div>
                                         <span style="color: #495057;">Parents receive email notifications</span>
-                                    </div>
-                                    <div class="step-item">
-                                        <div class="step-number">4</div>
-                                        <span style="color: #495057;">Students can view and submit homework</span>
                                     </div>
                                     <div class="step-item">
                                         <div class="step-number">5</div>

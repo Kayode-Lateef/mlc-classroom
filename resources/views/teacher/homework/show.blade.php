@@ -24,19 +24,6 @@
         opacity: 0.9;
     }
 
-    .submission-item {
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        transition: all 0.3s ease;
-    }
-
-    .submission-item:hover {
-        background-color: #f8f9fa;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
     .student-avatar {
         width: 45px;
         height: 45px;
@@ -57,105 +44,41 @@
         font-size: 1rem;
     }
 
-    .tab-content-wrapper {
-        margin-top: 20px;
-    }
-
-    /* ========================================
-       MODAL STYLES - PERFECTLY CENTERED
-       ======================================== */
-    .modal {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 9999;
-        display: none;
-        overflow-x: hidden;
-        overflow-y: auto;
-        outline: 0;
-        /* Flexbox for perfect centering */
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal.show {
-        display: flex !important; /* Use flex to enable centering */
-    }
-
-    .modal-backdrop {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 9998;
-        background-color: #000;
-        opacity: 0.5;
-    }
-
-    .modal-dialog {
-        position: relative;
-        width: 90%;
-        max-width: 500px;
-        margin: 0; /* No margin needed with flexbox */
-        z-index: 9999;
-    }
-
-    .modal-content {
-        position: relative;
-        background-color: #fff;
-        border: 1px solid rgba(0,0,0,.2);
-        border-radius: 6px;
-        box-shadow: 0 5px 15px rgba(0,0,0,.5);
-        background-clip: padding-box;
-        outline: 0;
-        animation: modalZoomIn 0.3s ease-out;
-    }
-
-    /* Zoom in animation for centered modal */
-    @keyframes modalZoomIn {
-        from {
-            opacity: 0;
-            transform: scale(0.7);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    /* Close button styling */
-    .modal-close {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: none;
-        border: none;
-        font-size: 28px;
-        font-weight: 700;
-        line-height: 1;
-        color: #000;
-        opacity: 0.4;
-        cursor: pointer;
-        z-index: 10;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        transition: opacity 0.2s;
-    }
-
-    .modal-close:hover,
-    .modal-close:focus {
-        opacity: 0.8;
-        outline: none;
-    }
-
     .progress-custom {
         height: 12px;
         border-radius: 6px;
     }
+
+    /* Highlight changed rows */
+.submission-row.changed {
+    background-color: #fff3cd !important;
+}
+
+.submission-row.changed td {
+    border-left: 3px solid #ffc107;
+}
+
+/* Input styling */
+.grade-input, .comments-input {
+    border: 1px solid #ced4da;
+    transition: all 0.2s;
+}
+
+.grade-input:focus, .comments-input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.grade-input.changed, .comments-input.changed {
+    border-color: #ffc107;
+    background-color: #fff3cd;
+}
+
+/* Quick action buttons */
+.btn-xs {
+    padding: 2px 6px;
+    font-size: 11px;
+}
 </style>
 @endpush
 
@@ -222,6 +145,20 @@
                                         </span>
                                     </div>
                                 </div>
+
+                                <!-- Display Topics -->
+                                @if($homework->topics->count() > 0)
+                                    <div class="topics-section" style="margin-bottom: 20px;">
+                                        <h4><i class="ti-bookmark-alt"></i> Topics Covered</h4>
+                                        <div class="topics-list">
+                                            @foreach($homework->topics as $topic)
+                                                <span class="badge badge-info" style="padding: 8px 12px; margin-right: 8px;">
+                                                    {{ $topic->name }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <div class="card-body mt-3">
                                     @if($homework->description)
@@ -341,99 +278,161 @@
                                 </div>
                             </div>
 
+
                             <!-- Student Submissions -->
                             <div class="card alert">
                                 <div class="card-header mb-3">
-                                    <h4><i class="ti-user"></i> Student Submissions ({{ $homework->submissions->count() }})</h4>
-                                </div>
-                                <div class="card-body">
-                                    @foreach($homework->submissions as $submission)
-                                    <div class="submission-item">
-                                        <div style="display: flex; gap: 15px;">
-                                            <!-- Student Avatar -->
-                                            <div style="flex-shrink: 0;">
-                                                @if($submission->student->profile_photo)
-                                                <img src="{{ asset('storage/' . $submission->student->profile_photo) }}" alt="{{ $submission->student->full_name }}" class="student-avatar">
-                                                @else
-                                                <div class="student-avatar-initial">
-                                                    {{ strtoupper(substr($submission->student->first_name, 0, 1)) }}{{ strtoupper(substr($submission->student->last_name, 0, 1)) }}
-                                                </div>
-                                                @endif
-                                            </div>
-
-                                            <!-- Student Info -->
-                                            <div style="flex: 1;">
-                                                <h5 style="margin: 0 0 5px 0; font-weight: 600;">{{ $submission->student->full_name }}</h5>
-                                                <p style="margin: 0 0 8px 0; color: #6c757d;">
-                                                    Parent: {{ $submission->student->parent->name ?? 'No parent assigned' }}
-                                                </p>
-
-                                                @if($submission->submitted_date)
-                                                <p style="margin: 0 0 8px 0; color: #495057;">
-                                                    <i class="ti-calendar"></i> Submitted: {{ \Carbon\Carbon::parse($submission->submitted_date)->format('d M Y, H:i') }}
-                                                </p>
-                                                @endif
-
-                                                @if($submission->status === 'graded' && $submission->grade)
-                                                <div style="margin-top: 10px;">
-                                                    <span class="badge badge-success" style="padding: 4px 10px;">
-                                                        Grade: {{ $submission->grade }}
-                                                    </span>
-                                                </div>
-                                                @endif
-
-                                                @if($submission->teacher_comments)
-                                                <div style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
-                                                    <strong>Teacher Comments:</strong>
-                                                    <p style="margin: 5px 0 0 0; color: #495057;">{{ $submission->teacher_comments }}</p>
-                                                </div>
-                                                @endif
-                                            </div>
-
-                                            <!-- Status & Actions -->
-                                            <div style="flex-shrink: 0; text-align: right;">
-                                                @switch($submission->status)
-                                                    @case('pending')
-                                                        <span class="badge badge-secondary">Pending</span>
-                                                        @break
-                                                    @case('submitted')
-                                                        <span class="badge badge-primary">Submitted</span>
-                                                        @break
-                                                    @case('late')
-                                                        <span class="badge badge-warning">Late</span>
-                                                        @break
-                                                    @case('graded')
-                                                        <span class="badge badge-success">Graded</span>
-                                                        @break
-                                                @endswitch
-
-                                                @if($submission->file_path)
-                                                <div style="margin-top: 8px;">
-                                                    <a href="{{ asset('storage/' . $submission->file_path) }}" target="_blank" class="btn btn-sm btn-info" style="font-size: 0.75rem;">
-                                                        <i class="ti-download"></i> Download
-                                                    </a>
-                                                </div>
-                                                @endif
-
-                                                @if(in_array($submission->status, ['submitted', 'late']))
-                                                <div style="margin-top: 8px;">
-                                                    <button 
-                                                        onclick="openGradeModal({{ $submission->id }}, '{{ addslashes($submission->student->full_name) }}')"
-                                                        class="btn btn-sm btn-success"
-                                                        style="font-size: 1rem;"
-                                                    >
-                                                        <i class="ti-pencil"></i> Grade
-                                                    </button>
-                                                </div>
-                                                @endif
-                                            </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h4><i class="ti-user"></i> Student Submissions ({{ $homework->submissions->count() }})</h4>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-primary" id="save-all-changes-btn" style="display: none;">
+                                                <i class="ti-save"></i> Save All Changes
+                                            </button>
                                         </div>
                                     </div>
-                                    @endforeach
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th width="5%">
+                                                    <input type="checkbox" id="select-all-checkbox" title="Select all">
+                                                </th>
+                                                <th width="25%">Student</th>
+                                                <th width="12%">Status</th>
+                                                <th width="15%">Submitted</th>
+                                                <th width="15%">Grade</th>
+                                                <th width="28%">Comments</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($homework->submissions as $submission)
+                                            <tr data-submission-id="{{ $submission->id }}" class="submission-row">
+                                                <td>
+                                                    <input type="checkbox" 
+                                                        class="submission-checkbox" 
+                                                        value="{{ $submission->id }}"
+                                                        data-status="{{ $submission->status }}">
+                                                </td>
+                                                
+                                                <!-- Student Info -->
+                                                <td>
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <div style="flex-shrink: 0;">
+                                                            @if($submission->student->profile_photo)
+                                                            <img src="{{ asset('storage/' . $submission->student->profile_photo) }}" 
+                                                                alt="{{ $submission->student->full_name }}" 
+                                                                class="student-avatar">
+                                                            @else
+                                                            <div class="student-avatar-initial">
+                                                                {{ strtoupper(substr($submission->student->first_name, 0, 1)) }}{{ strtoupper(substr($submission->student->last_name, 0, 1)) }}
+                                                            </div>
+                                                            @endif
+                                                        </div>
+                                                        <div>
+                                                            <strong>{{ $submission->student->full_name }}</strong>
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                {{ $submission->student->parent->name ?? 'No parent' }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                
+                                                <!-- Status with Quick Actions -->
+                                                <td>
+                                                    @if($submission->status === 'pending')
+                                                        <span class="badge badge-secondary">Pending</span>
+                                                        <br>
+                                                        <button class="btn btn-xs btn-warning mt-1 quick-mark-submitted" 
+                                                                data-id="{{ $submission->id }}"
+                                                                title="Mark as submitted">
+                                                            <i class="ti-check"></i> Submit
+                                                        </button>
+                                                    @elseif($submission->status === 'submitted')
+                                                        <span class="badge badge-warning">Submitted</span>
+                                                    @elseif($submission->status === 'late')
+                                                        <span class="badge badge-danger">Late</span>
+                                                    @elseif($submission->status === 'graded')
+                                                        <span class="badge badge-success">Graded</span>
+                                                    @endif
+                                                </td>
+                                                
+                                                <!-- Submitted Date -->
+                                                <td>
+                                                    @if($submission->submitted_date)
+                                                        <small>{{ $submission->submitted_date->format('d/m/Y') }}</small>
+                                                        <br>
+                                                        <small class="text-muted">{{ $submission->submitted_date->format('H:i') }}</small>
+                                                        @if($submission->submittedByUser)
+                                                            <br><small class="text-muted" title="Submitted by">{{ $submission->submittedByUser->name }}</small>
+                                                        @endif
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                
+                                                <!-- INLINE GRADE INPUT -->
+                                                <td>
+                                                    @if(in_array($submission->status, ['submitted', 'late', 'graded']))
+                                                        <input type="text" 
+                                                            class="form-control form-control-sm grade-input" 
+                                                            data-submission-id="{{ $submission->id }}"
+                                                            data-original-value="{{ $submission->grade }}"
+                                                            value="{{ $submission->grade }}" 
+                                                            placeholder="e.g., 85, A+"
+                                                            style="width: 100px;">
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                
+                                                <!-- INLINE COMMENTS INPUT -->
+                                                <td>
+                                                    @if(in_array($submission->status, ['submitted', 'late', 'graded']))
+                                                        <textarea class="form-control form-control-sm comments-input" 
+                                                                data-submission-id="{{ $submission->id }}"
+                                                                data-original-value="{{ $submission->teacher_comments }}"
+                                                                rows="2" 
+                                                                placeholder="Add feedback..."
+                                                                style="resize: vertical;">{{ $submission->teacher_comments }}</textarea>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+
+                            </div>
+                            <!-- Bulk Actions at Bottom -->                           
+                            <div class="card-footer" style="background: #f8f9fa; padding: 15px;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-sm btn-primary" id="select-all-bottom">
+                                            <i class="ti-check-box"></i> Select All
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-warning" id="bulk-mark-submitted-bottom">
+                                            <i class="ti-pencil-alt"></i> Mark Selected as Submitted
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <span class="text-muted" id="changes-indicator" style="display: none;">
+                                            <i class="ti-info-alt"></i> You have unsaved changes
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
+                        
+
+                        
+                        </div>
+                        
                         <!-- Sidebar -->
                         <div class="col-lg-4">
                             <!-- Quick Actions -->
@@ -499,6 +498,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
 
                     <!-- Footer -->
@@ -514,133 +514,244 @@
         </div>
     </div>
 
-    <!-- Grade Modal - BOOTSTRAP 3 STRUCTURE -->
-    <div id="gradeModal" class="modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <button type="button" class="modal-close" onclick="closeGradeModal()" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                
-                <div class="card alert" style="margin: 0; border: none; border-radius: 6px;">
-                    <div class="card-header">
-                        <h4 style="margin: 0;"><i class="ti-pencil"></i> Grade Homework</h4>
-                    </div>
-                    <div class="card-body">
-                        <p style="margin-bottom: 15px; font-size: 0.9375rem;">
-                            Student: <strong id="modalStudentName"></strong>
-                        </p>
-                        
-                        <form id="gradeForm" method="POST">
-                            @csrf
-                            <input type="hidden" name="submission_id" id="modalSubmissionId">
-                            
-                            <div class="form-group">
-                                <label class="required-field">Grade</label>
-                                <input 
-                                    type="text" 
-                                    name="grade" 
-                                    required
-                                    maxlength="50"
-                                    placeholder="e.g., A+, 95%, Excellent"
-                                    class="form-control"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label>Teacher Comments</label>
-                                <textarea 
-                                    name="teacher_comments" 
-                                    rows="3"
-                                    maxlength="1000"
-                                    placeholder="Optional feedback for the student..."
-                                    class="form-control"
-                                ></textarea>
-                                <small class="form-text text-muted">
-                                    <span id="commentCount">0</span>/1000 characters
-                                </small>
-                            </div>
-
-                            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                                <button type="button" onclick="closeGradeModal()" class="btn btn-secondary">
-                                    <i class="ti-close"></i> Cancel
-                                </button>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="ti-check"></i> Submit Grade
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="gradeModalBackdrop" class="modal-backdrop" style="display: none;"></div>
 @endsection
 
 @push('scripts')
 <script>
-function openGradeModal(submissionId, studentName) {
-    document.getElementById('modalStudentName').textContent = studentName;
-    document.getElementById('modalSubmissionId').value = submissionId;
-    document.getElementById('gradeForm').action = '{{ route("teacher.homework.grade", $homework) }}';
+$(document).ready(function() {
+    let changedSubmissions = new Set();
     
-    // Show modal and backdrop
-    document.getElementById('gradeModal').classList.add('show');
-    document.getElementById('gradeModalBackdrop').style.display = 'block';
+    // ========================================
+    // TRACK CHANGES IN GRADE/COMMENTS
+    // ========================================
+    $('.grade-input, .comments-input').on('input', function() {
+        const submissionId = $(this).data('submission-id');
+        const originalValue = $(this).data('original-value') || '';
+        const currentValue = $(this).val();
+        
+        if (currentValue !== originalValue) {
+            $(this).addClass('changed');
+            changedSubmissions.add(submissionId);
+            $(`tr[data-submission-id="${submissionId}"]`).addClass('changed');
+        } else {
+            $(this).removeClass('changed');
+            changedSubmissions.delete(submissionId);
+            
+            // Check if row has any other changes
+            const row = $(`tr[data-submission-id="${submissionId}"]`);
+            if (row.find('.changed').length === 0) {
+                row.removeClass('changed');
+            }
+        }
+        
+        updateChangesIndicator();
+    });
     
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-    document.body.style.paddingRight = '15px'; // Prevent content shift
-}
-
-function closeGradeModal() {
-    document.getElementById('gradeModal').classList.remove('show');
-    document.getElementById('gradeModalBackdrop').style.display = 'none';
-    document.getElementById('gradeForm').reset();
-    document.getElementById('commentCount').textContent = '0';
+    // Auto-save on blur (optional - saves individual field)
+    $('.grade-input, .comments-input').on('blur', function() {
+        const submissionId = $(this).data('submission-id');
+        const originalValue = $(this).data('original-value') || '';
+        const currentValue = $(this).val();
+        
+        if (currentValue !== originalValue) {
+            autoSaveSingle(submissionId);
+        }
+    });
     
-    // Restore body scroll
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-}
-
-// Close modal when clicking backdrop
-document.getElementById('gradeModalBackdrop').addEventListener('click', function() {
-    closeGradeModal();
-});
-
-// Character count for comments
-document.addEventListener('DOMContentLoaded', function() {
-    const commentField = document.querySelector('textarea[name="teacher_comments"]');
-    const commentCount = document.getElementById('commentCount');
-    
-    if (commentField && commentCount) {
-        commentField.addEventListener('input', function() {
-            commentCount.textContent = this.value.length;
+    // ========================================
+    // AUTO-SAVE SINGLE SUBMISSION
+    // ========================================
+    function autoSaveSingle(submissionId) {
+        const row = $(`tr[data-submission-id="${submissionId}"]`);
+        const grade = row.find('.grade-input').val();
+        const comments = row.find('.comments-input').val();
+        
+        if (!grade) return; // Don't save if no grade
+        
+        $.ajax({
+            url: '{{ route("teacher.homework.grade", $homework->id) }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                submission_id: submissionId,
+                grade: grade,
+                teacher_comments: comments
+            },
+            success: function(response) {
+                // Update original values
+                row.find('.grade-input').data('original-value', grade);
+                row.find('.comments-input').data('original-value', comments);
+                
+                // Remove changed indicators
+                row.find('.grade-input, .comments-input').removeClass('changed');
+                row.removeClass('changed');
+                changedSubmissions.delete(submissionId);
+                updateChangesIndicator();
+                
+                // Update status badge
+                row.find('td:eq(2)').html('<span class="badge badge-success">Graded</span>');
+                
+                // Show brief success indicator
+                showSuccessIndicator(row);
+            },
+            error: function(xhr) {
+                alert('Failed to save grade. Please try again.');
+            }
         });
     }
-});
-
-// Close modal on ESC key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape' || event.keyCode === 27) {
-        if (document.getElementById('gradeModal').classList.contains('show')) {
-            closeGradeModal();
+    
+    // ========================================
+    // SAVE ALL CHANGES
+    // ========================================
+    $('#save-all-changes-btn').click(function() {
+        if (changedSubmissions.size === 0) {
+            alert('No changes to save');
+            return;
+        }
+        
+        if (!confirm(`Save grades for ${changedSubmissions.size} student(s)?`)) {
+            return;
+        }
+        
+        let savedCount = 0;
+        const total = changedSubmissions.size;
+        
+        changedSubmissions.forEach(submissionId => {
+            const row = $(`tr[data-submission-id="${submissionId}"]`);
+            const grade = row.find('.grade-input').val();
+            const comments = row.find('.comments-input').val();
+            
+            if (!grade) return;
+            
+            $.ajax({
+                url: '{{ route("teacher.homework.grade", $homework->id) }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    submission_id: submissionId,
+                    grade: grade,
+                    teacher_comments: comments
+                },
+                success: function() {
+                    row.find('.grade-input').data('original-value', grade);
+                    row.find('.comments-input').data('original-value', comments);
+                    row.find('.grade-input, .comments-input').removeClass('changed');
+                    row.removeClass('changed');
+                    row.find('td:eq(2)').html('<span class="badge badge-success">Graded</span>');
+                    
+                    savedCount++;
+                    if (savedCount === total) {
+                        changedSubmissions.clear();
+                        updateChangesIndicator();
+                        alert(`Successfully graded ${savedCount} submission(s)!`);
+                        location.reload();
+                    }
+                }
+            });
+        });
+    });
+    
+    // ========================================
+    // QUICK MARK AS SUBMITTED
+    // ========================================
+    $('.quick-mark-submitted').click(function() {
+        const submissionId = $(this).data('id');
+        const row = $(`tr[data-submission-id="${submissionId}"]`);
+        
+        $.ajax({
+            url: '{{ route("teacher.homework.mark-submitted", $homework->id) }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                submission_id: submissionId
+            },
+            success: function() {
+                location.reload();
+            },
+            error: function() {
+                alert('Failed to mark as submitted');
+            }
+        });
+    });
+    
+    // ========================================
+    // BULK MARK AS SUBMITTED
+    // ========================================
+    $('#bulk-mark-submitted-bottom').click(function() {
+        const checked = $('.submission-checkbox:checked');
+        if (checked.length === 0) {
+            alert('Please select at least one submission');
+            return;
+        }
+        
+        const submissionIds = checked.map(function() { return $(this).val(); }).get();
+        
+        if (!confirm(`Mark ${submissionIds.length} submission(s) as submitted?`)) {
+            return;
+        }
+        
+        const form = $('<form>', {
+            method: 'POST',
+            action: '{{ route("teacher.homework.bulk-mark-submitted", $homework->id) }}'
+        });
+        
+        form.append($('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }));
+        submissionIds.forEach(id => {
+            form.append($('<input>', { type: 'hidden', name: 'submission_ids[]', value: id }));
+        });
+        
+        $('body').append(form);
+        form.submit();
+    });
+    
+    // ========================================
+    // SELECT ALL
+    // ========================================
+    $('#select-all-checkbox, #select-all-bottom').on('change click', function() {
+        $('.submission-checkbox').prop('checked', true);
+    });
+    
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+    function updateChangesIndicator() {
+        if (changedSubmissions.size > 0) {
+            $('#changes-indicator').show();
+            $('#save-all-changes-btn').show();
+        } else {
+            $('#changes-indicator').hide();
+            $('#save-all-changes-btn').hide();
         }
     }
-});
-
-// Prevent form submission if already submitting
-document.getElementById('gradeForm').addEventListener('submit', function(e) {
-    const submitBtn = this.querySelector('button[type="submit"]');
-    if (submitBtn.disabled) {
-        e.preventDefault();
-        return false;
+    
+    function showSuccessIndicator(row) {
+        row.css('background-color', '#d4edda');
+        setTimeout(() => {
+            row.css('background-color', '');
+        }, 1000);
     }
     
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="ti-reload"></i> Submitting...';
+    // Warn before leaving with unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        if (changedSubmissions.size > 0) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 });
 </script>
 @endpush
+
+
+
+
+
+
+
+
+
+
+
+
+
+

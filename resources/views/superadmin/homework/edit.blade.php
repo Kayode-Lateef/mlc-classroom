@@ -135,6 +135,25 @@
                                         @enderror
                                     </div>
 
+                                    <!-- Topics Selection -->
+                                    <div class="form-group">
+                                        <label for="topic_ids">
+                                            <i class="ti-bookmark-alt"></i> Topics 
+                                            <span class="text-muted">(Select one or more)</span>
+                                        </label>
+                                        <select name="topic_ids[]" id="topic_ids" class="form-control select2" multiple>
+                                            @foreach($topics as $topic)
+                                                <option value="{{ $topic->id }}"
+                                                    {{ in_array($topic->id, $homework->topics->pluck('id')->toArray()) ? 'selected' : '' }}>
+                                                    {{ $topic->name }} 
+                                                    @if($topic->subject)
+                                                        <small>({{ $topic->subject }})</small>
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
                                     <!-- Description -->
                                     <div class="form-group">
                                         <label>Description</label>

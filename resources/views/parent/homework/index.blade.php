@@ -430,13 +430,14 @@
                                                     @endif
                                                 </div>
 
-                                                @if($submission->status === 'pending')
-                                                <div style="margin-top: 15px;">
-                                                    <button class="btn btn-primary btn-sm btn-block">
-                                                        <i class="ti-upload"></i> Submit Now
-                                                    </button>
+                                                {{-- @if($submission->status === 'pending')
+                                                <div class="alert alert-info">
+                                                    <i class="ti-info-alt"></i> 
+                                                    <strong>Physical Submission Required:</strong> 
+                                                    This homework must be submitted physically in class. 
+                                                    Your child's teacher will mark it as submitted once received.
                                                 </div>
-                                                @endif
+                                                @endif --}}
                                             </div>
                                         </div>
                                     </a>

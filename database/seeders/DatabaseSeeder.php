@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             HomeworkSeeder::class,
             LearningResourceSeeder::class,
             SystemSettingsSeeder::class,
+            
         ]);
     }
 }

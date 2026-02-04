@@ -36,9 +36,18 @@ use App\Http\Controllers\Teacher\LearningResourceController;
     
     // Homework (Only for teacher's classes)
     Route::get('homework/{homework}/download', [HomeworkController::class, 'download'])
-    ->name('homework.download');
-    Route::post('homework/{homework}/grade', [HomeworkController::class, 'grade'])->name('homework.grade');
-    Route::get('homework/{homework}/submissions', [HomeworkController::class, 'submissions'])->name('homework.submissions');
+        ->name('homework.download');
+    Route::post('homework/{homework}/grade', [HomeworkController::class, 'grade'])
+        ->name('homework.grade');
+    Route::get('homework/{homework}/submissions', [HomeworkController::class, 'submissions'])
+        ->name('homework.submissions');
+    Route::post('homework/{homework}/mark-submitted', [HomeworkController::class, 'markAsSubmitted'])
+        ->name('homework.mark-submitted');
+    Route::post('homework/{homework}/bulk-mark-submitted', [HomeworkController::class, 'bulkMarkAsSubmitted'])
+        ->name('homework.bulk-mark-submitted');
+    Route::post('homework/{homework}/bulk-grade', [HomeworkController::class, 'bulkGrade'])
+        ->name('homework.bulk-grade');
+    
     Route::resource('homework', HomeworkController::class);
     
     // Progress Sheets (Only for teacher's classes)

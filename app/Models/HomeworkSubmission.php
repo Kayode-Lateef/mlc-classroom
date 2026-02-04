@@ -18,6 +18,9 @@ class HomeworkSubmission extends Model
         'teacher_comments',
         'grade',
         'graded_at',
+        'submitted_by',        // ✅ NEW: Who marked as submitted
+        'graded_by',           // ✅ NEW: Who graded
+        'submission_notes',    // ✅ NEW: Notes when marking as submitted
     ];
 
     protected $casts = [
@@ -39,6 +42,22 @@ class HomeworkSubmission extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
+    }
+
+    /**
+     * ✅ NEW: Relationship - User who marked as submitted
+     */
+    public function submittedByUser()
+    {
+        return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    /**
+     * ✅ NEW: Relationship - User who graded
+     */
+    public function gradedByUser()
+    {
+        return $this->belongsTo(User::class, 'graded_by');
     }
 
     /**
@@ -66,6 +85,14 @@ class HomeworkSubmission extends Model
      */
     public function scopePendingGrading($query)
     {
-        return $query->where('status', 'submitted');
+        return $query->whereIn('status', ['submitted', 'late']);
+    }
+
+    /**
+     * ✅ NEW: Scope - Pending submission (not yet marked as submitted)
+     */
+    public function scopePendingSubmission($query)
+    {
+        return $query->where('status', 'pending');
     }
 }

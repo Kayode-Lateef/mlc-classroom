@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\HomeworkAssignment;
 use App\Models\HomeworkSubmission;
+use App\Models\HomeworkTopic;
 use App\Models\ClassModel;
 use App\Models\ProgressSheet;
 use App\Models\ActivityLog;
@@ -106,7 +107,9 @@ class HomeworkController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('teacher.homework.create', compact('classes', 'progressSheets'));
+        $topics = HomeworkTopic::active()->orderBy('subject')->orderBy('name')->get();
+
+        return view('teacher.homework.create', compact('classes', 'progressSheets', 'topics'));
     }
 
     /**
@@ -142,6 +145,8 @@ class HomeworkController extends Controller
             'assigned_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:assigned_date',
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
+            'topic_ids' => 'nullable|array',
+            'topic_ids.*' => 'exists:homework_topics,id',
         ], $messages);
 
         if ($validator->fails()) {
@@ -187,6 +192,11 @@ class HomeworkController extends Controller
                 'teacher_id' => $teacher->id,
             ]);
 
+            // Attach topics to homework
+            if ($request->filled('topic_ids') && is_array($request->topic_ids)) {
+                $homework->topics()->attach($request->topic_ids);
+            }
+
             // Create submissions for all enrolled students
             $students = $class->students()->wherePivot('status', 'active')->get();
             foreach ($students as $student) {
@@ -201,7 +211,7 @@ class HomeworkController extends Controller
             NotificationHelper::notifyClassParents(
                 $homework->class,
                 'New Homework Assigned',
-                "New homework '{$homework->title}' assigned. Due: {$homework->due_date->format('d M Y')}",
+                "New homework '{$homework->title}' assigned to {$homework->class->name}. Physical submission required by " . $homework->due_date->format('d/m/Y') . ".",
                 'homework',
                 [
                     'homework_id' => $homework->id,
@@ -306,7 +316,10 @@ class HomeworkController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('teacher.homework.edit', compact('homework', 'classes', 'progressSheets'));
+        $topics = HomeworkTopic::active()->orderBy('subject')->orderBy('name')->get();
+    
+        return view('teacher.homework.edit', compact('homework', 'classes', 'progressSheets', 'topics'));
+
     }
 
     /**
@@ -394,6 +407,15 @@ class HomeworkController extends Controller
                 'assigned_date' => $request->assigned_date,
                 'due_date' => $request->due_date,
             ]);
+
+            // Sync topics
+            if ($request->has('topic_ids')) {
+                if (is_array($request->topic_ids) && count($request->topic_ids) > 0) {
+                    $homework->topics()->sync($request->topic_ids);
+                } else {
+                    $homework->topics()->detach();
+                }
+            }
 
             // Log activity
             ActivityLog::create([
@@ -649,5 +671,225 @@ class HomeworkController extends Controller
                 ->where('due_date', '<', $today)
                 ->count(),
         ];
+    }
+
+    /**
+     * ✅ NEW: Mark single submission as submitted
+     */
+    public function markAsSubmitted(Request $request, HomeworkAssignment $homework)
+    {
+        $teacher = auth()->user();
+
+        // Verify homework belongs to teacher
+        if ($homework->teacher_id !== $teacher->id) {
+            abort(403, 'You do not have permission to modify this homework.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'submission_id' => 'required|exists:homework_submissions,id',
+            'submission_notes' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->with('error', 'Invalid submission data.');
+        }
+
+        try {
+            $submission = HomeworkSubmission::where('id', $request->submission_id)
+                ->where('homework_assignment_id', $homework->id)
+                ->firstOrFail();
+
+            // Check if already submitted or graded
+            if (in_array($submission->status, ['submitted', 'late', 'graded'])) {
+                return redirect()->back()
+                    ->with('warning', 'This submission has already been marked as submitted.');
+            }
+
+            $isLate = now()->gt($homework->due_date);
+
+            $submission->update([
+                'status' => $isLate ? 'late' : 'submitted',
+                'submitted_date' => now(),
+                'submitted_by' => $teacher->id,
+                'submission_notes' => $request->submission_notes,
+            ]);
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => $teacher->id,
+                'action' => 'marked_submission',
+                'model_type' => 'HomeworkSubmission',
+                'model_id' => $submission->id,
+                'description' => "Marked homework as submitted for student: {$submission->student->name}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Homework marked as submitted successfully!');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to mark homework as submitted: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->with('error', 'Failed to mark homework as submitted. Please try again.');
+        }
+    }
+
+    /**
+     * ✅ NEW: Bulk mark submissions as submitted
+     */
+    public function bulkMarkAsSubmitted(Request $request, HomeworkAssignment $homework)
+    {
+        $teacher = auth()->user();
+
+        // Verify homework belongs to teacher
+        if ($homework->teacher_id !== $teacher->id) {
+            abort(403, 'You do not have permission to modify this homework.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'submission_ids' => 'required|array|min:1',
+            'submission_ids.*' => 'exists:homework_submissions,id',
+            'submission_notes' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->with('error', 'Please select at least one submission.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $isLate = now()->gt($homework->due_date);
+            $status = $isLate ? 'late' : 'submitted';
+            $count = 0;
+
+            foreach ($request->submission_ids as $submissionId) {
+                $submission = HomeworkSubmission::where('id', $submissionId)
+                    ->where('homework_assignment_id', $homework->id)
+                    ->where('status', 'pending')
+                    ->first();
+
+                if ($submission) {
+                    $submission->update([
+                        'status' => $status,
+                        'submitted_date' => now(),
+                        'submitted_by' => $teacher->id,
+                        'submission_notes' => $request->submission_notes,
+                    ]);
+                    $count++;
+                }
+            }
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => $teacher->id,
+                'action' => 'bulk_marked_submission',
+                'model_type' => 'HomeworkAssignment',
+                'model_id' => $homework->id,
+                'description' => "Bulk marked {$count} submissions as submitted for: {$homework->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', "{$count} homework submission(s) marked as submitted successfully!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Bulk mark as submitted failed: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->with('error', 'Failed to mark submissions. Please try again.');
+        }
+    }
+
+    /**
+     * ✅ NEW: Bulk grade submissions
+     */
+    public function bulkGrade(Request $request, HomeworkAssignment $homework)
+    {
+        $teacher = auth()->user();
+
+        // Verify homework belongs to teacher
+        if ($homework->teacher_id !== $teacher->id) {
+            abort(403, 'You do not have permission to grade this homework.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'submission_ids' => 'required|array|min:1',
+            'submission_ids.*' => 'exists:homework_submissions,id',
+            'grade' => 'required|string|max:50',
+            'teacher_comments' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->with('error', 'Please provide valid grading information.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $count = 0;
+
+            foreach ($request->submission_ids as $submissionId) {
+                $submission = HomeworkSubmission::where('id', $submissionId)
+                    ->where('homework_assignment_id', $homework->id)
+                    ->whereIn('status', ['submitted', 'late'])
+                    ->first();
+
+                if ($submission) {
+                    $submission->update([
+                        'grade' => $request->grade,
+                        'teacher_comments' => $request->teacher_comments,
+                        'status' => 'graded',
+                        'graded_at' => now(),
+                        'graded_by' => $teacher->id,
+                    ]);
+
+                    // Notify parent
+                    NotificationHelper::notifyStudentParent(
+                        $submission->student,
+                        'Homework Graded',
+                        "Homework '{$homework->title}' has been graded. Grade: {$request->grade}",
+                        route('parent.homework.show', [$homework->id, 'child_id' => $submission->student_id])
+                    );
+
+                    $count++;
+                }
+            }
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => $teacher->id,
+                'action' => 'bulk_graded',
+                'model_type' => 'HomeworkAssignment',
+                'model_id' => $homework->id,
+                'description' => "Bulk graded {$count} submissions for: {$homework->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', "{$count} homework submission(s) graded successfully!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Bulk grading failed: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->with('error', 'Failed to grade submissions. Please try again.');
+        }
     }
 }

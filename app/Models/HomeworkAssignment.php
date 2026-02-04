@@ -58,6 +58,15 @@ class HomeworkAssignment extends Model
     }
 
     /**
+     * ✅ NEW: Relationship - Homework belongs to many topics
+     */
+    public function topics()
+    {
+        return $this->belongsToMany(HomeworkTopic::class, 'homework_assignment_topic')
+            ->withTimestamps();
+    }
+
+    /**
      * Check if homework is overdue
      */
     public function isOverdue(): bool
@@ -74,5 +83,16 @@ class HomeworkAssignment extends Model
         $submitted = $this->submissions()->where('status', '!=', 'pending')->count();
         
         return $total > 0 ? round(($submitted / $total) * 100, 2) : 0;
+    }
+
+    /**
+     * ✅ NEW: Get grading rate
+     */
+    public function getGradingRateAttribute()
+    {
+        $total = $this->submissions()->count();
+        $graded = $this->submissions()->where('status', 'graded')->count();
+        
+        return $total > 0 ? round(($graded / $total) * 100, 2) : 0;
     }
 }

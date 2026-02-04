@@ -67,6 +67,21 @@ Route::middleware(['auth', 'role:admin', 'check.status'])->group(function () {
     Route::post('homework/submissions/{submission}/grade', [HomeworkController::class, 'gradeSubmission'])
         ->name('homework.submissions.grade');
 
+    // Mark homework as submitted
+    Route::post('homework/{homework}/mark-submitted', [HomeworkController::class, 'markAsSubmitted'])
+        ->name('homework.mark-submitted');
+
+    // Bulk mark as submitted
+    Route::post('homework/{homework}/bulk-mark-submitted', [HomeworkController::class, 'bulkMarkAsSubmitted'])
+        ->name('homework.bulk-mark-submitted');
+
+    // Bulk grade
+    Route::post('homework/{homework}/bulk-grade', [   HomeworkController::class, 'bulkGrade'])
+        ->name('homework.bulk-grade');
+
+    // Topics management
+    // Route::resource('homework-topics', HomeworkTopicController::class)->except(['show']);
+
     Route::resource('homework', HomeworkController::class);
         
     // Progress Sheets

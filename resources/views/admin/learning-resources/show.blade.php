@@ -144,7 +144,7 @@
 
                             <!-- Resource Content -->
                             <div class="card alert">
-                                <div class="card-header mb-2">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-eye"></i> Resource Content</h4>
                                 </div>
                                 <div class="card-body">
@@ -231,7 +231,7 @@
                         <div class="col-lg-4">
                             <!-- Quick Actions -->
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-settings"></i> Actions</h4>
                                 </div>
                                 <div class="card-body">
@@ -245,7 +245,9 @@
                                     </a>
                                     @endif
                                     
-                                    <form action="{{ route('admin.resources.destroy', $resource) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this resource?');">
+                                    <form action="{{ route('admin.resources.destroy', $resource) }}" 
+                                        method="POST"
+                                        id="deleteResourceForm">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-block">
@@ -257,7 +259,7 @@
 
                             <!-- Resource Information -->
                             <div class="card alert" style="margin-top: 20px;">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-info-alt"></i> Information</h4>
                                 </div>
                                 <div class="card-body">
@@ -332,3 +334,38 @@
         </div>
     </div>
 @endsection
+
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Handle resource deletion with SweetAlert
+    $('#deleteResourceForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+        
+        const form = this;
+        const resourceTitle = "{{ $resource->title }}";
+        const resourceType = "{{ ucfirst($resource->resource_type) }}";
+        
+        swal({
+            title: "Delete Resource?",
+            text: "Are you sure you want to delete this resource?\n\nTitle: " + resourceTitle + "\nType: " + resourceType + "\n\nThis action cannot be undone!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        },
+        function(isConfirm){
+            if (isConfirm) {
+                form.submit(); // Submit the form
+            }
+        });
+        
+        return false;
+    });
+});
+</script>
+@endpush

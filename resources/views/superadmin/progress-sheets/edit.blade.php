@@ -98,7 +98,6 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1rem;
             background-color: #007bff;
             color: white;
         }

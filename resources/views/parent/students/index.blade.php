@@ -9,6 +9,7 @@
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 100%;
         }
 
         .stat-icon {
@@ -18,17 +19,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
         }
 
         .stat-label {
-            font-size: 0.875rem;
             color: #6c757d;
             margin-bottom: 3px;
         }
 
         .stat-value {
-            font-size: 1.5rem;
             font-weight: bold;
         }
 
@@ -55,11 +53,37 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2rem;
+        }
+
+        .children-grid-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        .child-card-col {
+            display: flex;
+            flex-direction: column;
+            padding-left: 15px;
+            padding-right: 15px;
+            margin-bottom: 30px;
+        }
+
+        .child-card-col .panel {
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* ✅ Makes all cards same height */
+            margin-bottom: 0;
+        }
+
+        .child-card-col .panel-body {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* ✅ Fills available space */
         }
 
         .role-badge {
-            font-size: 0.75rem;
             padding: 4px 8px;
         }
 
@@ -73,15 +97,13 @@
         }
 
         .child-card {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
         }
 
         .child-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .progress-stat {
@@ -102,6 +124,88 @@
             height: 100%;
             background-color: #28a745;
             transition: width 0.3s;
+        }
+
+        .quick-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-stat-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .quick-stat-value {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .quick-stat-label {
+            color: #6c757d;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .info-label {
+            color: #6c757d;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-weight: bold;
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .empty-state i {
+            color: #cbd5e0;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-top: auto; /* Pushes to bottom */
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .attendance-progress-container {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .alert-mini {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
         }
     </style>
 @endpush
@@ -134,111 +238,156 @@
 
                 <div id="main-content">
                     @if($children->count() > 0)
-                        <!-- Children Cards -->
-                        <div class="row">
-                            @foreach($children as $child)
-                            <div class="col-lg-6">
-                                <div class="child-card card">
-                                    <!-- Child Header -->
-                                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                                        @if($child->profile_photo)
-                                            <img src="{{ asset('storage/' . $child->profile_photo) }}" 
-                                                 alt="{{ $child->full_name }}" 
-                                                 class="child-avatar" 
-                                                 style="margin-right: 15px;">
-                                        @else
-                                            <div class="child-avatar-initial bg-primary text-white" style="margin-right: 15px;">
-                                                {{ strtoupper(substr($child->first_name, 0, 1)) }}{{ strtoupper(substr($child->last_name, 0, 1)) }}
-                                            </div>
-                                        @endif
-                                        <div style="flex: 1;">
-                                            <h4 style="margin: 0;">{{ $child->full_name }}</h4>
-                                            <small class="text-muted">
-                                                Student ID: {{ $child->id }} | Age: {{ $child->age }} years
-                                            </small>
+                        <!-- Statistics Cards -->
+
+                        <div class="row mb-4">
+                             <div class="col-lg-3">
+                                <div class="card">
+                                    <div class="stat-widget-one">
+                                       <div class="stat-icon dib"><i class="ti-user color-primary border-primary"></i></div>
+                                        <div class="stat-content dib">
+                                            <div class="stat-text">Total Children</div>
+                                            <div class="stat-digit">{{ $children->count() }}</div>
                                         </div>
-                                        <div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="card">
+                                    <div class="stat-widget-one">
+                                        <div class="stat-icon dib"><i class="ti-book color-success border-success"></i></div>
+                                        <div class="stat-content dib">
+                                            <div class="stat-text">Total Classes</div>
+                                            <div class="stat-digit">{{ $children->sum('enrolled_classes') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="card">
+                                    <div class="stat-widget-one">
+                                        <div class="stat-icon dib"><i class="ti-alarm-clock color-warning border-warning"></i></div>
+                                        <div class="stat-content dib">
+                                            <div class="stat-text">Pending Homework</div>
+                                            <div class="stat-digit">{{ $children->sum('pending_homework') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="card">
+                                    <div class="stat-widget-one">
+                                        <div class="stat-icon dib"><i class="ti-stats-up color-info border-info"></i></div>
+                                        <div class="stat-content dib">
+                                            <div class="stat-text">Avg Attendance</div>
+                                            <div class="stat-digit">{{ round($children->avg('attendance_rate'), 1) }}%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Children Cards Grid -->
+                        <div class="children-grid-row">
+                            @foreach($children as $child)
+                            <div class="col-lg-6 child-card-col">
+                                <div class="panel lobipanel-basic panel-info child-card">
+                                    <!-- Child Header -->
+                                    <div class="panel-heading">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                            <div class="panel-title" style="display: flex; align-items: center; gap: 15px;">
+                                                @if($child->profile_photo)
+                                                    <img src="{{ asset('storage/' . $child->profile_photo) }}" 
+                                                         alt="{{ $child->full_name }}" 
+                                                         class="child-avatar">
+                                                @else
+                                                    <div class="child-avatar-initial bg-primary text-white">
+                                                        {{ strtoupper(substr($child->first_name, 0, 1)) }}{{ strtoupper(substr($child->last_name, 0, 1)) }}
+                                                    </div>
+                                                @endif
+                                                <div>
+                                                    <h4 style="margin: 0;">{{ $child->full_name }}</h4>
+                                                    <small class="">
+                                                        Student ID: {{ $child->id }} • Age: {{ $child->age }} years
+                                                    </small>
+                                                </div>
+                                            </div>
                                             <span class="badge badge-success">Active</span>
                                         </div>
                                     </div>
 
-                                    <!-- Quick Stats -->
-                                    <div class="row mb-3">
-                                        <div class="col-6">
-                                            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center;">
-                                                <div style="font-size: 1.5rem; font-weight: bold; color: #007bff;">
-                                                    {{ $child->enrolled_classes }}
-                                                </div>
-                                                <div style="font-size: 0.875rem; color: #6c757d;">
-                                                    Enrolled Classes
-                                                </div>
+                                    <div class="panel-body">
+                                        <!-- Quick Stats -->
+                                        <div class="quick-stats-grid">
+                                            <div class="quick-stat-item">
+                                                <span class="quick-stat-value text-primary">{{ $child->enrolled_classes }}</span>
+                                                <span class="quick-stat-label">Enrolled Classes</span>
+                                            </div>
+                                            <div class="quick-stat-item">
+                                                <span class="quick-stat-value text-success">{{ $child->attendance_rate }}%</span>
+                                                <span class="quick-stat-label">Attendance Rate</span>
                                             </div>
                                         </div>
-                                        <div class="col-6">
-                                            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center;">
-                                                <div style="font-size: 1.5rem; font-weight: bold; color: #28a745;">
-                                                    {{ $child->attendance_rate }}%
-                                                </div>
-                                                <div style="font-size: 0.875rem; color: #6c757d;">
-                                                    Attendance Rate
-                                                </div>
+
+                                        <!-- Attendance Progress -->
+                                        <div class="attendance-progress-container">
+                                            <div class="progress-stat">
+                                                <span style="color: #6c757d;">This Month's Attendance</span>
+                                                <span style="font-weight: bold; color: #495057;">{{ $child->attendance_rate }}%</span>
+                                            </div>
+                                            <div class="progress-bar-custom">
+                                                <div class="progress-fill" style="width: {{ $child->attendance_rate }}%;"></div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Attendance Progress Bar -->
-                                    <div class="mb-3">
-                                        <div class="progress-stat">
-                                            <span style="font-size: 0.875rem; color: #6c757d;">This Month's Attendance</span>
-                                            <span style="font-weight: bold;">{{ $child->attendance_rate }}%</span>
+                                        <!-- Info Grid -->
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <span class="info-label">Date of Birth</span>
+                                                <span class="info-value">{{ $child->date_of_birth->format('d M Y') }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Enrolled Since</span>
+                                                <span class="info-value">{{ $child->enrollment_date->format('d M Y') }}</span>
+                                            </div>
                                         </div>
-                                        <div class="progress-bar-custom">
-                                            <div class="progress-fill" style="width: {{ $child->attendance_rate }}%;"></div>
-                                        </div>
-                                    </div>
 
-                                    <!-- Additional Info -->
-                                    <div class="row mb-3">
-                                        <div class="col-6">
-                                            <small class="text-muted">Date of Birth:</small><br>
-                                            <strong>{{ $child->date_of_birth->format('d M Y') }}</strong>
+                                        <!-- Pending Homework Alert -->
+                                        @if($child->pending_homework > 0)
+                                        <div class="alert alert-warning alert-mini">
+                                            <i class="ti-alert" style="margin-right: 5px;"></i>
+                                            <strong>{{ $child->pending_homework }}</strong> pending homework assignment(s)
                                         </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Enrolled Since:</small><br>
-                                            <strong>{{ $child->enrollment_date->format('d M Y') }}</strong>
+                                        @endif
+
+                                        <!-- Action Buttons -->
+                                        <div class="action-buttons-row">
+                                            <a href="{{ route('parent.students.show', $child) }}" class="btn btn-primary btn-sm flex-fill">
+                                                <i class="ti-eye"></i> View Details
+                                            </a>
+                                            <a href="{{ route('parent.attendance.index', ['child_id' => $child->id]) }}" class="btn btn-info btn-sm flex-fill">
+                                                <i class="ti-clipboard"></i> Attendance
+                                            </a>
+                                            <a href="{{ route('parent.homework.index', ['child_id' => $child->id]) }}" class="btn btn-success btn-sm">
+                                                <i class="ti-book"></i>
+                                            </a>
                                         </div>
-                                    </div>
-
-                                    <!-- Pending Homework Alert -->
-                                    @if($child->pending_homework > 0)
-                                    <div class="alert alert-warning" style="margin-bottom: 15px; padding: 10px;">
-                                        <i class="ti-alert"></i>
-                                        <strong>{{ $child->pending_homework }}</strong> pending homework assignment(s)
-                                    </div>
-                                    @endif
-
-                                    <!-- Action Buttons -->
-                                    <div style="display: flex; gap: 10px;">
-                                        <a href="{{ route('parent.students.show', $child) }}" class="btn btn-primary flex-fill">
-                                            <i class="ti-eye"></i> View Details
-                                        </a>
-                                        <a href="{{ route('parent.attendance.index', ['child_id' => $child->id]) }}" class="btn btn-info flex-fill">
-                                            <i class="ti-clipboard"></i> Attendance
-                                        </a>
                                     </div>
                                 </div>
                             </div>
                             @endforeach
                         </div>
 
-                        <!-- Summary Table (Optional) -->
+                        <!-- Summary Table -->
                         <div class="row mt-4">
                             <div class="col-lg-12">
-                                <div class="card alert">
-                                    <div class="card-header">
-                                        <h4>Children Summary</h4>
+                                <div class="panel lobipanel-basic panel-default">
+                                    <div class="panel-heading">
+                                        <div class="panel-title">
+                                            <h4>Children Summary</h4>
+                                        </div>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="panel-body">
                                         <div class="table-responsive">
                                             <table class="table table-hover">
                                                 <thead>
@@ -296,6 +445,16 @@
                                                                title="View Details">
                                                                 <i class="ti-eye"></i>
                                                             </a>
+                                                            <a href="{{ route('parent.attendance.index', ['child_id' => $child->id]) }}" 
+                                                               class="btn btn-sm btn-primary" 
+                                                               title="Attendance">
+                                                                <i class="ti-clipboard"></i>
+                                                            </a>
+                                                            <a href="{{ route('parent.homework.index', ['child_id' => $child->id]) }}" 
+                                                               class="btn btn-sm btn-success" 
+                                                               title="Homework">
+                                                                <i class="ti-book"></i>
+                                                            </a>
                                                         </td>
                                                     </tr>
                                                     @endforeach
@@ -310,17 +469,15 @@
                         <!-- Empty State -->
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="card alert">
-                                    <div class="card-body text-center py-5">
-                                        <i class="ti-user" style="font-size: 5rem; color: #cbd5e0;"></i>
-                                        <h3 class="mt-3 mb-2">No Children Found</h3>
-                                        <p class="text-muted mb-4">
-                                            You don't have any children registered in the system yet.
-                                        </p>
-                                        <p class="text-muted">
-                                            Please contact the school administrator to register your children.
-                                        </p>
-                                    </div>
+                                <div class="empty-state">
+                                    <i class="ti-user" style="font-size: 5rem;"></i>
+                                    <h3 class="mb-3">No Children Found</h3>
+                                    <p class="text-muted mb-4">
+                                        You don't have any children registered in the system yet.
+                                    </p>
+                                    <p class="text-muted">
+                                        Please contact the school administrator to register your children.
+                                    </p>
                                 </div>
                             </div>
                         </div>

@@ -21,7 +21,7 @@
 
         .stat-box h3 {
             margin: 10px 0 5px;
-            font-size: 2rem;
+            /* font-size: 2rem; */
         }
 
         .detail-item {
@@ -42,7 +42,6 @@
             padding: 6px 12px;
             border-radius: 12px;
             font-weight: 600;
-            font-size: 0.875rem;
         }
 
         .badge-excellent {
@@ -98,7 +97,6 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.9rem;
             background-color: #007bff;
             color: white;
         }
@@ -154,7 +152,7 @@
                     <!-- Session Header -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="session-header card bg-success">
+                            <div class="session-header card bg-primary">
                                 <div class="row">
                                     <div class="col-md-8">
                                         <h2 style="margin: 0 0 10px; color: white;">
@@ -191,7 +189,7 @@
 
                     <!-- Statistics Cards -->
                     <div class="row">
-                        <div class="col-lg-2">
+                        <div class="col-lg-4">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-clipboard color-primary border-primary"></i></div>
@@ -202,7 +200,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-4">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-star color-success border-success"></i></div>
@@ -213,7 +211,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-4">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-check color-info border-info"></i></div>
@@ -224,7 +222,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-minus color-warning border-warning"></i></div>
@@ -235,7 +235,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-4">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-alert color-danger border-danger"></i></div>
@@ -246,7 +246,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-4">
                             <div class="card">
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-close color-secondary border-secondary"></i></div>
@@ -300,7 +300,7 @@
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-stats-up"></i> Overall (All Time)</h4>
                                 </div>
                                 <div class="card-body">
@@ -329,7 +329,7 @@
 
                         <div class="col-lg-4">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-calendar"></i> This Month</h4>
                                 </div>
                                 <div class="card-body">
@@ -355,7 +355,7 @@
 
                         <div class="col-lg-4">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-calendar"></i> Last Month</h4>
                                 </div>
                                 <div class="card-body">
@@ -384,7 +384,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-bar-chart"></i> 6-Month Performance Trend</h4>
                                 </div>
                                 <div class="card-body">
@@ -407,7 +407,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-book"></i> Performance by Class</h4>
                                 </div>
                                 <div class="card-body">
@@ -461,7 +461,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
-                                <div class="card-header">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-pie-chart"></i> Performance Distribution (Selected Period)</h4>
                                 </div>
                                 <div class="card-body">

@@ -17,6 +17,46 @@
         margin-bottom: 20px;
     }
 
+    .homework-grid-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -15px;
+    margin-right: -15px;
+    }
+
+    .homework-card-col {
+        display: flex;
+        flex-direction: column;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 30px;
+    }
+
+    .homework-card-col .panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* ✅ Makes all cards same height */
+        margin-bottom: 0;
+    }
+    .homework-description {
+    min-height: 60px;
+    max-height: 60px; /* ✅ All descriptions same height */
+    overflow: hidden;
+    }
+
+    .homework-card-col .panel-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* ✅ Fills available space */
+    }
+
+    .homework-details {
+        flex-grow: 1; /* ✅ Pushes submission section to bottom */
+    }
+
+    .homework-submission-progress {
+        margin-top: auto; /* ✅ Stays at bottom */
+    }
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -198,9 +238,9 @@
 
                     <!-- Homework Grid -->
                         @if($homework->count() > 0)
-                        <div class="row">
+                        <div class="homework-grid-row">
                             @foreach($homework as $assignment)
-                            <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="col-lg-4 col-md-6 mb-4 homework-card-col">
                                 <div class="panel lobipanel-basic panel-info">
                                     <div class="panel-heading">
                                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">

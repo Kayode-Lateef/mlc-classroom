@@ -82,7 +82,6 @@
         }
 
         .empty-state i {
-            font-size: 4rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -378,7 +377,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="empty-state">
-                                <i class="ti-clipboard"></i>
+                                <i class="ti-clipboard" style="font-size: 4rem;"></i>
                                 <h3 class="mb-3">No Progress Sheets Found</h3>
                                 <p class="text-muted mb-4">Get started by creating your first progress sheet.</p>
                                 <a href="{{ route('admin.progress-sheets.create') }}" class="btn btn-primary">

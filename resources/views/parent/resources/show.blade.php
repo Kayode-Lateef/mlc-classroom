@@ -60,7 +60,6 @@
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 0.875rem;
         background-color: #007bff;
         color: white;
     }
@@ -221,7 +220,7 @@
                                             <a href="{{ $resource->file_path }}" target="_blank" class="btn btn-primary btn-lg">
                                                 <i class="ti-new-window"></i> Open Link
                                             </a>
-                                            <p style="margin-top: 15px; font-size: 0.875rem; color: #6c757d; word-break: break-all;">
+                                            <p style="margin-top: 15px; color: #6c757d; word-break: break-all;">
                                                 {{ Str::limit($resource->file_path, 60) }}
                                             </p>
                                         </div>
@@ -245,7 +244,7 @@
                                                 <i class="ti-download"></i> Download File
                                             </a>
                                             @if(!filter_var($resource->file_path, FILTER_VALIDATE_URL))
-                                            <p style="margin-top: 15px; font-size: 0.875rem; color: #6c757d;">
+                                            <p style="margin-top: 15px; color: #6c757d;">
                                                 <i class="ti-file"></i> {{ basename($resource->file_path) }}
                                             </p>
                                             @endif
@@ -274,7 +273,7 @@
                                     <h4><i class="ti-user"></i> Available For</h4>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted mb-3" style="font-size: 0.875rem;">
+                                    <p class="text-muted mb-3">
                                         This resource is available for the following 
                                         {{ $accessibleChildren->count() === 1 ? 'child' : 'children' }}:
                                     </p>
@@ -341,14 +340,14 @@
                                                      style="margin-right: 12px;">
                                             @else
                                             <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                                                <span style="color: white; font-weight: 600; font-size: 1.1rem;">
+                                                <span style="color: white; font-weight: 600;">
                                                     {{ strtoupper(substr($resource->uploader->name, 0, 1)) }}
                                                 </span>
                                             </div>
                                             @endif
                                             <div>
                                                 <p style="margin: 0; font-weight: 600; color: #212529;">{{ $resource->uploader->name }}</p>
-                                                <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">
+                                                <p style="margin: 0; color: #6c757d;">
                                                     {{ ucfirst(str_replace('_', ' ', $resource->uploader->role)) }}
                                                 </p>
                                             </div>
@@ -360,7 +359,7 @@
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Assigned Class</p>
                                         <p style="margin: 0; font-weight: 600; color: #212529;">{{ $resource->class->name }}</p>
                                         @if($resource->class->teacher)
-                                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 0.875rem;">
+                                        <p style="margin: 5px 0 0 0; color: #6c757d;">
                                             <i class="ti-user"></i> Teacher: {{ $resource->class->teacher->name }}
                                         </p>
                                         @endif
@@ -368,10 +367,10 @@
                                     @else
                                     <div class="info-item">
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Availability</p>
-                                        <span class="badge badge-success" style="padding: 6px 12px; font-size: 0.875rem;">
+                                        <span class="badge badge-success" style="padding: 6px 12px;">
                                             <i class="ti-world"></i> General Resource
                                         </span>
-                                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 0.875rem;">
+                                        <p style="margin: 5px 0 0 0; color: #6c757d;">
                                             Available to all enrolled students
                                         </p>
                                     </div>
@@ -380,7 +379,7 @@
                                     @if($resource->subject)
                                     <div class="info-item">
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Subject</p>
-                                        <span class="badge badge-secondary" style="padding: 6px 12px; font-size: 0.875rem;">
+                                        <span class="badge badge-secondary" style="padding: 6px 12px;">
                                             {{ $resource->subject }}
                                         </span>
                                     </div>
@@ -388,7 +387,7 @@
 
                                     <div class="info-item">
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Resource Type</p>
-                                        <span class="badge {{ $typeInfo['class'] }}" style="padding: 6px 12px; font-size: 0.875rem;">
+                                        <span class="badge {{ $typeInfo['class'] }}" style="padding: 6px 12px;">
                                             <i class="{{ $typeInfo['icon'] }}"></i> {{ strtoupper($resource->resource_type) }}
                                         </span>
                                     </div>
@@ -396,13 +395,13 @@
                                     <div class="info-item">
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Created</p>
                                         <p style="margin: 0; color: #212529;">{{ $resource->created_at->format('d M Y') }}</p>
-                                        <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">{{ $resource->created_at->format('H:i') }}</p>
+                                        <p style="margin: 0; color: #6c757d;">{{ $resource->created_at->format('H:i') }}</p>
                                     </div>
 
                                     <div class="info-item">
                                         <p style="margin: 0 0 5px 0; color: #6c757d; font-weight: 500;">Last Updated</p>
                                         <p style="margin: 0; color: #212529;">{{ $resource->updated_at->format('d M Y') }}</p>
-                                        <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">{{ $resource->updated_at->diffForHumans() }}</p>
+                                        <p style="margin: 0; color: #6c757d;">{{ $resource->updated_at->diffForHumans() }}</p>
                                     </div>
                                 </div>
                             </div>

@@ -79,7 +79,6 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.9rem;
             background-color: #007bff;
             color: white;
         }
@@ -91,7 +90,6 @@
         }
 
         .empty-state i {
-            font-size: 4rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -104,7 +102,6 @@
         }
 
         .info-card h4 {
-            font-size: 0.95rem;
             font-weight: 600;
             margin-bottom: 15px;
         }
@@ -302,7 +299,7 @@
                                     @endforeach
                                 @else
                                     <div class="empty-state">
-                                        <i class="ti-user"></i>
+                                        <i class="ti-user" style="font-size: 4rem;"></i>
                                         <p>No student notes recorded for this session</p>
                                     </div>
                                 @endif
@@ -322,7 +319,9 @@
                                     <i class="ti-pencil-alt"></i> Edit Progress Sheet
                                 </a>
 
-                                <form action="{{ route('admin.progress-sheets.destroy', $progressSheet) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this progress sheet? This action cannot be undone.');">
+                                <form action="{{ route('admin.progress-sheets.destroy', $progressSheet) }}" 
+                                    method="POST" 
+                                    id="deleteProgressSheetForm">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-block">
@@ -353,7 +352,7 @@
                                     @if($progressSheet->teacher->profile_photo)
                                         <img src="{{ asset('storage/' . $progressSheet->teacher->profile_photo) }}" alt="{{ $progressSheet->teacher->name }}" class="user-avatar" style="margin-right: 12px;">
                                     @else
-                                    <div class="student-avatar-initial" style="width: 32px; height: 32px; font-size: 0.75rem; margin-right: 10px;">
+                                    <div class="student-avatar-initial" style="width: 32px; height: 32px; margin-right: 10px;">
                                         {{ strtoupper(substr($progressSheet->teacher->name, 0, 1)) }}
                                     </div>
                                     @endif
@@ -407,3 +406,45 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Handle progress sheet deletion with SweetAlert
+    $('#deleteProgressSheetForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+        
+        const form = this;
+        const lessonTitle = "{{ $progressSheet->lesson_title }}";
+        const assessedCount = {{ $progressSheet->progressNotes()->count() ?? 0 }};
+        
+        let warningText = "You want to delete progress sheet '" + lessonTitle + "'?\n\n";
+        
+        if (assessedCount > 0) {
+            warningText += "⚠️ This will delete " + assessedCount + " student assessment(s).\n\n";
+        }
+        
+        warningText += "This action cannot be undone!";
+        
+        swal({
+            title: "Are you sure?",
+            text: warningText,
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel!",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        },
+        function(isConfirm){
+            if (isConfirm) {
+                form.submit(); // Submit the form
+            }
+        });
+        
+        return false;
+    });
+});
+</script>
+@endpush

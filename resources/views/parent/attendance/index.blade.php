@@ -9,13 +9,11 @@
             align-items: center;
             padding: 4px 10px;
             border-radius: 4px;
-            font-size: 1rem;
             font-weight: 600;
         }
 
         .status-badge i {
             margin-right: 4px;
-            font-size: 1.1rem;
         }
 
         .filter-card {
@@ -40,7 +38,6 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.875rem;
             background-color: #e7f3ff;
             color: #007bff;
         }
@@ -88,7 +85,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
             font-weight: bold;
             margin: 0 auto;
         }

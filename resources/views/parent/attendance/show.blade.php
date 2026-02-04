@@ -46,13 +46,11 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2rem;
             background-color: #e7f3ff;
             color: #007bff;
         }
 
         .status-badge-large {
-            font-size: 1rem;
             padding: 6px 12px;
             border-radius: 4px;
             font-weight: 600;

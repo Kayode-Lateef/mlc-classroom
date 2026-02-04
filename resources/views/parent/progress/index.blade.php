@@ -29,7 +29,6 @@
             padding: 6px 12px;
             border-radius: 12px;
             font-weight: 600;
-            font-size: 0.875rem;
         }
 
         .badge-excellent {
@@ -64,7 +63,6 @@
         }
 
         .empty-state i {
-            font-size: 4rem;
             color: #cbd5e0;
             margin-bottom: 20px;
         }
@@ -109,7 +107,6 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.875rem;
             background-color: #007bff;
             color: white;
         }
@@ -206,7 +203,7 @@
                         @if($selectedChild && $stats)
                             <!-- Statistics Cards -->
                             <div class="row">
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-clipboard color-primary border-primary"></i></div>
@@ -217,7 +214,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-star color-success border-success"></i></div>
@@ -228,7 +225,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-check color-info border-info"></i></div>
@@ -239,7 +236,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-minus color-warning border-warning"></i></div>
@@ -250,7 +250,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-alert color-danger border-danger"></i></div>
@@ -261,7 +261,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-stats-up color-pink border-pink"></i></div>
@@ -291,7 +291,7 @@
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="card alert">
-                                        <div class="card-header">
+                                        <div class="card-header mb-4">
                                             <h4><i class="ti-bar-chart"></i> 8-Week Performance Trend</h4>
                                         </div>
                                         <div class="card-body">
@@ -314,7 +314,7 @@
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="card alert">
-                                        <div class="card-header">
+                                        <div class="card-header mb-4">
                                             <h4><i class="ti-book"></i> Performance by Class</h4>
                                         </div>
                                         <div class="card-body">
@@ -422,7 +422,7 @@
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="card alert">
-                                        <div class="card-header">
+                                        <div class="card-header mb-4">
                                             <h4>Recent Progress Notes ({{ $progressNotes->total() }})</h4>
                                             <div class="card-header-right-icon">
                                                 <span class="badge badge-primary">

@@ -310,7 +310,7 @@
                                         <span style="color: #495057;">Parents receive email notifications</span>
                                     </div>
                                     <div class="step-item">
-                                        <div class="step-number">5</div>
+                                        <div class="step-number">4</div>
                                         <span style="color: #495057;">You can grade submissions as they come in</span>
                                     </div>
                                 </div>

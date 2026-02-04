@@ -305,18 +305,15 @@
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <!-- Delete Form -->
                                     <form action="{{ route('admin.resources.destroy', $resource) }}" 
-                                          method="POST" 
-                                          id="deleteResourceForm"
-                                          style="margin: 0;">
+                                        method="POST" 
+                                        id="deleteResourceForm"
+                                        style="margin: 0;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" 
-                                                class="btn btn-danger"
-                                                onclick="if(confirm('Are you sure you want to delete this resource? This action cannot be undone.')) { document.getElementById('deleteResourceForm').submit(); }">
+                                        <button type="submit" class="btn btn-danger">
                                             <i class="ti-trash"></i> Delete Resource
                                         </button>
                                     </form>
-
                                     <div style="display: flex; gap: 10px;">
                                         <a href="{{ route('admin.resources.index') }}" class="btn btn-secondary">
                                             <i class="ti-arrow-left"></i> Cancel
@@ -484,6 +481,34 @@ $(document).ready(function() {
         }
         
         return true;
+    });
+
+        // ADDED: Handle resource deletion with SweetAlert
+    $('#deleteResourceForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+        
+        const form = this;
+        const resourceTitle = "{{ $resource->title }}";
+        const resourceType = "{{ ucfirst($resource->resource_type) }}";
+        
+        swal({
+            title: "Delete Resource?",
+            text: "Are you sure you want to delete this resource?\n\nTitle: " + resourceTitle + "\nType: " + resourceType + "\n\nThis action cannot be undone!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        },
+        function(isConfirm){
+            if (isConfirm) {
+                form.submit(); // Submit the form
+            }
+        });
+        
+        return false;
     });
 });
 </script>

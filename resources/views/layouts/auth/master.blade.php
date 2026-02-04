@@ -23,11 +23,17 @@
     <!-- Base CSS (always loaded) -->
     @include('layouts.auth.css')
     
+    <style>
+        .auth-body {
+            background-image: url({{ asset('assets/images/background.png') }})
+        }
+    </style>
     <!-- Page-specific styles -->
+
     @stack('styles')
 </head>
 
-<body class="">
+<body class="auth-body">
     @yield('main_content')
 
     <!-- Base scripts -->

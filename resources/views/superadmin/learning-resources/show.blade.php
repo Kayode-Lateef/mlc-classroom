@@ -144,7 +144,7 @@
 
                             <!-- Resource Content -->
                             <div class="card alert">
-                                <div class="card-header mb-3">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-eye"></i> Resource Content</h4>
                                 </div>
                                 <div class="card-body">
@@ -231,7 +231,7 @@
                         <div class="col-lg-4">
                             <!-- Quick Actions -->
                             <div class="card alert">
-                                <div class="card-header mb-3">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-settings"></i> Actions</h4>
                                 </div>
                                 <div class="card-body">
@@ -259,7 +259,7 @@
 
                             <!-- Resource Information -->
                             <div class="card alert" style="margin-top: 20px;">
-                                <div class="card-header mb-3">
+                                <div class="card-header mb-4">
                                     <h4><i class="ti-info-alt"></i> Information</h4>
                                 </div>
                                 <div class="card-body">

@@ -404,7 +404,7 @@
 
                             <!-- Quick Actions -->
                             <div class="card alert" style="margin-top: 20px;">
-                                <div class="card-header">
+                                <div class="card-header mb-3">
                                     <h4><i class="ti-menu"></i> Quick Actions</h4>
                                 </div>
                                 <div class="card-body">

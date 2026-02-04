@@ -257,7 +257,7 @@
                     <!-- Upcoming Homework -->
                     <div class="col-lg-6">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-4">
                                 <h4><i class="ti-clipboard"></i> Upcoming Homework (Next 7 Days)</h4>
                             </div>
                             <div class="card-body" style="max-height: 500px; overflow-y: auto;">
@@ -297,7 +297,7 @@
                     <!-- Recent Progress Reports -->
                     <div class="col-lg-6">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-4">
                                 <h4><i class="ti-bar-chart"></i> Recent Progress Reports</h4>
                             </div>
                             <div class="card-body" style="max-height: 500px; overflow-y: auto;">
@@ -343,7 +343,7 @@
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="card">
-                            <div class="card-header">
+                            <div class="card-header mb-4">
                                 <h4>Progress Trend - Last 4 Months</h4>
                             </div>
                             <div class="card-body">
@@ -354,7 +354,7 @@
 
                     <div class="col-lg-6">
                         <div class="card">
-                            <div class="card-header">
+                            <div class="card-header mb-4">
                                 <h4>Subject Comparison - {{ $selectedChild->first_name }}'s Performance</h4>
                             </div>
                             <div class="card-body">
@@ -368,7 +368,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-4">
                                 <h4><i class="ti-calendar"></i> This Week's Schedule</h4>
                             </div>
                             <div class="card-body">
@@ -412,7 +412,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card alert">
-                            <div class="card-header">
+                            <div class="card-header mb-4">
                                 <h4><i class="ti-check-box"></i> This Week's Attendance</h4>
                             </div>
                             <div class="card-body">

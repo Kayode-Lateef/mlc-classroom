@@ -95,7 +95,6 @@
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 0.875rem;
         background-color: #007bff;
         color: white;
     }
@@ -397,13 +396,13 @@
                                             </h5>
 
                                             @if($resource->description)
-                                            <p style="margin: 0 0 12px 0; color: #6c757d; line-height: 1.5; font-size: 0.875rem;">
+                                            <p style="margin: 0 0 12px 0; color: #6c757d; line-height: 1.5;">
                                                 {{ Str::limit($resource->description, 80) }}
                                             </p>
                                             @endif
 
                                             <!-- Meta -->
-                                            <div style="display: flex; justify-content: space-between; color: #6c757d; margin-bottom: 12px; font-size: 0.875rem;">
+                                            <div style="display: flex; justify-content: space-between; color: #6c757d; margin-bottom: 12px;">
                                                 <div>
                                                     <i class="ti-user"></i> {{ $resource->uploader->name }}
                                                 </div>

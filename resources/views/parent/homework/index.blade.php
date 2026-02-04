@@ -18,6 +18,44 @@
         margin-bottom: 20px;
     }
 
+    .homework-grid-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    .homework-card-col {
+        display: flex;
+        flex-direction: column;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 30px;
+    }
+
+    .homework-card-col .panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* ✅ Makes all cards same height */
+        margin-bottom: 0;
+    }
+
+    .homework-description {
+        min-height: 60px;
+        max-height: 60px; /* ✅ All descriptions same height */
+        overflow: hidden;
+    }
+
+    .homework-card-col .panel-body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1; /* ✅ Fills available space */
+    }
+
+    .homework-details {
+        flex-grow: 1; /* ✅ Pushes footer section to bottom */
+    }
+
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -76,6 +114,13 @@
         color: white;
     }
 
+    .grade-badge {
+        font-size: 1.2rem;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+
     .homework-card {
         transition: transform 0.2s, box-shadow 0.2s;
         cursor: pointer;
@@ -87,11 +132,11 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    .grade-badge {
-        font-size: 1.2rem;
-        padding: 8px 15px;
-        border-radius: 8px;
-        font-weight: bold;
+    .submission-status-section {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        margin-top: auto;
     }
 </style>
 @endpush
@@ -177,7 +222,7 @@
                         @if($selectedChild && $stats)
                             <!-- Statistics Cards -->
                             <div class="row">
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-book color-primary border-primary"></i></div>
@@ -188,7 +233,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-time color-warning border-warning"></i></div>
@@ -199,7 +244,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-check color-success border-success"></i></div>
@@ -210,7 +255,11 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                               
+                            </div>
+
+                             <div class="row">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-alert color-danger border-danger"></i></div>
@@ -221,7 +270,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-star color-info border-info"></i></div>
@@ -232,7 +281,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-4">
                                     <div class="card">
                                         <div class="stat-widget-one">
                                             <div class="stat-icon dib"><i class="ti-stats-up color-pink border-pink"></i></div>
@@ -337,9 +386,9 @@
                                 </div>
                             </div>
 
-                            <!-- Homework Cards (Grid View) -->
+                            <!-- Homework Grid -->
                             @if($homework->count() > 0)
-                            <div class="row">
+                            <div class="homework-grid-row">
                                 @foreach($homework as $submission)
                                 @php
                                     $assignment = $submission->homeworkAssignment;
@@ -347,62 +396,70 @@
                                     $dueDate = $assignment->due_date->format('Y-m-d');
                                     
                                     if ($dueDate < $today && $submission->status === 'pending') {
-                                        $dueBadgeClass = 'badge-danger';
-                                        $dueBadgeText = 'Overdue';
+                                        $statusClass = 'danger';
+                                        $statusText = 'Overdue';
                                     } elseif ($dueDate == $today) {
-                                        $dueBadgeClass = 'badge-warning';
-                                        $dueBadgeText = 'Due Today';
+                                        $statusClass = 'warning';
+                                        $statusText = 'Due Today';
                                     } else {
-                                        $dueBadgeClass = 'badge-success';
-                                        $dueBadgeText = 'Upcoming';
+                                        $statusClass = 'success';
+                                        $statusText = 'Upcoming';
                                     }
                                 @endphp
                                 
-                                <div class="col-lg-4 col-md-6 mb-4">
-                                    <a href="{{ route('parent.homework.show', ['homework' => $assignment->id, 'child_id' => $selectedChild->id]) }}" 
-                                       style="text-decoration: none; color: inherit;">
-                                        <div class="card homework-card">
-                                            <div class="card-header" style="background: #f8f9fa;">
-                                                <div style="display: flex; justify-content: space-between; align-items: start;">
-                                                    <h5 style="margin: 0; flex: 1;">{{ Str::limit($assignment->title, 40) }}</h5>
-                                                    <span class="badge {{ $dueBadgeClass }}" style="margin-left: 10px;">
-                                                        {{ $dueBadgeText }}
+                                <div class="col-lg-4 col-md-6 homework-card-col">
+                                    <div class="panel lobipanel-basic panel-info">
+                                        <div class="panel-heading">
+                                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                                <div class="panel-title">
+                                                    {{ Str::limit($assignment->title, 50) }}
+                                                </div>
+                                                <span class="label-{{ $statusClass }} status-badge">{{ $statusText }}</span>
+                                            </div>
+                                            <span class="badge badge-light" style="font-size: 1rem;">{{ $assignment->class->name }}</span>
+                                        </div>
+
+                                        <!-- Description -->
+                                        @if($assignment->description)
+                                        <div style="padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+                                            <p style="margin: 0; color: #6c757d; line-height: 1.5;" class="homework-description">
+                                                {{ Str::limit($assignment->description, 100) }}
+                                            </p>
+                                        </div>
+                                        @endif
+
+                                        <div class="panel-body">
+                                            <div style="padding: 15px;" class="homework-details">
+                                                <div style="margin-bottom: 10px;">
+                                                    <i class="ti-user" style="color: #6c757d; margin-right: 8px;"></i>
+                                                    <span style="color: #495057;">
+                                                        <strong>Teacher:</strong> {{ $assignment->teacher->name }}
                                                     </span>
                                                 </div>
-                                                <div style="margin-top: 8px;">
-                                                    <span class="badge badge-light">{{ $assignment->class->name }}</span>
+                                                <div style="margin-bottom: 10px;">
+                                                    <i class="ti-calendar" style="color: #6c757d; margin-right: 8px;"></i>
+                                                    <span style="color: #495057;">
+                                                        <strong>Assigned:</strong> {{ $assignment->assigned_date->format('d M Y') }}
+                                                    </span>
                                                 </div>
+                                                <div style="margin-bottom: 10px;">
+                                                    <i class="ti-alarm-clock" style="color: #6c757d; margin-right: 8px;"></i>
+                                                    <span style="color: #495057;">
+                                                        <strong>Due:</strong> {{ $assignment->due_date->format('d M Y') }}
+                                                    </span>
+                                                    <span style="font-size: 1rem; color: #6c757d;">({{ $assignment->due_date->diffForHumans() }})</span>
+                                                </div>
+                                                @if($assignment->file_path)
+                                                <div>
+                                                    <i class="ti-clip" style="color: #007bff; margin-right: 8px;"></i>
+                                                    <span style="color: #007bff;">Has attachment</span>
+                                                </div>
+                                                @endif
                                             </div>
 
-                                            <div class="card-body">
-                                                @if($assignment->description)
-                                                <p style="color: #6c757d; margin-bottom: 15px;">
-                                                    {{ Str::limit($assignment->description, 80) }}
-                                                </p>
-                                                @endif
-
-                                                <div style="margin-bottom: 10px;">
-                                                    <i class="ti-user" style="color: #6c757d;"></i>
-                                                    <small>{{ $assignment->teacher->name }}</small>
-                                                </div>
-
-                                                <div style="margin-bottom: 10px;">
-                                                    <i class="ti-calendar" style="color: #6c757d;"></i>
-                                                    <small>Due: {{ $assignment->due_date->format('d M Y') }}</small>
-                                                    <small class="text-muted">({{ $assignment->due_date->diffForHumans() }})</small>
-                                                </div>
-
-                                                @if($assignment->file_path)
-                                                <div style="margin-bottom: 15px;">
-                                                    <i class="ti-clip" style="color: #007bff;"></i>
-                                                    <small style="color: #007bff;">Has attachment</small>
-                                                </div>
-                                                @endif
-
-                                                <hr style="margin: 15px 0;">
-
-                                                <!-- Submission Status -->
-                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <!-- Submission Status Section -->
+                                            <div class="submission-status-section">
+                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                                     <div>
                                                         <strong>Status:</strong>
                                                         @switch($submission->status)
@@ -430,17 +487,25 @@
                                                     @endif
                                                 </div>
 
-                                                {{-- @if($submission->status === 'pending')
-                                                <div class="alert alert-info">
-                                                    <i class="ti-info-alt"></i> 
-                                                    <strong>Physical Submission Required:</strong> 
-                                                    This homework must be submitted physically in class. 
-                                                    Your child's teacher will mark it as submitted once received.
+                                                @if($submission->status === 'pending')
+                                                <div style="background-color: #e7f3ff; padding: 8px; border-radius: 4px; border-left: 3px solid #007bff;">
+                                                    <i class="ti-info-alt" style="color: #007bff; margin-right: 5px;"></i>
+                                                    <small style="color: #0056b3;">
+                                                        Physical submission required in class
+                                                    </small>
                                                 </div>
-                                                @endif --}}
+                                                @endif
+                                            </div>
+
+                                            <!-- Action Button -->
+                                            <div style="padding: 15px; border-top: 1px solid #e9ecef;">
+                                                <a href="{{ route('parent.homework.show', ['homework' => $assignment->id, 'child_id' => $selectedChild->id]) }}" 
+                                                   class="btn btn-primary btn-sm flex-fill">
+                                                    <i class="ti-eye"></i> View Details
+                                                </a>
                                             </div>
                                         </div>
-                                    </a>
+                                    </div>
                                 </div>
                                 @endforeach
                             </div>
@@ -460,8 +525,8 @@
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="empty-state">
-                                        <i class="ti-book" style="font-size: 4rem;"></i>
-                                        <h3 class="mb-3">No Homework Found</h3>
+                                        <i class="ti-book" style="font-size: 5rem; color: #cbd5e0;"></i>
+                                        <h3 class="mb-3">No Homework Assignments Found</h3>
                                         <p class="text-muted mb-4">No homework assignments match your filters.</p>
                                     </div>
                                 </div>

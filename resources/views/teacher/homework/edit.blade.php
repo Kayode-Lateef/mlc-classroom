@@ -364,7 +364,7 @@
                                             @method('DELETE')
                                             <button type="button" 
                                                     class="btn btn-danger"
-                                                    onclick="if(confirm('Are you sure you want to delete this homework? All {{ $homework->submissions->count() }} submissions will be permanently deleted.')) { document.getElementById('deleteForm').submit(); }">
+                                                    onclick="confirmDeleteHomework({{ $homework->submissions->count() }})">
                                                 <i class="ti-trash"></i> Delete Homework
                                             </button>
                                         </form>
@@ -410,5 +410,50 @@ $(document).ready(function() {
         }
     });
 });
+
+// ==========================================
+// DELETE HOMEWORK CONFIRMATION WITH SWEETALERT V1
+// ==========================================
+function confirmDeleteHomework(submissionCount) {
+    var warningMessage = '';
+    var confirmButtonText = 'Yes, delete it!';
+    
+    if (submissionCount > 0) {
+        warningMessage = 'This homework has ' + submissionCount + ' submission(s) from students. ' +
+                       'All submissions will be permanently deleted! ' +
+                       'This action cannot be undone!';
+        confirmButtonText = 'Delete (' + submissionCount + ' submissions)';
+    } else {
+        warningMessage = 'This homework has no submissions yet. ' +
+                       'Are you sure you want to delete it? ' +
+                       'This action cannot be undone!';
+    }
+    
+    swal({
+        title: "Delete Homework?",
+        text: warningMessage,
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: confirmButtonText,
+        cancelButtonText: "No, keep it",
+        closeOnConfirm: false,
+        closeOnCancel: true
+    }, function(isConfirm) {
+        if (isConfirm) {
+            // Show loading state
+            swal({
+                title: "Deleting...",
+                text: "Please wait while we delete the homework",
+                type: "info",
+                showConfirmButton: false,
+                allowEscapeKey: false
+            });
+            
+            document.getElementById('deleteForm').submit();
+        }
+    });
+}
 </script>
 @endpush

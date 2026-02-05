@@ -451,15 +451,16 @@
                                     </a>
                                     @endif
 
-                                    <form action="{{ route('admin.homework.destroy', $homework) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this homework? All {{ $homework->submissions->count() }} submissions will be deleted.');">
+                                    <form action="{{ route('admin.homework.destroy', $homework) }}" method="POST" id="deleteHomeworkForm">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-block">
-                                            <i class="ti-trash"></i> Delete
+                                        <button type="button" class="btn btn-danger btn-block" onclick="confirmDeleteHomework({{ $homework->submissions->count() }})">
+                                            <i class="ti-trash"></i> Delete Homework
                                         </button>
                                     </form>
                                 </div>
                             </div>
+
 
                             <!-- Details Card -->
                             <div class="card alert" style="margin-top: 20px;">
@@ -591,124 +592,261 @@ $(document).ready(function() {
                 // Update status badge
                 row.find('td:eq(2)').html('<span class="badge badge-success">Graded</span>');
                 
-                // Show brief success indicator
+                // Toastr success message
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('Grade saved successfully!', 'Success', {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 3000
+                    });
+                }
+                
                 showSuccessIndicator(row);
             },
             error: function(xhr) {
-                alert('Failed to save grade. Please try again.');
+                swal({
+                    title: "Error!",
+                    text: "Failed to save grade. Please try again.",
+                    type: "error"
+                });
             }
         });
     }
     
     // ========================================
-    // SAVE ALL CHANGES
+    // SAVE ALL CHANGES WITH SWEETALERT V1
     // ========================================
     $('#save-all-changes-btn').click(function() {
         if (changedSubmissions.size === 0) {
-            alert('No changes to save');
+            swal({
+                title: "No Changes",
+                text: "No changes to save",
+                type: "info"
+            });
             return;
         }
         
-        if (!confirm(`Save grades for ${changedSubmissions.size} student(s)?`)) {
-            return;
-        }
+        const totalChanges = changedSubmissions.size;
         
-        let savedCount = 0;
-        const total = changedSubmissions.size;
-        
-        changedSubmissions.forEach(submissionId => {
-            const row = $(`tr[data-submission-id="${submissionId}"]`);
-            const grade = row.find('.grade-input').val();
-            const comments = row.find('.comments-input').val();
+        swal({
+            title: "Save All Grades?",
+            text: "Save grades for " + totalChanges + " student(s)?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, save all!",
+            cancelButtonText: "Cancel",
+            closeOnConfirm: false,
+            closeOnCancel: true
+        }, function(isConfirm) {
+            if (!isConfirm) return;
             
-            if (!grade) return;
+            // Show loading
+            swal({
+                title: "Saving...",
+                text: "Please wait while we save all grades",
+                type: "info",
+                showConfirmButton: false,
+                allowEscapeKey: false
+            });
             
-            $.ajax({
-                url: '{{ route("admin.homework.submissions.grade", $homework->id) }}',
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    submission_id: submissionId,
-                    grade: grade,
-                    teacher_comments: comments
-                },
-                success: function() {
-                    row.find('.grade-input').data('original-value', grade);
-                    row.find('.comments-input').data('original-value', comments);
-                    row.find('.grade-input, .comments-input').removeClass('changed');
-                    row.removeClass('changed');
-                    row.find('td:eq(2)').html('<span class="badge badge-success">Graded</span>');
+            let savedCount = 0;
+            let errorCount = 0;
+            const total = changedSubmissions.size;
+            const submissionArray = Array.from(changedSubmissions);
+            
+            submissionArray.forEach(function(submissionId) {
+                const row = $(`tr[data-submission-id="${submissionId}"]`);
+                const grade = row.find('.grade-input').val();
+                const comments = row.find('.comments-input').val();
+                
+                if (!grade) {
+                    errorCount++;
+                    checkCompletion();
+                    return;
+                }
+                
+                $.ajax({
+                    url: '{{ route("admin.homework.submissions.grade", $homework->id) }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        submission_id: submissionId,
+                        grade: grade,
+                        teacher_comments: comments
+                    },
+                    success: function() {
+                        row.find('.grade-input').data('original-value', grade);
+                        row.find('.comments-input').data('original-value', comments);
+                        row.find('.grade-input, .comments-input').removeClass('changed');
+                        row.removeClass('changed');
+                        row.find('td:eq(2)').html('<span class="badge badge-success">Graded</span>');
+                        savedCount++;
+                        checkCompletion();
+                    },
+                    error: function() {
+                        errorCount++;
+                        checkCompletion();
+                    }
+                });
+            });
+            
+            function checkCompletion() {
+                if (savedCount + errorCount === total) {
+                    changedSubmissions.clear();
+                    updateChangesIndicator();
                     
-                    savedCount++;
-                    if (savedCount === total) {
-                        changedSubmissions.clear();
-                        updateChangesIndicator();
-                        alert(`Successfully graded ${savedCount} submission(s)!`);
-                        location.reload();
+                    if (errorCount > 0) {
+                        swal({
+                            title: "Partially Saved",
+                            text: "Saved " + savedCount + " grade(s). " + errorCount + " failed.",
+                            type: "warning"
+                        }, function() {
+                            location.reload();
+                        });
+                    } else {
+                        swal({
+                            title: "Success!",
+                            text: "Successfully graded " + savedCount + " submission(s)!",
+                            type: "success"
+                        }, function() {
+                            location.reload();
+                        });
                     }
                 }
-            });
-        });
-    });
-    
-    // ========================================
-    // QUICK MARK AS SUBMITTED
-    // ========================================
-    $('.quick-mark-submitted').click(function() {
-        const submissionId = $(this).data('id');
-        const row = $(`tr[data-submission-id="${submissionId}"]`);
-        
-        $.ajax({
-            url: '{{ route("admin.homework.mark-submitted", $homework->id) }}',
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                submission_id: submissionId
-            },
-            success: function() {
-                location.reload();
-            },
-            error: function() {
-                alert('Failed to mark as submitted');
             }
         });
     });
     
     // ========================================
-    // BULK MARK AS SUBMITTED
+    // QUICK MARK AS SUBMITTED WITH SWEETALERT V1
+    // ========================================
+    $(document).on('click', '.quick-mark-submitted', function(e) {
+        e.preventDefault();
+        
+        const submissionId = $(this).data('id');
+        const row = $(`tr[data-submission-id="${submissionId}"]`);
+        const studentName = row.find('strong').first().text();
+        
+        swal({
+            title: "Mark as Submitted?",
+            text: "Mark " + studentName + "'s homework as submitted?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f0ad4e",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Yes, mark submitted!",
+            cancelButtonText: "Cancel",
+            closeOnConfirm: false,
+            closeOnCancel: true
+        }, function(isConfirm) {
+            if (!isConfirm) return;
+            
+            // Show loading
+            swal({
+                title: "Processing...",
+                text: "Marking homework as submitted",
+                type: "info",
+                showConfirmButton: false,
+                allowEscapeKey: false
+            });
+            
+            $.ajax({
+                url: '{{ route("admin.homework.mark-submitted", $homework->id) }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    submission_id: submissionId
+                },
+                success: function(response) {
+                    swal({
+                        title: "Success!",
+                        text: "Homework marked as submitted.",
+                        type: "success"
+                    }, function() {
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    swal({
+                        title: "Error!",
+                        text: "Failed to mark as submitted. Please try again.",
+                        type: "error"
+                    });
+                }
+            });
+        });
+    });
+
+    // ========================================
+    // BULK MARK AS SUBMITTED WITH SWEETALERT V1
     // ========================================
     $('#bulk-mark-submitted-bottom').click(function() {
         const checked = $('.submission-checkbox:checked');
+        
         if (checked.length === 0) {
-            alert('Please select at least one submission');
+            swal({
+                title: "No Selection",
+                text: "Please select at least one submission",
+                type: "warning"
+            });
             return;
         }
         
         const submissionIds = checked.map(function() { return $(this).val(); }).get();
+        const count = submissionIds.length;
         
-        if (!confirm(`Mark ${submissionIds.length} submission(s) as submitted?`)) {
-            return;
-        }
-        
-        const form = $('<form>', {
-            method: 'POST',
-            action: '{{ route("admin.homework.bulk-mark-submitted", $homework->id) }}'
+        swal({
+            title: "Bulk Mark as Submitted?",
+            text: "Mark " + count + " submission(s) as submitted?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f0ad4e",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Yes, mark " + count + " submissions",
+            cancelButtonText: "Cancel",
+            closeOnConfirm: false,
+            closeOnCancel: true
+        }, function(isConfirm) {
+            if (!isConfirm) return;
+            
+            // Show loading
+            swal({
+                title: "Processing...",
+                text: "Marking " + count + " submissions...",
+                type: "info",
+                showConfirmButton: false,
+                allowEscapeKey: false
+            });
+            
+            const form = $('<form>', {
+                method: 'POST',
+                action: '{{ route("admin.homework.bulk-mark-submitted", $homework->id) }}'
+            });
+            
+            form.append($('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }));
+            submissionIds.forEach(function(id) {
+                form.append($('<input>', { type: 'hidden', name: 'submission_ids[]', value: id }));
+            });
+            
+            $('body').append(form);
+            form.submit();
         });
-        
-        form.append($('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }));
-        submissionIds.forEach(id => {
-            form.append($('<input>', { type: 'hidden', name: 'submission_ids[]', value: id }));
-        });
-        
-        $('body').append(form);
-        form.submit();
     });
     
     // ========================================
-    // SELECT ALL
+    // SELECT ALL CHECKBOX
     // ========================================
-    $('#select-all-checkbox, #select-all-bottom').on('change click', function() {
-        $('.submission-checkbox').prop('checked', true);
+    $('#select-all-checkbox').on('change', function() {
+        const isChecked = $(this).prop('checked');
+        $('.submission-checkbox').prop('checked', isChecked);
+    });
+    
+    $('#select-all-bottom').on('click', function() {
+        const allChecked = $('.submission-checkbox:checked').length === $('.submission-checkbox').length;
+        $('.submission-checkbox').prop('checked', !allChecked);
+        $('#select-all-checkbox').prop('checked', !allChecked);
     });
     
     // ========================================
@@ -726,32 +864,111 @@ $(document).ready(function() {
     
     function showSuccessIndicator(row) {
         row.css('background-color', '#d4edda');
-        setTimeout(() => {
+        setTimeout(function() {
             row.css('background-color', '');
         }, 1000);
     }
     
     // Warn before leaving with unsaved changes
-    window.addEventListener('beforeunload', function(e) {
+    $(window).on('beforeunload', function(e) {
         if (changedSubmissions.size > 0) {
-            e.preventDefault();
-            e.returnValue = '';
+            return 'You have unsaved changes. Are you sure you want to leave?';
         }
     });
+    
+    // ========================================
+    // TOASTR FLASH MESSAGES
+    // ========================================
+    @if(session('success'))
+        if (typeof toastr !== 'undefined') {
+            toastr.success("{{ session('success') }}", "Success", {
+                closeButton: true,
+                progressBar: true,
+                timeOut: 5000,
+                positionClass: "toast-top-right"
+            });
+        }
+    @endif
+
+    @if(session('error'))
+        if (typeof toastr !== 'undefined') {
+            toastr.error("{{ session('error') }}", "Error", {
+                closeButton: true,
+                progressBar: true,
+                timeOut: 8000,
+                positionClass: "toast-top-right"
+            });
+        }
+    @endif
+
+    @if(session('warning'))
+        if (typeof toastr !== 'undefined') {
+            toastr.warning("{{ session('warning') }}", "Warning", {
+                closeButton: true,
+                progressBar: true,
+                timeOut: 6000,
+                positionClass: "toast-top-right"
+            });
+        }
+    @endif
+
+    @if($errors->any())
+        @foreach($errors->all() as $error)
+            if (typeof toastr !== 'undefined') {
+                toastr.error("{{ $error }}", "Validation Error", {
+                    closeButton: true,
+                    progressBar: true,
+                    timeOut: 6000,
+                    positionClass: "toast-top-right"
+                });
+            }
+        @endforeach
+    @endif
 });
+
+// ==========================================
+// DELETE HOMEWORK CONFIRMATION (GLOBAL)
+// ==========================================
+function confirmDeleteHomework(submissionCount) {
+    var warningMessage = '';
+    var confirmButtonText = 'Yes, delete it!';
+    
+    if (submissionCount > 0) {
+        warningMessage = 'This homework has ' + submissionCount + ' submission(s) from students. ' +
+                       'All submissions will be permanently deleted! ' +
+                       'This action cannot be undone!';
+        confirmButtonText = 'Delete (' + submissionCount + ' submissions)';
+    } else {
+        warningMessage = 'This homework has no submissions yet. ' +
+                       'Are you sure you want to delete it? ' +
+                       'This action cannot be undone!';
+    }
+    
+    swal({
+        title: "Delete Homework?",
+        text: warningMessage,
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: confirmButtonText,
+        cancelButtonText: "No, keep it",
+        closeOnConfirm: false,
+        closeOnCancel: true
+    }, function(isConfirm) {
+        if (isConfirm) {
+            // Show loading state
+            swal({
+                title: "Deleting...",
+                text: "Please wait while we delete the homework",
+                type: "info",
+                showConfirmButton: false,
+                allowEscapeKey: false
+            });
+            
+            document.getElementById('deleteHomeworkForm').submit();
+        }
+    });
+}
 </script>
 @endpush
-
-
-
-
-
-
-
-
-
-
-
-
-
-

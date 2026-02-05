@@ -157,7 +157,7 @@
                                     </div>
                                     <div class="stat-content">
                                         <div class="text-left dib">
-                                            <div class="stat-heading">Active Enrollments</div>
+                                            <div class="stat-heading">Active Enrolments</div>
                                             <div class="stat-text">Count: <strong>{{ number_format($stats['active_enrollments']) }}</strong></div>
                                         </div>
                                     </div>
@@ -322,11 +322,11 @@
 
                     <!-- Charts Section -->
                     <div class="row">
-                        <!-- Student & Teacher Enrollment Trend -->
+                        <!-- Student & Teacher Enrolment Trend -->
                         <div class="col-lg-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h4><i class="ti-stats-up"></i> Enrollment Trend (Last 6 Months)</h4>
+                                    <h4><i class="ti-stats-up"></i> Enrolment Trend (Last 6 Months)</h4>
                                 </div>
                                 <div class="card-body">
                                     <canvas id="enrollmentTrendChart"></canvas>
@@ -612,7 +612,7 @@
                     </div>
 
                     <!-- RECENT HOUR CHANGES -->
-                    {{-- <div class="row">
+                    <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-header">
@@ -673,15 +673,15 @@
                                 </div>
                             </div>
                         </div>
-                    </div> --}}
+                    </div>
 
 
-                    <!-- Recent Enrollments -->
+                    <!-- Recent Enrolments -->
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-header">
-                                    <h4><i class="ti-book"></i> Recent Class Enrollments (Last 7 Days)</h4>
+                                    <h4><i class="ti-book"></i> Recent Class Enrolments (Last 7 Days)</h4>
                                 </div>
                                 <div class="card-body">
                                     @if($recentEnrollments->count() > 0)
@@ -692,7 +692,7 @@
                                                     <th>#</th>
                                                     <th>Student</th>
                                                     <th>Class</th>
-                                                    <th>Enrollment Date</th>
+                                                    <th>Enrolment Date</th>
                                                     <th>Status</th>
                                                     <th>Action</th>
                                                 </tr>
@@ -722,7 +722,7 @@
                                         </table>
                                     </div>
                                     @else
-                                        <p class="text-muted text-center py-4">No recent enrollments</p>
+                                        <p class="text-muted text-center py-4">No recent enrolments</p>
                                     @endif
                                 </div>
                             </div>

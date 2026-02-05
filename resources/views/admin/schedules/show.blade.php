@@ -318,7 +318,7 @@
 
                                     <div class="info-item">
                                         <span class="info-label">
-                                            <i class="ti-user"></i> Enrolled Students
+                                            <i class="ti-user"></i> Enroled Students
                                         </span>
                                         <span class="info-value">
                                             <span class="badge badge-info">

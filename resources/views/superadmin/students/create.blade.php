@@ -200,14 +200,14 @@
                                             </div>
                                         </div>
 
-                                        <!-- Enrollment Information Section -->
+                                        <!-- Enrolment Information Section -->
                                         <div class="form-section">
-                                            <h4 class="mb-3"><i class="ti-book"></i> Enrollment & Schedule Information</h4>
+                                            <h4 class="mb-3"><i class="ti-book"></i> Enrolment & Schedule Information</h4>
                                             <div class="row">
-                                                <!-- Enrollment Date -->
+                                                <!-- Enrolment Date -->
                                                 <div class="col-md-4">
                                                     <div class="form-group">
-                                                        <label for="enrollment_date" class="required-field">Enrollment Date</label>
+                                                        <label for="enrollment_date" class="required-field">Enrolment Date</label>
                                                         <input 
                                                             type="date" 
                                                             name="enrollment_date" 
@@ -217,7 +217,7 @@
                                                             class="form-control @error('enrollment_date') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-calendar"></i> Date when student enrolled
+                                                            <i class="ti-calendar"></i> Date when student enroled
                                                         </small>
                                                         @error('enrollment_date')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -273,7 +273,7 @@
                                                             <option value="withdrawn" {{ old('status') === 'withdrawn' ? 'selected' : '' }}>Withdrawn</option>
                                                         </select>
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-flag"></i> Current enrollment status
+                                                            <i class="ti-flag"></i> Current enrolment status
                                                         </small>
                                                         @error('status')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -389,7 +389,7 @@
                                                 <i class="ti-info-alt mr-3"></i>
                                                 <div>
                                                     <strong>Important Information</strong>
-                                                    <p class="mb-0">Please ensure all required fields are filled correctly. The weekly hours field tracks teaching time for workload and income calculations. The parent will be notified of the new student enrollment via email.</p>
+                                                    <p class="mb-0">Please ensure all required fields are filled correctly. The weekly hours field tracks teaching time for workload and income calculations. The parent will be notified of the new student enrolment via email.</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -571,7 +571,7 @@
 
                 if ($('#enrollment_date').val() === '') {
                     isValid = false;
-                    errors.push('• Enrollment date is required');
+                    errors.push('• Enrolment date is required');
                     $('#enrollment_date').addClass('is-invalid');
                 }
 

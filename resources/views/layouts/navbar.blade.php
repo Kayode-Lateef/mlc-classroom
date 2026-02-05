@@ -104,6 +104,11 @@
         position: relative;
     }
 
+    #notification-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
     .notification-badge {
         position: absolute;
         top: 10px;

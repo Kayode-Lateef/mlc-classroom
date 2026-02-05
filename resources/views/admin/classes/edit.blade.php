@@ -98,8 +98,8 @@
                                         <div class="d-flex">
                                             <i class="ti-info-alt mr-3"></i>
                                             <div>
-                                                <strong>Current Enrollment: {{ $enrolledCount }} student(s)</strong>
-                                                <p class="mb-0 mt-1">You cannot reduce the capacity below the current number of enrolled students.</p>
+                                                <strong>Current Enrolment: {{ $enrolledCount }} student(s)</strong>
+                                                <p class="mb-0 mt-1">You cannot reduce the capacity below the current number of enroled students.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -267,7 +267,7 @@
                                                             class="form-control @error('capacity') is-invalid @enderror"
                                                         >
                                                         <small class="form-helper-text" id="capacity-helper">
-                                                            <i class="ti-id-badge"></i> Currently enrolled: {{ $enrolledCount }} student(s)
+                                                            <i class="ti-id-badge"></i> Currently enroled: {{ $enrolledCount }} student(s)
                                                         </small>
                                                         @error('capacity')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -355,7 +355,7 @@
                 var helper = $('#capacity-helper');
                 
                 if (capacity < currentEnrolled) {
-                    helper.html('<i class="ti-alert"></i> Cannot be less than current enrollment (' + currentEnrolled + ' students)')
+                    helper.html('<i class="ti-alert"></i> Cannot be less than current enrolment (' + currentEnrolled + ' students)')
                            .css('color', '#dc3545');
                     $(this).addClass('is-invalid');
                 } else if (capacity > 30) {
@@ -367,7 +367,7 @@
                            .css('color', '#28a745');
                     $(this).removeClass('is-invalid');
                 } else {
-                    helper.html('<i class="ti-id-badge"></i> Currently enrolled: ' + currentEnrolled + ' student(s)')
+                    helper.html('<i class="ti-id-badge"></i> Currently enroled: ' + currentEnrolled + ' student(s)')
                            .css('color', '#6c757d');
                     $(this).removeClass('is-invalid');
                 }
@@ -391,7 +391,7 @@
                 
                 if (capacity < currentEnrolled) {
                     e.preventDefault();
-                    alert('Capacity cannot be less than the current number of enrolled students (' + currentEnrolled + ').');
+                    alert('Capacity cannot be less than the current number of enroled students (' + currentEnrolled + ').');
                     $('#capacity').focus();
                     return false;
                 }

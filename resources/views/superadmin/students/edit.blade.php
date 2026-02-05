@@ -205,14 +205,14 @@
                                             </div>
                                         </div>
 
-                                        <!-- Enrollment Information Section -->
+                                        <!-- Enrolment Information Section -->
                                         <div class="form-section">
-                                            <h4 class="mb-3"><i class="ti-book"></i> Enrollment & Schedule Information</h4>
+                                            <h4 class="mb-3"><i class="ti-book"></i> Enrolment & Schedule Information</h4>
                                             <div class="row">
-                                                <!-- Enrollment Date -->
+                                                <!-- Enrolment Date -->
                                                 <div class="col-md-4">
                                                     <div class="form-group">
-                                                        <label for="enrollment_date" class="required-field">Enrollment Date</label>
+                                                        <label for="enrollment_date" class="required-field">Enrolment Date</label>
                                                         <input 
                                                             type="date" 
                                                             name="enrollment_date" 
@@ -222,7 +222,7 @@
                                                             class="form-control @error('enrollment_date') is-invalid @enderror"
                                                         >
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-calendar"></i> Date when student enrolled
+                                                            <i class="ti-calendar"></i> Date when student enroled
                                                         </small>
                                                         @error('enrollment_date')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -266,7 +266,7 @@
                                                             <option value="withdrawn" {{ old('status', $student->status) === 'withdrawn' ? 'selected' : '' }}>Withdrawn</option>
                                                         </select>
                                                         <small class="form-text text-muted">
-                                                            <i class="ti-flag"></i> Current enrollment status
+                                                            <i class="ti-flag"></i> Current enrolment status
                                                         </small>
                                                         @error('status')
                                                         <span class="invalid-feedback">{{ $message }}</span>
@@ -398,8 +398,8 @@
                                                     <strong>Student Information</strong>
                                                     <ul class="mb-0 mt-2">
                                                         <li>Student ID: {{ $student->id }}</li>
-                                                        <li>Enrolled: {{ $student->enrollment_date->format('d M Y') }} ({{ $student->enrollment_date->diffForHumans() }})</li>
-                                                        <li>Classes Enrolled: {{ $student->enrollments->count() }}</li>
+                                                        <li>Enroled: {{ $student->enrollment_date->format('d M Y') }} ({{ $student->enrollment_date->diffForHumans() }})</li>
+                                                        <li>Classes Enroled: {{ $student->enrollments->count() }}</li>
                                                         <li>Last Updated: {{ $student->updated_at->format('d M Y, H:i') }}</li>
                                                     </ul>
                                                 </div>
@@ -552,10 +552,10 @@
                     let warningText = "Are you sure you want to change the status to '" + newStatus.toUpperCase() + "'?\n\n";
                     
                     if (classCount > 0) {
-                        warningText += "This student is currently enrolled in " + classCount + " class(es).\n\n";
+                        warningText += "This student is currently enroled in " + classCount + " class(es).\n\n";
                     }
                     
-                    warningText += "This may affect the student's class enrollments and access to the system.";
+                    warningText += "This may affect the student's class enrolments and access to the system.";
                     
                     swal({
                         title: "Change Student Status?",
@@ -630,10 +630,10 @@
                     $('#parent_id').removeClass('is-invalid');
                 }
 
-                // Validate Enrollment Date
+                // Validate Enrolment Date
                 if ($('#enrollment_date').val() === '') {
                     isValid = false;
-                    errors.push('• Enrollment date is required');
+                    errors.push('• Enrolment date is required');
                     $('#enrollment_date').addClass('is-invalid');
                 } else {
                     $('#enrollment_date').removeClass('is-invalid');

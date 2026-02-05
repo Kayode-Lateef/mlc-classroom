@@ -120,8 +120,11 @@ class ReportController extends Controller
             ? round(($stats['present'] / $stats['total']) * 100, 1)
             : 0;
 
-        // Chart data
+        // Chart data - attendance trend
         $attendanceTrend = $this->getAttendanceTrend($dateFrom, $dateTo, $request);
+        
+        // ADD THIS: Status distribution for pie chart
+        $statusDistribution = $this->getStatusDistribution($dateFrom, $dateTo, $request);
 
         // Filter options
         $classes = ClassModel::orderBy('name')->get();
@@ -131,6 +134,7 @@ class ReportController extends Controller
             'attendanceRecords',
             'stats',
             'attendanceTrend',
+            'statusDistribution', // ADD THIS
             'classes',
             'students',
             'dateFrom',
@@ -562,6 +566,63 @@ class ReportController extends Controller
         return [
             'labels' => ['A', 'B', 'C', 'D', 'F'],
             'data' => [20, 30, 25, 15, 10],
+        ];
+    }
+
+
+    /**
+     * Get status distribution for pie chart
+     */
+    protected function getStatusDistribution($dateFrom, $dateTo, $request)
+    {
+        // Get filtered records
+        $query = Attendance::whereBetween('date', [$dateFrom, $dateTo]);
+        
+        if ($request->filled('class_id')) {
+            $query->where('class_id', $request->class_id);
+        }
+        
+        if ($request->filled('student_id')) {
+            $query->where('student_id', $request->student_id);
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        // Group by status
+        $statusCounts = $query->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+        
+        // Define status labels in order
+        $statusLabels = [
+            'present' => 'Present',
+            'absent' => 'Absent', 
+            'late' => 'Late',
+            'unauthorized' => 'Unauthorized',
+        ];
+        
+        $data = [];
+        $labels = [];
+        
+        foreach ($statusLabels as $key => $label) {
+            if (isset($statusCounts[$key]) && $statusCounts[$key] > 0) {
+                $labels[] = $label;
+                $data[] = $statusCounts[$key];
+            }
+        }
+        
+        // If no data, provide defaults
+        if (empty($data)) {
+            $labels = ['No Data'];
+            $data = [1];
+        }
+        
+        return [
+            'labels' => $labels,
+            'data' => $data,
         ];
     }
 

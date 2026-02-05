@@ -219,7 +219,7 @@
                                                             <small class="text-muted d-block">({{ $student->date_of_birth->age }} years old)</small>
                                                         </div>
                                                         <div class="email-content">
-                                                            <span class="contact-title">Enrollment Date:</span>
+                                                            <span class="contact-title">Enrolment Date:</span>
                                                             <span class="contact-email">{{ $student->enrollment_date->format('d F Y') }}</span>
                                                         </div>
                                                         <div class="website-content">
@@ -267,7 +267,7 @@
                                             <i class="ti-book"></i>
                                         </div>
                                         <div style="margin-left: 15px; flex: 1;">
-                                            <div class="stat-text">Enrolled Classes</div>
+                                            <div class="stat-text">Enroled Classes</div>
                                             <div class="stat-digit">{{ $stats['enrolled_classes'] }}</div>
                                         </div>
                                     </div>
@@ -346,7 +346,7 @@
                                 <div class="card-body">
                                     <div class="custom-tab">
                                         <ul class="nav nav-tabs" role="tablist">
-                                            <li role="presentation" class="active"><a href="#classes" aria-controls="classes" role="tab" data-toggle="tab"><i class="ti-book"></i> Enrolled Classes</a></li>
+                                            <li role="presentation" class="active"><a href="#classes" aria-controls="classes" role="tab" data-toggle="tab"><i class="ti-book"></i> Enroled Classes</a></li>
                                             <li role="presentation"><a href="#attendance" aria-controls="attendance" role="tab" data-toggle="tab"><i class="ti-check-box"></i> Attendance History</a></li>
                                             <li role="presentation"><a href="#homework" aria-controls="homework" role="tab" data-toggle="tab"> <i class="ti-write"></i> Homework</a></li>
                                             <li role="presentation"><a href="#progress" aria-controls="progress" role="tab" data-toggle="tab"><i class="ti-stats-up"></i> Progress Reports</a></li>
@@ -372,7 +372,7 @@
                                                                         <span class="badge badge-secondary role-badge">{{ ucfirst($class->pivot->status) }}</span>
                                                                     @endif
                                                                     <small class="text-muted d-block mt-2">
-                                                                        Enrolled: {{ \Carbon\Carbon::parse($class->pivot->enrollment_date)->format('d M Y') }}
+                                                                        Enroled: {{ \Carbon\Carbon::parse($class->pivot->enrollment_date)->format('d M Y') }}
                                                                     </small>
                                                                 </div>
                                                             </div>
@@ -382,8 +382,8 @@
                                                 @else
                                                     <div class="empty-state">
                                                         <i class="ti-book"></i>
-                                                        <h4>No Classes Enrolled</h4>
-                                                        <p>This student is not enrolled in any classes yet.</p>
+                                                        <h4>No Classes Enroled</h4>
+                                                        <p>This student is not enroled in any classes yet.</p>
                                                     </div>
                                                 @endif
                                             </div>
@@ -579,12 +579,12 @@
                 
                 const form = this;
                 const studentName = "{{ $student->first_name }} {{ $student->last_name }}";
-                const classCount = {{ $student->classes->count() ?? 0 }}; // Number of enrolled classes
+                const classCount = {{ $student->classes->count() ?? 0 }}; // Number of ed classes
                 
                 let warningText = "You want to delete student '" + studentName + "'?\n\n";
                 
                 if (classCount > 0) {
-                    warningText += "⚠️ This student is currently enrolled in " + classCount + " class(es).\n\n";
+                    warningText += "⚠️ This student is currently enroled in " + classCount + " class(es).\n\n";
                 }
                 
                 warningText += "This action cannot be undone!";

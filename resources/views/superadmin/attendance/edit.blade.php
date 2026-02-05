@@ -226,7 +226,7 @@
                                         @if($students->count() === 0)
                                         <div class="text-center py-5">
                                             <i class="ti-user" style="font-size: 3rem; color: #cbd5e0;"></i>
-                                            <h4 class="mt-3">No Students Enrolled</h4>
+                                            <h4 class="mt-3">No Students Enroled</h4>
                                             <p class="text-muted">This class doesn't have any active students.</p>
                                         </div>
                                         @endif

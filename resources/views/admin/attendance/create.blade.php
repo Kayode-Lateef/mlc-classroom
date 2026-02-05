@@ -218,7 +218,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <strong>Students:</strong><br>
-                                        {{ $students->count() }} enrolled
+                                        {{ $students->count() }} enroled
                                     </div>
                                 </div>
                             </div>

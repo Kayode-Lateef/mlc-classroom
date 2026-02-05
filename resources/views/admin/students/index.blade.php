@@ -271,7 +271,7 @@
                                                     <th>Student</th>
                                                     <th>Parent</th>
                                                     <th>Date of Birth</th>
-                                                    <th>Enrollment</th>
+                                                    <th>Enrolment</th>
                                                     <th>Weekly Hour</th>
                                                     <th>Status</th>
                                                     <th>Classes</th>
@@ -409,7 +409,7 @@
                 let warningText = "You want to delete student '" + studentName + "'?\n\n";
                 
                 if (classCount > 0) {
-                    warningText += "⚠️ This student is currently enrolled in " + classCount + " class(es).\n\n";
+                    warningText += "⚠️ This student is currently enroled in " + classCount + " class(es).\n\n";
                 }
                 
                 warningText += "This action cannot be undone!";

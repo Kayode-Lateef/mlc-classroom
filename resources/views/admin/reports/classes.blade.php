@@ -181,7 +181,7 @@
                     </div>
 
                     <!-- Export Buttons -->
-                    <div class="row">
+                    {{-- <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-header mb-3">
@@ -232,7 +232,8 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
+                    
                 @endif
 
                 <div class="row">

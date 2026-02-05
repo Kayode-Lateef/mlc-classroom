@@ -290,8 +290,8 @@
                             <!-- No Students Warning -->
                             <div class="alert alert-warning" id="no-students-warning" style="display: none;">
                                 <i class="ti-info-alt"></i>
-                                <strong>No students enrolled</strong> - 
-                                No students are enrolled in this class. You can still update the progress sheet, but there won't be any student notes.
+                                <strong>No students enroled</strong> - 
+                                No students are enroled in this class. You can still update the progress sheet, but there won't be any student notes.
                             </div>
                         </div>
 

@@ -246,7 +246,7 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <strong><i class="ti-user"></i> Students:</strong><br>
-                                                {{ $students->count() }} enrolled
+                                                {{ $students->count() }} enroled
                                             </div>
                                         </div>
                                     </div>
@@ -373,8 +373,8 @@
                                                 @else
                                                     <div class="text-center py-5">
                                                         <i class="ti-user" style="font-size: 3rem; color: #cbd5e0;"></i>
-                                                        <h4 class="mt-3">No Students Enrolled</h4>
-                                                        <p class="text-muted">This class doesn't have any enrolled students yet.</p>
+                                                        <h4 class="mt-3">No Students Enroled</h4>
+                                                        <p class="text-muted">This class doesn't have any enroled students yet.</p>
                                                     </div>
                                                 @endif
                                             </div>
@@ -415,10 +415,10 @@
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="alert alert-warning">
-                                    <i class="ti-alert"></i> <strong>No Students Enrolled</strong>
+                                    <i class="ti-alert"></i> <strong>No Students Enroled</strong>
                                     <p class="mb-0">
-                                        This class doesn't have any active enrolled students. 
-                                        Please contact your administrator to enroll students in this class.
+                                        This class doesn't have any active enroled students. 
+                                        Please contact your administrator to enrol students in this class.
                                     </p>
                                 </div>
                             </div>

@@ -117,6 +117,11 @@
         .class-card:hover, .child-card:hover {
             box-shadow: 0 3px 10px rgba(0,123,255,0.1);
         }
+        .recent-activity-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
 
         .activity-item {
             padding: 15px;
@@ -397,7 +402,7 @@
                                 </div>
                                 <div class="card-body">
                                     @if($recentActivity->count() > 0)
-                                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div class="recent-activity-container" style="display: flex; flex-direction: column; gap: 10px;">
                                         @foreach($recentActivity->take(10) as $activity)
                                         <div class="activity-item">
                                             <div style="display: flex; align-items: flex-start; gap: 15px;">
@@ -663,7 +668,7 @@
                                                 <div class="stat-icon bg-success text-white">
                                                     <i class="ti-briefcase"></i>
                                                 </div>
-                                                <div class="stat-text">Total Enrollments</div>
+                                                <div class="stat-text">Total Enrolments</div>
                                                 <div class="stat-digit">{{ $user->children->sum(function($child) { return $child->classes->count(); }) }}</div>
                                             </div>
                                         </div>
@@ -709,7 +714,7 @@
                                                             <div>
                                                                 <h5 style="margin-bottom: 5px;">{{ $child->full_name }}</h5>
                                                                 <p class="text-muted mb-0">
-                                                                    <i class="ti-briefcase"></i> {{ $child->classes->count() }} classes enrolled
+                                                                    <i class="ti-briefcase"></i> {{ $child->classes->count() }} classes enroled
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -730,8 +735,8 @@
                                             @else
                                             <div class="empty-state">
                                                 <i class="ti-user"></i>
-                                                <h4>No Children Enrolled</h4>
-                                                <p>This parent doesn't have any children enrolled yet.</p>
+                                                <h4>No Children Enroled</h4>
+                                                <p>This parent doesn't have any children enroled yet.</p>
                                             </div>
                                             @endif
                                         </div>

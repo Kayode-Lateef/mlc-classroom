@@ -255,7 +255,7 @@
 
                                     <div class="guideline-item">
                                         <i class="ti-check guideline-icon"></i>
-                                        <p class="mb-0">Students see their schedules through class enrollments</p>
+                                        <p class="mb-0">Students see their schedules through class enrolments</p>
                                     </div>
 
                                     <!-- Common Time Slots -->

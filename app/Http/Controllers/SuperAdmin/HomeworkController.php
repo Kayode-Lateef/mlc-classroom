@@ -405,31 +405,48 @@ class HomeworkController extends Controller
         }
     }
 
+
     /**
-     * Grade a homework submission
+     * Grade a homework submission via AJAX
      */
-    public function gradeSubmission(Request $request, HomeworkSubmission $submission)
+    public function gradeSubmission(Request $request, $homeworkId)
     {
+        $user = auth()->user(); // Get current user (superadmin or teacher)
+
         $validator = Validator::make($request->all(), [
+            'submission_id' => 'required|exists:homework_submissions,id',
             'grade' => 'required|string|max:50',
             'teacher_comments' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->with('error', 'Please provide a valid grade.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         try {
+            $submission = HomeworkSubmission::findOrFail($request->submission_id);
+            
+            // Verify this submission belongs to the homework
+            if ($submission->homework_assignment_id != $homeworkId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Submission does not belong to this homework'
+                ], 403);
+            }
+
             $submission->update([
                 'grade' => $request->grade,
                 'teacher_comments' => $request->teacher_comments,
                 'status' => 'graded',
                 'graded_at' => now(),
+                'graded_by' => $user->id, // Track who graded it
             ]);
 
-           // NOTIFY PARENT
+            // NOTIFY PARENT
             NotificationHelper::notifyStudentParent(
                 $submission->student,
                 'Homework Graded',
@@ -446,7 +463,7 @@ class HomeworkController extends Controller
 
             // Log activity
             ActivityLog::create([
-                'user_id' => auth()->id(),
+                'user_id' => $user->id,
                 'action' => 'graded_homework',
                 'model_type' => 'HomeworkSubmission',
                 'model_id' => $submission->id,
@@ -455,14 +472,18 @@ class HomeworkController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
-            return redirect()->back()
-                ->with('success', 'Homework graded and parent notified!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Homework graded successfully!'
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Homework grading failed: ' . $e->getMessage());
             
-            return redirect()->back()
-                ->with('error', 'Failed to grade homework. Please try again.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to grade homework. Please try again.'
+            ], 500);
         }
     }
 
@@ -506,13 +527,12 @@ class HomeworkController extends Controller
     }
 
 
-       /**
-     * ✅ NEW: Mark single submission as submitted
+    /**
+     * ✅ Mark single submission as submitted
      */
     public function markAsSubmitted(Request $request, HomeworkAssignment $homework)
     {
-        // $teacher = auth()->user();
-
+        $user = auth()->user(); // Get current user (superadmin or teacher)
 
         $validator = Validator::make($request->all(), [
             'submission_id' => 'required|exists:homework_submissions,id',
@@ -541,17 +561,31 @@ class HomeworkController extends Controller
             $submission->update([
                 'status' => $isLate ? 'late' : 'submitted',
                 'submitted_date' => now(),
-                'submitted_by' => $teacher->id,
+                'submitted_by' => $user->id,
                 'submission_notes' => $request->submission_notes,
             ]);
 
+            // Optional: Send notification to parent
+            NotificationHelper::notifyStudentParent(
+                $submission->student,
+                'Homework Submitted',
+                "Homework '{$homework->title}' has been marked as submitted by teacher.",
+                'homework_submitted',
+                [
+                    'homework_id' => $homework->id,
+                    'submission_id' => $submission->id,
+                    'class_name' => $homework->class->name,
+                    'url' => route('parent.homework.show', $homework->id)
+                ]
+            );
+
             // Log activity
             ActivityLog::create([
-                'user_id' => $teacher->id,
+                'user_id' => $user->id,
                 'action' => 'marked_submission',
                 'model_type' => 'HomeworkSubmission',
                 'model_id' => $submission->id,
-                'description' => "Marked homework as submitted for student: {$submission->student->name}",
+                'description' => "Marked homework as submitted for student: {$submission->student->full_name}",
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
@@ -567,12 +601,13 @@ class HomeworkController extends Controller
         }
     }
 
+
     /**
-     * ✅ NEW: Bulk mark submissions as submitted
+     * ✅ Bulk mark submissions as submitted
      */
     public function bulkMarkAsSubmitted(Request $request, HomeworkAssignment $homework)
     {
-        // $teacher = auth()->user();
+        $user = auth()->user(); // Get current user (superadmin or teacher)
 
         $validator = Validator::make($request->all(), [
             'submission_ids' => 'required|array|min:1',
@@ -603,16 +638,31 @@ class HomeworkController extends Controller
                     $submission->update([
                         'status' => $status,
                         'submitted_date' => now(),
-                        'submitted_by' => $teacher->id,
+                        'submitted_by' => $user->id,
                         'submission_notes' => $request->submission_notes,
                     ]);
+                    
+                    // Optional: Send notification to parent
+                    NotificationHelper::notifyStudentParent(
+                        $submission->student,
+                        'Homework Submitted',
+                        "Homework '{$homework->title}' has been marked as submitted by teacher.",
+                        'homework_submitted',
+                        [
+                            'homework_id' => $homework->id,
+                            'submission_id' => $submission->id,
+                            'class_name' => $homework->class->name,
+                            'url' => route('parent.homework.show', $homework->id)
+                        ]
+                    );
+                    
                     $count++;
                 }
             }
 
             // Log activity
             ActivityLog::create([
-                'user_id' => $teacher->id,
+                'user_id' => $user->id,
                 'action' => 'bulk_marked_submission',
                 'model_type' => 'HomeworkAssignment',
                 'model_id' => $homework->id,
@@ -636,11 +686,11 @@ class HomeworkController extends Controller
     }
 
     /**
-     * ✅ NEW: Bulk grade submissions
+     * ✅ Bulk grade submissions
      */
     public function bulkGrade(Request $request, HomeworkAssignment $homework)
     {
-        // $teacher = auth()->user();
+        $user = auth()->user(); // Get current user (superadmin or teacher)
 
         $validator = Validator::make($request->all(), [
             'submission_ids' => 'required|array|min:1',
@@ -672,7 +722,7 @@ class HomeworkController extends Controller
                         'teacher_comments' => $request->teacher_comments,
                         'status' => 'graded',
                         'graded_at' => now(),
-                        'graded_by' => $teacher->id,
+                        'graded_by' => $user->id,
                     ]);
 
                     // Notify parent
@@ -680,7 +730,14 @@ class HomeworkController extends Controller
                         $submission->student,
                         'Homework Graded',
                         "Homework '{$homework->title}' has been graded. Grade: {$request->grade}",
-                        route('parent.homework.show', [$homework->id, 'child_id' => $submission->student_id])
+                        'homework_graded',
+                        [
+                            'homework_id' => $submission->homework_assignment_id,
+                            'submission_id' => $submission->id,
+                            'grade' => $request->grade,
+                            'class_name' => $submission->homeworkAssignment->class->name,
+                            'url' => route('parent.homework.show', $submission->homeworkAssignment->id)
+                        ]
                     );
 
                     $count++;
@@ -689,7 +746,7 @@ class HomeworkController extends Controller
 
             // Log activity
             ActivityLog::create([
-                'user_id' => $teacher->id,
+                'user_id' => $user->id,
                 'action' => 'bulk_graded',
                 'model_type' => 'HomeworkAssignment',
                 'model_id' => $homework->id,

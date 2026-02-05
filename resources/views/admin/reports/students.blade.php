@@ -94,7 +94,7 @@
                                                 {{ $studentData->parent->name ?? 'N/A' }}</p>
                                         </div>
                                         <div class="col-md-3">
-                                            <p style="color: #6c757d; margin-bottom: 5px;">Enrolled
+                                            <p style="color: #6c757d; margin-bottom: 5px;">Enroled
                                                 Classes</p>
                                             <p style="font-weight: 600;">
                                                 {{ $studentData->enrollments->count() }}</p>
@@ -180,7 +180,7 @@
                     </div>
 
                     <!-- Export Buttons -->
-                    <div class="row">
+                    {{-- <div class="row">
                         <div class="col-lg-12">
                             <div class="card alert">
                                 <div class="card-header mb-3">
@@ -231,7 +231,8 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
+
                 @endif
 
                 <div class="row">

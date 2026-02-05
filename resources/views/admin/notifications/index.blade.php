@@ -302,7 +302,7 @@
                                             @endforeach
                                         </select>
                                         <small class="form-text text-muted">
-                                            <i class="ti-info-alt"></i> Will send to all parents of students enrolled in this class
+                                            <i class="ti-info-alt"></i> Will send to all parents of students enroled in this class
                                         </small>
                                         @error('class_id')
                                             <div class="invalid-feedback">{{ $message }}</div>

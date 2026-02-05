@@ -54,6 +54,7 @@ class DashboardController extends Controller
         
         // Recent hour changes (last 7 days)
         $recentHourChanges = StudentHourHistory::with(['student', 'changedBy'])
+            ->whereHas('student')
             ->where('changed_at', '>=', now()->subDays(7))
             ->orderBy('changed_at', 'desc')
             ->limit(5)

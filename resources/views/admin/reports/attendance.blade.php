@@ -154,7 +154,7 @@
                         <div class="card alert">
                             <div class="card-header">
                                 <h4><i class="ti-list"></i> Attendance Records</h4>
-                                <div class="card-header-right">
+                                {{-- <div class="card-header-right">
                                     <!-- PDF Export -->
                                     <form method="POST" action="{{ route('admin.reports.export') }}" style="display: inline-block; margin-right: 5px;">
                                         @csrf
@@ -217,7 +217,7 @@
                                             <i class="ti-download"></i> CSV
                                         </button>
                                     </form>
-                                </div>
+                                </div> --}}
                             </div>
                             <div class="card-body">
                                 @if($attendanceRecords->count() > 0)
@@ -273,7 +273,6 @@
 @endsection
 
 @push('scripts')
-{{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}}
 <script src="{{ asset('assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
 
 <script>

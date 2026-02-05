@@ -291,7 +291,7 @@
                                         <div style="flex: 1;">
                                             <strong style="display: block;">{{ $child->full_name }}</strong>
                                             @if($resource->class_id)
-                                                <small class="text-muted">Enrolled in {{ $resource->class->name }}</small>
+                                                <small class="text-muted">Enroled in {{ $resource->class->name }}</small>
                                             @else
                                                 <small class="text-muted">General Resource</small>
                                             @endif
@@ -371,7 +371,7 @@
                                             <i class="ti-world"></i> General Resource
                                         </span>
                                         <p style="margin: 5px 0 0 0; color: #6c757d;">
-                                            Available to all enrolled students
+                                            Available to all enroled students
                                         </p>
                                     </div>
                                     @endif

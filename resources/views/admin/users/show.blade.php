@@ -479,7 +479,7 @@
                                                 <div class="stat-icon bg-success text-white">
                                                     <i class="ti-briefcase"></i>
                                                 </div>
-                                                <div class="stat-text">Total Enrollments</div>
+                                                <div class="stat-text">Total Enrolments</div>
                                                 <div class="stat-digit">{{ $user->children->sum(function($child) { return $child->classes->count(); }) }}</div>
                                             </div>
                                         </div>
@@ -525,7 +525,7 @@
                                                             <div>
                                                                 <h5 style="margin-bottom: 5px;">{{ $child->full_name }}</h5>
                                                                 <p class="text-muted mb-0">
-                                                                    <i class="ti-briefcase"></i> {{ $child->classes->count() }} classes enrolled
+                                                                    <i class="ti-briefcase"></i> {{ $child->classes->count() }} classes enroled
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -546,8 +546,8 @@
                                             @else
                                             <div class="empty-state">
                                                 <i class="ti-user"></i>
-                                                <h4>No Children Enrolled</h4>
-                                                <p>This parent doesn't have any children enrolled yet.</p>
+                                                <h4>No Children Enroled</h4>
+                                                <p>This parent doesn't have any children enroled yet.</p>
                                             </div>
                                             @endif
                                         </div>

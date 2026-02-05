@@ -151,7 +151,7 @@
                                     <div class="col-md-9">
                                         <h2 class="mb-2">{{ $selectedChild->full_name }}</h2>
                                         <p class="mb-0" style="opacity: 0.9;">
-                                            <i class="ti-calendar"></i> Enrolled: {{ $selectedChild->enrollment_date->format('d F Y') }}
+                                            <i class="ti-calendar"></i> Enroled: {{ $selectedChild->enrollment_date->format('d F Y') }}
                                         </p>
                                     </div>
                                     <div class="col-md-3 text-right">
@@ -211,7 +211,7 @@
                                 </div>
                                 <div class="stat-content">
                                     <div class="text-left dib">
-                                        <div class="stat-heading">Enrolled Classes</div>
+                                        <div class="stat-heading">Enroled Classes</div>
                                         <div class="stat-text"><strong>{{ $stats['enrolled_classes'] }}</strong></div>
                                         {{-- <div class="card-footer text-center">
                                             <a href="{{ route('parent.students.classes', $selectedChild) }}" class="text-info">View classes →</a>
@@ -493,8 +493,8 @@
                         <div class="card alert">
                             <div class="card-body text-center py-5">
                                 <i class="ti-user" style="font-size: 5rem; color: #cbd5e0;"></i>
-                                <h3 class="mt-4 mb-2">No Children Enrolled</h3>
-                                <p class="text-muted mb-4">You don't have any children enrolled yet. Please contact the school administrator to add your children.</p>
+                                <h3 class="mt-4 mb-2">No Children Enroled</h3>
+                                <p class="text-muted mb-4">You don't have any children enroled yet. Please contact the school administrator to add your children.</p>
                             </div>
                         </div>
                     </div>

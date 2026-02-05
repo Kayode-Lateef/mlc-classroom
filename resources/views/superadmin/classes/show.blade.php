@@ -222,7 +222,7 @@
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
                                     <div class="stat-icon dib"><i class="ti-user color-primary border-primary"></i></div>
                                     <div class="stat-content dib">
-                                        <div class="stat-text">Enrolled Students</div>
+                                        <div class="stat-text">Enroled Students</div>
                                         <div class="stat-digit">{{ $stats['enrolled'] }} / {{ $class->capacity }}</div>
                                     </div>
                                 </div>
@@ -274,12 +274,12 @@
                                         <ul class="nav nav-tabs" role="tablist">
                                             <li role="presentation" class="active">
                                                 <a href="#students" aria-controls="students" role="tab" data-toggle="tab">
-                                                    <i class="ti-user"></i> Enrolled Students ({{ $stats['enrolled'] }})
+                                                    <i class="ti-user"></i> Enroled Students ({{ $stats['enrolled'] }})
                                                 </a>
                                             </li>
                                              <li role="presentation">
                                                 <a href="#enrollment-history" aria-controls="enrollment-history" role="tab" data-toggle="tab">
-                                                    <i class="ti-time"></i> Enrollment History ({{ $enrollmentHistory->count() }})
+                                                    <i class="ti-time"></i> Enrolment History ({{ $enrollmentHistory->count() }})
                                                 </a>
                                             </li>
                                             <li role="presentation">
@@ -289,7 +289,7 @@
                                             </li>
                                             <li role="presentation">
                                                 <a href="#enroll" aria-controls="enroll" role="tab" data-toggle="tab">
-                                                    <i class="ti-plus"></i> Enroll Students
+                                                    <i class="ti-plus"></i> Enrol Students
                                                 </a>
                                             </li>
                                         </ul>
@@ -304,7 +304,7 @@
                                                                 <tr>
                                                                     <th>Student</th>
                                                                     <th>Parent</th>
-                                                                    <th>Enrollment Date</th>
+                                                                    <th>Enrolment Date</th>
                                                                     <th>Status</th>
                                                                     <th>Actions</th>
                                                                 </tr>
@@ -356,24 +356,24 @@
                                                 @else
                                                     <div class="empty-state">
                                                         <i class="ti-user"></i>
-                                                        <h4>No Students Enrolled</h4>
-                                                        <p>Use the "Enroll Students" tab to add students to this class.</p>
+                                                        <h4>No Students Enroled</h4>
+                                                        <p>Use the "Enrol Students" tab to add students to this class.</p>
                                                     </div>
                                                 @endif
                                             </div>
 
 
-                                            <!-- Enrollment History Tab -->
+                                            <!-- Enrolment History Tab -->
                                             <div role="tabpanel" class="tab-pane" id="enrollment-history">
                                                 @if($enrollmentHistory->count() > 0)
                                                     <!-- Info Alert -->
                                                     <div class="alert alert-info" style="margin-bottom: 20px;">
                                                         <i class="ti-info-alt"></i> 
-                                                        <strong>Enrollment History:</strong> This shows complete enrollment records including dropped students. 
-                                                        Students with multiple enrollments are grouped together to show their enrollment timeline.
+                                                        <strong>Enrolment History:</strong> This shows complete enrolment records including dropped students. 
+                                                        Students with multiple enrolments are grouped together to show their enrolment timeline.
                                                     </div>
 
-                                                    <!-- Enrollment History Cards -->
+                                                    <!-- Enrolment History Cards -->
                                                     <div class="row">
                                                         @foreach($enrollmentHistory as $studentId => $history)
                                                         <div class="col-lg-6 mb-4">
@@ -419,11 +419,11 @@
                                                                 </div>
 
                                                                 <div class="card-body" style="padding: 20px;">
-                                                                    <!-- Enrollment Summary -->
+                                                                    <!-- Enrolment Summary -->
                                                                     <div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 15px; background: #f9fafb; border-radius: 8px;">
                                                                         <div>
                                                                             <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">
-                                                                                Total Enrollments
+                                                                                Total Enrolments
                                                                             </div>
                                                                             <div style="font-size: 24px; font-weight: bold; color: #1f2937;">
                                                                                 {{ $history['total_enrollments'] }}
@@ -431,7 +431,7 @@
                                                                         </div>
                                                                         <div>
                                                                             <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">
-                                                                                First Enrolled
+                                                                                First Enroled
                                                                             </div>
                                                                             <div style="font-size: 14px; font-weight: 600; color: #4b5563;">
                                                                                 {{ $history['first_enrollment']->format('M d, Y') }}
@@ -440,7 +440,7 @@
                                                                         @if($history['total_enrollments'] > 1)
                                                                         <div>
                                                                             <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">
-                                                                                Last Enrolled
+                                                                                Last Enroled
                                                                             </div>
                                                                             <div style="font-size: 14px; font-weight: 600; color: #4b5563;">
                                                                                 {{ $history['last_enrollment']->format('M d, Y') }}
@@ -449,10 +449,10 @@
                                                                         @endif
                                                                     </div>
 
-                                                                    <!-- Enrollment Timeline -->
+                                                                    <!-- Enrolment Timeline -->
                                                                     <div style="margin-top: 20px;">
                                                                         <h6 style="margin-bottom: 15px; color: #374151; font-weight: 600;">
-                                                                            <i class="ti-time"></i> Enrollment Timeline
+                                                                            <i class="ti-time"></i> Enrolment Timeline
                                                                         </h6>
                                                                         <div style="position: relative; padding-left: 30px;">
                                                                             @foreach($history['enrollments'] as $index => $enrollment)
@@ -468,16 +468,16 @@
                                                                                 <div style="position: absolute; left: -25px; top: 12px; width: 2px; height: calc(100% + 20px); background: #e5e7eb;"></div>
                                                                                 @endif
 
-                                                                                <!-- Enrollment Info -->
+                                                                                <!-- Enrolment Info -->
                                                                                 <div style="padding: 12px; background: white; border: 1px solid #e5e7eb; border-radius: 8px;">
                                                                                     <div style="display: flex; justify-content: space-between; align-items: start;">
                                                                                         <div>
                                                                                             <div style="font-weight: 600; color: #1f2937; margin-bottom: 5px;">
-                                                                                                Enrollment #{{ $history['total_enrollments'] - $index }}
+                                                                                                Enrolment #{{ $history['total_enrollments'] - $index }}
                                                                                             </div>
                                                                                             <div style="font-size: 13px; color: #6b7280;">
                                                                                                 <i class="ti-calendar"></i> 
-                                                                                                Enrolled: {{ $enrollment->enrollment_date->format('M d, Y') }}
+                                                                                                Enroled: {{ $enrollment->enrollment_date->format('M d, Y') }}
                                                                                             </div>
                                                                                             <div style="font-size: 13px; color: #6b7280; margin-top: 3px;">
                                                                                                 <i class="ti-time"></i> 
@@ -500,13 +500,13 @@
                                                                         </div>
                                                                     </div>
 
-                                                                    <!-- Re-enrollment Badge -->
+                                                                    <!-- Re-enrolment Badge -->
                                                                     @if($history['total_enrollments'] > 1)
                                                                     <div style="margin-top: 15px; padding: 10px; background: #fef3c7; border-radius: 4px;">
                                                                         <i class="ti-reload" style="color: #f59e0b;"></i> 
-                                                                        <strong style="color: #92400e;">Re-enrolled Student</strong>
+                                                                        <strong style="color: #92400e;">Re-enroled Student</strong>
                                                                         <span style="color: #78350f; font-size: 13px;">
-                                                                            - This student has enrolled {{ $history['total_enrollments'] }} times
+                                                                            - This student has enroled {{ $history['total_enrollments'] }} times
                                                                         </span>
                                                                     </div>
                                                                     @endif
@@ -518,8 +518,8 @@
                                                 @else
                                                     <div class="empty-state">
                                                         <i class="ti-time"></i>
-                                                        <h4>No Enrollment History</h4>
-                                                        <p>No students have been enrolled in this class yet.</p>
+                                                        <h4>No Enrolment History</h4>
+                                                        <p>No students have been enroled in this class yet.</p>
                                                     </div>
                                                 @endif
                                             </div>                                            
@@ -559,7 +559,7 @@
                                                 @endif
                                             </div>
 
-                                            <!-- Enroll Students Tab -->
+                                            <!-- Enrol Students Tab -->
                                             <div role="tabpanel" class="tab-pane" id="enroll">
                                                 @if($class->isFull())
                                                 <div class="warning-box">
@@ -578,7 +578,7 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="student_id" class="required-field">Select Student to Enroll</label>
+                                                                <label for="student_id" class="required-field">Select Student to Enrol</label>
                                                                 <select 
                                                                     name="student_id" 
                                                                     id="student_id" 
@@ -601,7 +601,7 @@
 
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="enrollment_date" class="required-field">Enrollment Date</label>
+                                                                <label for="enrollment_date" class="required-field">Enrolment Date</label>
                                                                 <input 
                                                                     type="date" 
                                                                     name="enrollment_date" 
@@ -624,14 +624,14 @@
                                                             class="btn btn-primary"
                                                             {{ $class->isFull() ? 'disabled' : '' }}
                                                         >
-                                                            <i class="ti-check"></i> Enroll Student
+                                                            <i class="ti-check"></i> Enrol Student
                                                         </button>
                                                     </div>
                                                 </form>
 
                                                 @if($availableStudents->isEmpty() && !$class->isFull())
                                                     <div class="alert alert-info">
-                                                        <i class="ti-info-alt"></i> All active students are already enrolled in this class.
+                                                        <i class="ti-info-alt"></i> All active students are already enroled in this class.
                                                     </div>
                                                 @endif
                                             </div>
@@ -661,7 +661,7 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Handle student unenrollment with SweetAlert
+            // Handle student unenrolment with SweetAlert
             $('.unenroll-student-form').on('submit', function(e) {
                 e.preventDefault(); // Prevent default submission
                 
@@ -671,7 +671,7 @@
                 
                 swal({
                     title: "Remove Student from Class?",
-                    text: "Are you sure you want to remove '" + studentName + "' from '" + className + "'?\n\nThis will:\n• Mark the enrollment as 'dropped'\n• Keep the enrollment history for records\n• Student can be re-enrolled if needed\n\nDo you want to continue?",
+                    text: "Are you sure you want to remove '" + studentName + "' from '" + className + "'?\n\nThis will:\n• Mark the enrolment as 'dropped'\n• Keep the enrolment history for records\n• Student can be re-enroled if needed\n\nDo you want to continue?",
                     type: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#DD6B55",
@@ -698,11 +698,11 @@
                 const enrolledCount = {{ $class->enrollments()->where('status', 'active')->count() ?? 0 }};
                 const scheduleCount = {{ $class->schedules()->count() ?? 0 }};
                 
-                // Prevent deletion if class has active enrollments
+                // Prevent deletion if class has active enrolments
                 if (enrolledCount > 0) {
                     swal({
                         title: "Cannot Delete Class!",
-                        text: "Class '" + className + "' has " + enrolledCount + " actively enrolled student(s).\n\nPlease remove all students from this class before deleting.\n\nYou can use the 'Remove' button for each student in the Students tab.",
+                        text: "Class '" + className + "' has " + enrolledCount + " actively enroled student(s).\n\nPlease remove all students from this class before deleting.\n\nYou can use the 'Remove' button for each student in the Students tab.",
                         type: "error",
                         confirmButtonText: "OK"
                     });

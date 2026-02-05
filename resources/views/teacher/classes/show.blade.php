@@ -202,7 +202,7 @@
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-user color-primary border-primary"></i></div>
                                     <div class="stat-content dib">
-                                        <div class="stat-text">Enrolled Students</div>
+                                        <div class="stat-text">Enroled Students</div>
                                         <div class="stat-digit">{{ $stats['students']['total_enrolled'] }}</div>
                                     </div>
                                 </div>
@@ -342,7 +342,7 @@
                                                                             @endif
                                                                             <div>
                                                                                 <strong>{{ $student->full_name }}</strong><br>
-                                                                                <small class="text-muted">Enrolled: {{ \Carbon\Carbon::parse($student->pivot->enrollment_date)->format('d M Y') }}</small>
+                                                                                <small class="text-muted">Enroled: {{ \Carbon\Carbon::parse($student->pivot->enrollment_date)->format('d M Y') }}</small>
                                                                             </div>
                                                                         </div>
                                                                     </td>
@@ -399,8 +399,8 @@
                                                 @else
                                                     <div class="empty-state">
                                                         <i class="ti-user"></i>
-                                                        <h4>No Students Enrolled</h4>
-                                                        <p>This class doesn't have any enrolled students yet.</p>
+                                                        <h4>No Students Enroled</h4>
+                                                        <p>This class doesn't have any enroled students yet.</p>
                                                     </div>
                                                 @endif
                                             </div>

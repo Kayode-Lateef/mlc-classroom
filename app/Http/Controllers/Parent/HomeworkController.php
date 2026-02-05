@@ -9,6 +9,7 @@ use App\Models\HomeworkSubmission;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
@@ -219,15 +220,22 @@ class HomeworkController extends Controller
 
 
 
-       /**
+    /**
      * Download homework file
      */
     public function download(HomeworkAssignment $homework)
     {
-        $teacher = auth()->user();
+        $parent = auth()->user();
 
-        // Verify homework belongs to teacher
-        if ($homework->teacher_id !== $teacher->id) {
+        // Get parent's children IDs
+        $childIds = $parent->children()->where('status', 'active')->pluck('id')->toArray();
+
+        // Check if any child has this homework
+        $hasAccess = HomeworkSubmission::where('homework_assignment_id', $homework->id)
+            ->whereIn('student_id', $childIds)
+            ->exists();
+
+        if (!$hasAccess) {
             abort(403, 'You do not have permission to download this file.');
         }
 
@@ -238,7 +246,7 @@ class HomeworkController extends Controller
 
         // Log activity
         ActivityLog::create([
-            'user_id' => $teacher->id,
+            'user_id' => $parent->id,
             'action' => 'downloaded_homework',
             'model_type' => 'HomeworkAssignment',
             'model_id' => $homework->id,
@@ -247,9 +255,10 @@ class HomeworkController extends Controller
             'user_agent' => request()->userAgent(),
         ]);
 
-        return Storage::disk('public')->download(
-            $homework->file_path,
-            $homework->title . '.' . pathinfo($homework->file_path, PATHINFO_EXTENSION)
-        );
+        // Generate a clean filename using Str facade
+        $extension = pathinfo($homework->file_path, PATHINFO_EXTENSION);
+        $cleanFilename = Str::slug($homework->title) . '.' . $extension;
+
+        return Storage::disk('public')->download($homework->file_path, $cleanFilename);
     }
 }

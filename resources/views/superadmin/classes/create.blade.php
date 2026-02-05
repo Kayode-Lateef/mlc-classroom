@@ -253,7 +253,7 @@
                                                     <p class="mb-0">After creating the class, you can:</p>
                                                     <ul class="mb-0 mt-2">
                                                         <li>Set up class schedules</li>
-                                                        <li>Enroll students into the class</li>
+                                                        <li>Enrol students into the class</li>
                                                         <li>Assign homework and track progress</li>
                                                     </ul>
                                                 </div>

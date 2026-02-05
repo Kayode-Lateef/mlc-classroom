@@ -236,7 +236,7 @@
 
                             <!-- Submission Status for Selected Child -->
                             <div class="card alert">
-                                <div class="card-header mb-3">
+                                <div class="card-header mb-4">
                                     <h4>
                                         <i class="ti-user"></i> 
                                         Submission for {{ $selectedChild->full_name }}
@@ -308,48 +308,14 @@
                                         @endif
 
                                         <!-- Submit Button (if pending) -->
-                                        {{-- @if($submission->status === 'pending')
-                                        <div class="mt-4">
-                                            <h5>Submit Homework</h5>
-                                            <form action="{{ route('parent.homework.submit', $homework) }}" 
-                                                  method="POST" 
-                                                  enctype="multipart/form-data">
-                                                @csrf
-                                                <input type="hidden" name="child_id" value="{{ $selectedChild->id }}">
-                                                
-                                                <div class="form-group">
-                                                    <label class="required-field">Upload File</label>
-                                                    <input type="file" 
-                                                           name="file" 
-                                                           required 
-                                                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                                           class="form-control">
-                                                    <small class="text-muted">
-                                                        Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max: 10MB)
-                                                    </small>
-                                                </div>
-
-                                                @if($isOverdue)
-                                                <div class="alert alert-warning">
-                                                    <i class="ti-alert"></i>
-                                                    <strong>Note:</strong> This homework is overdue. Your submission will be marked as late.
-                                                </div>
-                                                @endif
-
-                                                <button type="submit" class="btn btn-success">
-                                                    <i class="ti-upload"></i> Submit Homework
-                                                </button>
-                                            </form>
-                                        </div>
-                                        @endif --}}
-                                    @if($submission->status === 'pending')
-                                        <div class="alert alert-info">
-                                            <i class="ti-info-alt"></i> 
-                                            <strong>Physical Submission Required:</strong> 
-                                            This homework must be submitted physically in class. 
-                                            Your child's teacher will mark it as submitted once received.
-                                        </div>
-                                    @endif
+                                        @if($submission->status === 'pending')
+                                            <div class="alert alert-info mt-4">
+                                                <i class="ti-info-alt"></i> 
+                                                <strong>Physical Submission Required:</strong> 
+                                                This homework must be submitted physically in class. 
+                                                Your child's teacher will mark it as submitted once received.
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

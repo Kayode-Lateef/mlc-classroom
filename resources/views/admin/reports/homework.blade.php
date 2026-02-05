@@ -155,7 +155,7 @@
                         <div class="card alert">
                             <div class="card-header mb-3">
                                 <h4><i class="ti-list"></i> Homework Assignments</h4>
-                                <div class="card-header-right">
+                                {{-- <div class="card-header-right">
                                     <!-- PDF Export -->
                                     <form method="POST" action="{{ route('admin.reports.export') }}"
                                         style="display: inline-block; margin-right: 5px;">
@@ -207,7 +207,7 @@
                                         <button type="submit" class="btn btn-secondary btn-sm"><i
                                                 class="ti-download"></i> CSV</button>
                                     </form>
-                                </div>
+                                </div> --}}
                             </div>
                             <div class="card-body">
                                 @if ($homeworkAssignments->count() > 0)

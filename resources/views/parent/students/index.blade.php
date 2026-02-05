@@ -321,7 +321,7 @@
                                         <div class="quick-stats-grid">
                                             <div class="quick-stat-item">
                                                 <span class="quick-stat-value text-primary">{{ $child->enrolled_classes }}</span>
-                                                <span class="quick-stat-label">Enrolled Classes</span>
+                                                <span class="quick-stat-label">Enroled Classes</span>
                                             </div>
                                             <div class="quick-stat-item">
                                                 <span class="quick-stat-value text-success">{{ $child->attendance_rate }}%</span>
@@ -347,7 +347,7 @@
                                                 <span class="info-value">{{ $child->date_of_birth->format('d M Y') }}</span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="info-label">Enrolled Since</span>
+                                                <span class="info-label">Enroled Since</span>
                                                 <span class="info-value">{{ $child->enrollment_date->format('d M Y') }}</span>
                                             </div>
                                         </div>
@@ -395,7 +395,7 @@
                                                         <th>#</th>
                                                         <th>Name</th>
                                                         <th>Age</th>
-                                                        <th>Enrolled Classes</th>
+                                                        <th>Enroled Classes</th>
                                                         <th>Attendance Rate</th>
                                                         <th>Pending Homework</th>
                                                         <th>Actions</th>

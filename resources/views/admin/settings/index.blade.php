@@ -4,99 +4,295 @@
 
 @push('styles')
     <style>
-
-        .stat-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-        }
-
-        .stat-widget-one .stat-value {
-            /* font-size: 24px; */
-            font-weight: bold;
-        }
-
-
-        .tab-content {
+        .settings-header {
+            background: linear-gradient(135deg, #3386f7 0%, #2c75d6 100%);
+            color: white;
+            border-radius: 8px;
             padding: 30px;
+            margin-bottom: 30px;
         }
 
-        .setting-section {
-            border: 1px solid #e9ecef;
+        .settings-header h1 {
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .settings-header p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+            font-size: 1.0625rem;
+        }
+
+        .settings-nav {
+            background: white;
             border-radius: 8px;
             padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .settings-nav .nav-pills .nav-link {
+            color: #495057;
+            padding: 12px 20px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .settings-nav .nav-pills .nav-link i {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .settings-nav .nav-pills .nav-link:hover {
+            background-color: #f8f9fa;
+            color: #3386f7;
+        }
+
+        .settings-nav .nav-pills .nav-link.active {
+            background-color: #3386f7;
+            color: white;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .setting-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .setting-card:hover {
+            border-color: #3386f7;
+            box-shadow: 0 4px 8px rgba(51, 134, 247, 0.1);
+        }
+
+        .setting-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 20px;
         }
 
-        .setting-section-title {
+        .setting-card-title {
+            font-size: 1.125rem;
             font-weight: 600;
-            margin-bottom: 15px;
+            color: #2c3e50;
+            margin-bottom: 5px;
         }
 
-        .info-box {
-            background-color: #e7f3ff;
-            border-radius: 6px;
-            padding: 15px;
+        .setting-card-description {
+            font-size: 0.9375rem;
+            color: #7f8c8d;
+            margin: 0;
+        }
+
+        .notification-table {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .notification-table th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .notification-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+
+        .notification-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-label {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            color: #2c3e50;
         }
 
-        .info-box i {
-            color: #007bff;
-            margin-right: 12px;
-            font-size: 1.5rem;
-            flex-shrink: 0;
+        .notification-label i {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
         }
 
-        .logo-preview {
-            max-height: 80px;
+        .notification-label .badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+        }
+
+        .custom-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .custom-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 26px;
+        }
+
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .switch-slider {
+            background-color: #3386f7;
+        }
+
+        input:checked + .switch-slider:before {
+            transform: translateX(24px);
+        }
+
+        .info-alert {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3386f7;
+            padding: 15px 20px;
             border-radius: 6px;
-            border: 1px solid #dee2e6;
-            padding: 5px;
-            background-color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .info-alert i {
+            color: #3386f7;
+            font-size: 1.5rem;
+            margin-right: 12px;
+        }
+
+        .warning-alert {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .warning-alert i {
+            color: #ffc107;
+            font-size: 1.5rem;
+            margin-right: 12px;
         }
 
         .form-actions {
-            padding: 20px 30px;
-            background-color: #f8f9fa;
-            border-top: 1px solid #e9ecef;
+            padding-top: 25px;
+            border-top: 2px solid #e9ecef;
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 12px;
+            margin-top: 30px;
         }
 
-        .status-enabled {
-            color: #28a745;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
             font-weight: 600;
         }
 
-        .status-disabled {
-            color: #dc3545;
-            font-weight: 600;
+        .status-badge.enabled {
+            background-color: #d4edda;
+            color: #155724;
         }
 
-        .toggle-label {
-            display: flex;
-            align-items: flex-start;
+        .status-badge.disabled {
+            background-color: #f8d7da;
+            color: #721c24;
         }
 
-        .toggle-label input[type="checkbox"] {
-            margin-top: 6px;
+        .channel-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
         }
 
-        .toggle-description {
-            margin-left: 10px;
+        .channel-icon.email {
+            background-color: #e3f2fd;
+            color: #1976d2;
         }
 
-        .required-field::after {
-            content: " *";
-            color: #dc3545;
+        .channel-icon.sms {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
         }
 
+        .channel-icon.app {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        @media (max-width: 768px) {
+            .settings-nav {
+                margin-bottom: 20px;
+            }
+
+            .notification-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .setting-card-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
     </style>
 @endpush
 
@@ -106,548 +302,482 @@
             <div class="container-fluid">
                 <!-- Page Header -->
                 <div class="row">
-                    <div class="col-lg-8 p-r-0 title-margin-right">
-                        <div class="page-header">
-                            <div class="page-title">
-                                <h1>System Settings</h1>
-                            </div>
-                        </div>
-                        <span>Configure and manage system-wide settings</span>
-                    </div>
-                    <div class="col-lg-4 p-l-0 title-margin-left">
-                        <div class="page-header">
-                            <div class="page-title">
-                                <ol class="breadcrumb text-right">
-                                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                                    <li class="active">System Settings</li>
-                                </ol>
-                            </div>
+                    <div class="col-lg-12">
+                        <div class="settings-header">
+                            <h1><i class="ti-settings"></i> System Settings</h1>
+                            <p>Configure system-wide settings and notification preferences</p>
                         </div>
                     </div>
                 </div>
 
                 <div id="main-content">
-
-                    <!-- Statistics Cards -->
+                    <!-- Success Message -->
+                    @if(session('success'))
                     <div class="row">
-                        {{-- <div class="col-lg-3 col-md-6">
-                            <div class="card">
-                                <div class="stat-widget-one" style="display: flex; align-items: center;">
-                                    <div class="stat-icon dib"><i class="ti-settings color-primary border-primary"></i></div>
-                                    <div class="stat-content dib">
-                                        <div class="stat-text">Total Settings</div>
-                                        <div class="stat-value">{{ $stats['total_settings'] }}</div>
-                                    </div>
-                                </div>
+                        <div class="col-lg-12">
+                            <div class="alert alert-success alert-dismissible fade show">
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <i class="ti-check"></i> {{ session('success') }}
                             </div>
-                        </div> --}}
-                        {{-- <div class="col-lg-3 col-md-6">
-                            <div class="card">
-                                <div class="stat-widget-one" style="display: flex; align-items: center;">
-                                    <div class="stat-icon dib"><i class="ti-email color-success border-success"></i></div>
-                                    <div class="stat-content dib">
-                                        <div class="stat-text">Email Status</div>
-                                        <div class="stat-value {{ $stats['email_enabled'] ? 'status-enabled' : 'status-disabled' }}">
-                                            {{ $stats['email_enabled'] ? 'Enabled' : 'Disabled' }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> --}}
-                        {{-- <div class="col-lg-3 col-md-6">
-                            <div class="card">
-                                <div class="stat-widget-one" style="display: flex; align-items: center;">
-                                    <div class="stat-icon dib"><i class="ti-comment-alt color-pink border-pink"></i></div>
-                                    <div class="stat-content dib">
-                                        <div class="stat-text">SMS Status</div>
-                                        <div class="stat-value {{ $stats['sms_enabled'] ? 'status-enabled' : 'status-disabled' }}">
-                                            {{ $stats['sms_enabled'] ? 'Enabled' : 'Disabled' }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> --}}
-                        {{-- <div class="col-lg-3 col-md-6">
-                            <div class="card">
-                                <div class="stat-widget-one" style="display: flex; align-items: center;">
-                                    <div class="stat-icon dib"><i class="ti-time color-warning border-warning"></i></div>
-                                    <div class="stat-content dib">
-                                        <div class="stat-text">Last Updated</div>
-                                        <div class="stat-value">{{ $stats['last_updated'] ? $stats['last_updated']->diffForHumans() : 'Never' }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> --}}
-                      
+                        </div>
                     </div>
+                    @endif
 
-                    <!--Error Messages -->
-            
-
+                    <!-- Error Message -->
                     @if(session('error'))
-                        <div class="row mt-3">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <i class="ti-alert"></i> {{ session('error') }}
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Settings Layout -->
+                    <div class="row">
+                        <!-- Settings Navigation -->
+                        <div class="col-lg-3 col-md-4">
+                            <div class="settings-nav">
+                                <ul class="nav nav-pills flex-column" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-toggle="pill" href="#notifications">
+                                            <i class="ti-bell"></i>
+                                            <span>Notifications</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="pill" href="#system">
+                                            <i class="ti-settings"></i>
+                                            <span>System Info</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('profile.edit') }}">
+                                            <i class="ti-user"></i>
+                                            <span>Profile Settings</span>
+                                            <i class="ti-angle-right ml-auto"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                                    <div class="info-alert" style="padding: 12px;">
+                                        <i class="ti-info-alt" style="font-size: 1.25rem; margin-right: 8px;"></i>
+                                        <small style="font-size: 0.8125rem;">
+                                            Profile and password settings are managed separately via Profile Settings.
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    @endif
 
-                    <!-- Settings Form -->
-                    <div class="row mt-4">
-                        <div class="col-lg-12">
-                            <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
-                                @csrf
-                                
-                                <div class="card alert">                                         
-                                    <div class="card-body">
-                                        <div class="custom-tab">
-                                            <ul class="nav nav-tabs" role="tablist">
-                                                <li role="presentation" class="active"><a href="#school-tab" aria-controls="school-tab" role="tab" data-toggle="tab"><i class="ti-home"></i> School Information</a></li>
-                                                <li role="presentation"><a href="#system-tab" aria-controls="system-tab" role="tab" data-toggle="tab"><i class="ti-settings"></i> System Settings</a></li>
-                                                <li role="presentation"><a href="#notifications-tab" aria-controls="notifications-tab" role="tab" data-toggle="tab"><i class="ti-bell"></i> Notifications</a></li>
-                                                <li role="presentation"><a href="#academic-tab" aria-controls="academic-tab" role="tab" data-toggle="tab"><i class="ti-book"></i> Academic Settings</a></li>
-                                            </ul>
-                                            <div class="tab-content">
-                                                <!-- School Information Tab -->
-                                                {{-- <div role="tabpanel" class="tab-pane active" id="school-tab">
-                                                        <h3 style="font-weight: 600; margin-bottom: 25px;">School Information</h3>                                                       
-                                                        <div class="row">
-                                                            <!-- School Name -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Name</label>
-                                                                    <input 
-                                                                        type="text" 
-                                                                        name="school_name" 
-                                                                        value="{{ old('school_name', $settings->get('school')->firstWhere('key', 'school_name')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('school_name') is-invalid @enderror"
-                                                                    >
-                                                                    @error('school_name')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
+                        <!-- Settings Content -->
+                        <div class="col-lg-9 col-md-8">
+                            <div class="settings-content">
+                                <div class="tab-content">
+                                    <!-- Notifications Tab -->
+                                    <div class="tab-pane fade show active" id="notifications">
+                                        <h2 class="section-title">
+                                            <i class="ti-bell"></i> Notification Preferences
+                                        </h2>
 
-                                                            <!-- School Email -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Email</label>
-                                                                    <input 
-                                                                        type="email" 
-                                                                        name="school_email" 
-                                                                        value="{{ old('school_email', $settings->get('school')->firstWhere('key', 'school_email')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('school_email') is-invalid @enderror"
-                                                                    >
-                                                                    @error('school_email')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
+                                        <div class="info-alert">
+                                            <i class="ti-info-alt"></i>
+                                            <div>
+                                                <strong style="font-size: 0.9375rem;">Manage Your Notification Channels</strong>
+                                                <p style="margin: 5px 0 0 0; font-size: 0.875rem;">
+                                                    Choose how you want to receive notifications for different events. You can enable or disable Email, SMS, and In-App notifications for each notification type.
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                                            <!-- School Phone -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Phone</label>
-                                                                    <input 
-                                                                        type="text" 
-                                                                        name="school_phone" 
-                                                                        id="school_phone"
-                                                                        value="{{ old('school_phone', $settings->get('school')->firstWhere('key', 'school_phone')?->value) }}"
-                                                                        placeholder="+44 20 1234 5678 or 020 1234 5678"
-                                                                        required
-                                                                        minlength="10"
-                                                                        maxlength="20"
-                                                                        pattern="(\+44\s?|0)[0-9\s\-\(\)]{9,}"
-                                                                        class="form-control @error('school_phone') is-invalid @enderror"
-                                                                    >
-                                                                    <small class="form-text text-muted">
-                                                                        <i class="ti-info-alt"></i> UK phone number format: +44 20 1234 5678 or 020 1234 5678
-                                                                    </small>
-                                                                    @error('school_phone')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
+                                        <form method="POST" action="{{ route('admin.settings.update') }}">
+                                            @csrf
+                                            <input type="hidden" name="section" value="notifications">
 
-                                                            <!-- School Address -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Address</label>
-                                                                    <textarea 
-                                                                        name="school_address" 
-                                                                        rows="3"
-                                                                        required
-                                                                        class="form-control @error('school_address') is-invalid @enderror"
-                                                                    >{{ old('school_address', $settings->get('school')->firstWhere('key', 'school_address')?->value) }}</textarea>
-                                                                    @error('school_address')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- School Logo -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label>School Logo</label>
-                                                                    @php
-                                                                        $currentLogo = $settings->get('school')->firstWhere('key', 'school_logo')?->value;
-                                                                    @endphp
-                                                                    @if($currentLogo)
-                                                                    <div style="margin-bottom: 15px;">
-                                                                        <img src="{{ asset('storage/' . $currentLogo) }}" alt="Current Logo" class="logo-preview">
-                                                                        <p style="font-size: 0.875rem; color: #6c757d; margin-top: 5px;">Current logo</p>
-                                                                    </div>
-                                                                    @endif
-                                                                    <input 
-                                                                        type="file" 
-                                                                        name="school_logo" 
-                                                                        accept="image/*"
-                                                                        class="form-control-file @error('school_logo') is-invalid @enderror"
-                                                                    >
-                                                                    <small class="form-text text-muted">Max size: 2MB. Formats: JPG, PNG, GIF</small>
-                                                                    @error('school_logo')
-                                                                    <span class="invalid-feedback d-block">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
+                                            <!-- Notification Channels Legend -->
+                                            <div class="setting-card" style="background-color: #f8f9fa;">
+                                                <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <div class="channel-icon email">
+                                                            <i class="ti-email"></i>
                                                         </div>
-                                                </div> --}}
-
-                                                <!-- System Settings Tab -->
-                                                {{-- <div role="tabpanel" class="tab-pane" id="system-tab">
-                                                        <h3 style="font-weight: 600; margin-bottom: 25px;">System Settings</h3>                                                       
-                                                        <div class="row">
-                                                            <!-- Max Class Capacity -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">Maximum Class Capacity</label>
-                                                                    <input 
-                                                                        type="number" 
-                                                                        name="max_class_capacity" 
-                                                                        value="{{ old('max_class_capacity', $settings->get('system')->firstWhere('key', 'max_class_capacity')?->value ?? 20) }}"
-                                                                        min="1"
-                                                                        max="100"
-                                                                        required
-                                                                        class="form-control @error('max_class_capacity') is-invalid @enderror"
-                                                                    >
-                                                                    <small class="form-text text-muted">Default maximum students per class</small>
-                                                                    @error('max_class_capacity')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Term Start Date -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">Current Term Start Date</label>
-                                                                    <input 
-                                                                        type="date" 
-                                                                        name="term_start_date" 
-                                                                        value="{{ old('term_start_date', $settings->get('system')->firstWhere('key', 'term_start_date')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('term_start_date') is-invalid @enderror"
-                                                                    >
-                                                                    @error('term_start_date')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Term End Date -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">Current Term End Date</label>
-                                                                    <input 
-                                                                        type="date" 
-                                                                        name="term_end_date" 
-                                                                        value="{{ old('term_end_date', $settings->get('system')->firstWhere('key', 'term_end_date')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('term_end_date') is-invalid @enderror"
-                                                                    >
-                                                                    @error('term_end_date')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Timezone -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Timezone</label>
-                                                                    <select name="timezone" class="form-control">
-                                                                        <option value="Europe/London" {{ old('timezone', $settings->get('system')->firstWhere('key', 'timezone')?->value ?? 'Europe/London') === 'Europe/London' ? 'selected' : '' }}>
-                                                                            Europe/London (GMT/BST)
-                                                                        </option>
-                                                                        <option value="UTC" {{ old('timezone', $settings->get('system')->firstWhere('key', 'timezone')?->value) === 'UTC' ? 'selected' : '' }}>
-                                                                            UTC
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Date Format -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Date Format</label>
-                                                                    <select name="date_format" class="form-control">
-                                                                        <option value="d/m/Y" {{ old('date_format', $settings->get('system')->firstWhere('key', 'date_format')?->value ?? 'd/m/Y') === 'd/m/Y' ? 'selected' : '' }}>
-                                                                            DD/MM/YYYY ({{ date('d/m/Y') }})
-                                                                        </option>
-                                                                        <option value="m/d/Y" {{ old('date_format', $settings->get('system')->firstWhere('key', 'date_format')?->value) === 'm/d/Y' ? 'selected' : '' }}>
-                                                                            MM/DD/YYYY ({{ date('m/d/Y') }})
-                                                                        </option>
-                                                                        <option value="Y-m-d" {{ old('date_format', $settings->get('system')->firstWhere('key', 'date_format')?->value) === 'Y-m-d' ? 'selected' : '' }}>
-                                                                            YYYY-MM-DD ({{ date('Y-m-d') }})
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Time Format -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Time Format</label>
-                                                                    <select name="time_format" class="form-control">
-                                                                        <option value="H:i" {{ old('time_format', $settings->get('system')->firstWhere('key', 'time_format')?->value ?? 'H:i') === 'H:i' ? 'selected' : '' }}>
-                                                                            24 Hour ({{ date('H:i') }})
-                                                                        </option>
-                                                                        <option value="h:i A" {{ old('time_format', $settings->get('system')->firstWhere('key', 'time_format')?->value) === 'h:i A' ? 'selected' : '' }}>
-                                                                            12 Hour ({{ date('h:i A') }})
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Maintenance Mode -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label class="toggle-label">
-                                                                        <input 
-                                                                            type="checkbox" 
-                                                                            name="maintenance_mode" 
-                                                                            value="1"
-                                                                            id="maintenance_mode"
-                                                                            {{ old('maintenance_mode', $settings->get('system')->firstWhere('key', 'maintenance_mode')?->value) ? 'checked' : '' }}
-                                                                        >
-                                                                        <div class="toggle-description">
-                                                                            <span style="font-weight: 500;">Enable Maintenance Mode</span>
-                                                                            <p style="font-size: 1rem; color: #6c757d; margin: 5px 0 0 0;">When enabled, only administrators can access the system</p>
-                                                                        </div>
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Maintenance Message -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label>Maintenance Message</label>
-                                                                    <textarea 
-                                                                        name="maintenance_message" 
-                                                                        rows="3"
-                                                                        placeholder="System is undergoing maintenance. Please check back later."
-                                                                        class="form-control"
-                                                                    >{{ old('maintenance_message', $settings->get('system')->firstWhere('key', 'maintenance_message')?->value) }}</textarea>
-                                                                    <small class="form-text text-muted">Message shown to users when maintenance mode is enabled</small>
-                                                                </div>
-                                                            </div>
+                                                        <div>
+                                                            <div style="font-weight: 600; font-size: 0.9375rem;">Email</div>
+                                                            <small style="color: #7f8c8d;">Email Notifications</small>
                                                         </div>
-                                                    
-                                                </div> --}}
-
-                                                <!-- Notifications Tab -->
-                                                {{-- <div role="tabpanel" class="tab-pane" id="notifications-tab">
-                                                        <h3 style="font-weight: 600; margin-bottom: 25px;">Notification Settings</h3>
-                                                        <!-- Email Notifications -->
-                                                        <div class="setting-section">
-                                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                                                                <div>
-                                                                    <h4 class="setting-section-title">Email Notifications</h4>
-                                                                    <p style="font-size: 1.2rem; color: #6c757d;">Configure email notification settings</p>
-                                                                </div>
-                                                                <label class="toggle-label">
-                                                                    <input 
-                                                                        type="checkbox" 
-                                                                        name="email_enabled" 
-                                                                        value="1"
-                                                                        {{ old('email_enabled', $settings->get('notifications')->firstWhere('key', 'email_enabled')?->value) ? 'checked' : '' }}
-                                                                    >
-                                                                    <span style="margin-left: 8px; font-weight: 500;">Enable Email</span>
-                                                                </label>
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-lg-6">
-                                                                    <div class="form-group">
-                                                                        <label class="required-field">Admin Notification Email</label>
-                                                                        <input 
-                                                                            type="email" 
-                                                                            name="admin_notification_email" 
-                                                                            value="{{ old('admin_notification_email', $settings->get('notifications')->firstWhere('key', 'admin_notification_email')?->value) }}"
-                                                                            required
-                                                                            class="form-control @error('admin_notification_email') is-invalid @enderror"
-                                                                        >
-                                                                        <small class="form-text text-muted">Email for receiving system notifications</small>
-                                                                        @error('admin_notification_email')
-                                                                        <span class="invalid-feedback">{{ $message }}</span>
-                                                                        @enderror
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                    </div>
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <div class="channel-icon sms">
+                                                            <i class="ti-mobile"></i>
                                                         </div>
-
-                                                        <!-- SMS Notifications -->
-                                                        <div class="setting-section">
-                                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                                                                <div>
-                                                                    <h4 class="setting-section-title">SMS Notifications</h4>
-                                                                    <p style="font-size: 1.2rem; color: #6c757d;">Configure SMS notification settings (Twilio)</p>
-                                                                </div>
-                                                                <label class="toggle-label">
-                                                                    <input 
-                                                                        type="checkbox" 
-                                                                        name="sms_enabled" 
-                                                                        value="1"
-                                                                        {{ old('sms_enabled', $settings->get('notifications')->firstWhere('key', 'sms_enabled')?->value) ? 'checked' : '' }}
-                                                                    >
-                                                                    <span style="margin-left: 8px; font-weight: 500;">Enable SMS</span>
-                                                                </label>
-                                                            </div>
-
-                                                            <div class="info-box">
-                                                                <i class="ti-info-alt"></i>
-                                                                <div>
-                                                                    <p style="font-size: 1.2rem; font-weight: 500; margin-bottom: 5px;">SMS Provider Configuration</p>
-                                                                    <p style="font-size: 1.2rem; margin: 0;">SMS credentials are configured in your .env file. Provider: Twilio</p>
-                                                                </div>
-                                                            </div>
+                                                        <div>
+                                                            <div style="font-weight: 600; font-size: 0.9375rem;">SMS</div>
+                                                            <small style="color: #7f8c8d;">Text Messages</small>
                                                         </div>
-                                                    
-                                                </div> --}}
-
-                                                <!-- Academic Settings Tab -->
-                                                <div role="tabpanel" class="tab-pane" id="academic-tab">
-                                                    <h3 style="font-weight: 600; margin-bottom: 25px;">Academic Settings</h3>
-
-                                                 
-
-                                                    <!-- ============================================ -->
-                                                    <!-- ATTENDANCE SETTINGS -->
-                                                    <!-- ============================================ -->
-                                                    {{-- <div class="setting-section">
-                                                        <h4 class="setting-section-title">Attendance Settings</h4>
-                                                        
-                                                        <label class="toggle-label">
-                                                            <input 
-                                                                type="checkbox" 
-                                                                name="attendance_required" 
-                                                                value="1"
-                                                                {{ old('attendance_required', $settings->get('academic')->firstWhere('key', 'attendance_required')?->value) ? 'checked' : '' }}
-                                                            >
-                                                            <div class="toggle-description">
-                                                                <span style="font-weight: 500;">Require Attendance Marking</span>
-                                                                <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Teachers must mark attendance for each class session</p>
-                                                            </div>
-                                                        </label>
-                                                    </div> --}}
-
-                                                    <!-- ============================================ -->
-                                                    <!-- HOMEWORK SETTINGS -->
-                                                    <!-- ============================================ -->
-                                                    {{-- <div class="setting-section">
-                                                        <h4 class="setting-section-title">Homework Settings</h4>
-                                                        
-                                                        <div style="margin-bottom: 20px;">
-                                                            <label class="toggle-label">
-                                                                <input 
-                                                                    type="checkbox" 
-                                                                    name="late_homework_penalty" 
-                                                                    value="1"
-                                                                    {{ old('late_homework_penalty', $settings->get('academic')->firstWhere('key', 'late_homework_penalty')?->value) ? 'checked' : '' }}
-                                                                >
-                                                                <div class="toggle-description">
-                                                                    <span style="font-weight: 500;">Apply Late Homework Penalty</span>
-                                                                    <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Mark homework as "late" if submitted after due date</p>
-                                                                </div>
-                                                            </label>
+                                                    </div>
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <div class="channel-icon app">
+                                                            <i class="ti-bell"></i>
                                                         </div>
-
-                                                        <div class="row">
-                                                            <div class="col-lg-4">
-                                                                <div class="form-group">
-                                                                    <label>Default Homework Due Days</label>
-                                                                    <input 
-                                                                        type="number" 
-                                                                        name="homework_due_days" 
-                                                                        value="{{ old('homework_due_days', $settings->get('academic')->firstWhere('key', 'homework_due_days')?->value ?? 7) }}"
-                                                                        min="1"
-                                                                        max="30"
-                                                                        class="form-control"
-                                                                    >
-                                                                    <small class="form-text text-muted">Default number of days until homework is due</small>
-                                                                </div>
-                                                            </div>
+                                                        <div>
+                                                            <div style="font-weight: 600; font-size: 0.9375rem;">In-App</div>
+                                                            <small style="color: #7f8c8d;">Dashboard Alerts</small>
                                                         </div>
-                                                    </div> --}}
-
-                                                    <!-- ============================================ -->
-                                                    <!-- PROGRESS REPORT SETTINGS -->
-                                                    <!-- ============================================ -->
-                                                    {{-- <div class="setting-section">
-                                                        <h4 class="setting-section-title">Progress Report Settings</h4>
-                                                        
-                                                        <div class="row">
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Progress Report Frequency</label>
-                                                                    <select name="progress_report_frequency" class="form-control">
-                                                                        <option value="weekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'weekly' ? 'selected' : '' }}>
-                                                                            Weekly
-                                                                        </option>
-                                                                        <option value="biweekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'biweekly' ? 'selected' : '' }}>
-                                                                            Bi-weekly
-                                                                        </option>
-                                                                        <option value="monthly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value ?? 'monthly') === 'monthly' ? 'selected' : '' }}>
-                                                                            Monthly
-                                                                        </option>
-                                                                        <option value="quarterly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'quarterly' ? 'selected' : '' }}>
-                                                                            Quarterly
-                                                                        </option>
-                                                                    </select>
-                                                                    <small class="form-text text-muted">How often progress reports should be generated</small>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div> --}}
-
+                                                    </div>
                                                 </div>
+                                            </div>
 
-                                                
+                                            <!-- Notification Types Table -->
+                                            <div class="setting-card">
+                                                <table class="notification-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Notification Type</th>
+                                                            <th style="text-align: center; width: 100px;">
+                                                                <i class="ti-email"></i> Email
+                                                            </th>
+                                                            <th style="text-align: center; width: 100px;">
+                                                                <i class="ti-mobile"></i> SMS
+                                                            </th>
+                                                            <th style="text-align: center; width: 100px;">
+                                                                <i class="ti-bell"></i> In-App
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <!-- Absence Notifications -->
+                                                        <tr>
+                                                            <td>
+                                                                <div class="notification-label">
+                                                                    <i class="ti-close" style="color: #dc3545;"></i>
+                                                                    <div>
+                                                                        <strong>Student Absence</strong>
+                                                                        <div style="font-size: 0.8125rem; color: #7f8c8d;">
+                                                                            When students are marked absent
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[absence][email_enabled]" 
+                                                                           {{ $notificationSettings['absence']->email_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[absence][sms_enabled]" 
+                                                                           {{ $notificationSettings['absence']->sms_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[absence][in_app_enabled]" 
+                                                                           {{ $notificationSettings['absence']->in_app_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <!-- Homework Assigned -->
+                                                        <tr>
+                                                            <td>
+                                                                <div class="notification-label">
+                                                                    <i class="ti-book" style="color: #3386f7;"></i>
+                                                                    <div>
+                                                                        <strong>Homework Assigned</strong>
+                                                                        <div style="font-size: 0.8125rem; color: #7f8c8d;">
+                                                                            When new homework is assigned
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[homework_assigned][email_enabled]" 
+                                                                           {{ $notificationSettings['homework_assigned']->email_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[homework_assigned][sms_enabled]" 
+                                                                           {{ $notificationSettings['homework_assigned']->sms_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[homework_assigned][in_app_enabled]" 
+                                                                           {{ $notificationSettings['homework_assigned']->in_app_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <!-- Homework Graded -->
+                                                        <tr>
+                                                            <td>
+                                                                <div class="notification-label">
+                                                                    <i class="ti-check-box" style="color: #28a745;"></i>
+                                                                    <div>
+                                                                        <strong>Homework Graded</strong>
+                                                                        <div style="font-size: 0.8125rem; color: #7f8c8d;">
+                                                                            When homework is graded
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[homework_graded][email_enabled]" 
+                                                                           {{ $notificationSettings['homework_graded']->email_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[homework_graded][sms_enabled]" 
+                                                                           {{ $notificationSettings['homework_graded']->sms_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[homework_graded][in_app_enabled]" 
+                                                                           {{ $notificationSettings['homework_graded']->in_app_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <!-- Progress Report -->
+                                                        <tr>
+                                                            <td>
+                                                                <div class="notification-label">
+                                                                    <i class="ti-clipboard" style="color: #17a2b8;"></i>
+                                                                    <div>
+                                                                        <strong>Progress Report</strong>
+                                                                        <div style="font-size: 0.8125rem; color: #7f8c8d;">
+                                                                            When progress sheets are published
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[progress_report][email_enabled]" 
+                                                                           {{ $notificationSettings['progress_report']->email_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[progress_report][sms_enabled]" 
+                                                                           {{ $notificationSettings['progress_report']->sms_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[progress_report][in_app_enabled]" 
+                                                                           {{ $notificationSettings['progress_report']->in_app_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <!-- Schedule Change -->
+                                                        <tr>
+                                                            <td>
+                                                                <div class="notification-label">
+                                                                    <i class="ti-calendar" style="color: #ffc107;"></i>
+                                                                    <div>
+                                                                        <strong>Schedule Change</strong>
+                                                                        <div style="font-size: 0.8125rem; color: #7f8c8d;">
+                                                                            When class schedules are modified
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[schedule_change][email_enabled]" 
+                                                                           {{ $notificationSettings['schedule_change']->email_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[schedule_change][sms_enabled]" 
+                                                                           {{ $notificationSettings['schedule_change']->sms_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[schedule_change][in_app_enabled]" 
+                                                                           {{ $notificationSettings['schedule_change']->in_app_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+
+                                                        <!-- Emergency -->
+                                                        <tr>
+                                                            <td>
+                                                                <div class="notification-label">
+                                                                    <i class="ti-alert" style="color: #e91e63;"></i>
+                                                                    <div>
+                                                                        <strong>Emergency Alerts</strong>
+                                                                        <span class="badge badge-danger ml-2">Critical</span>
+                                                                        <div style="font-size: 0.8125rem; color: #7f8c8d;">
+                                                                            Urgent system or safety alerts
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[emergency][email_enabled]" 
+                                                                           {{ $notificationSettings['emergency']->email_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[emergency][sms_enabled]" 
+                                                                           {{ $notificationSettings['emergency']->sms_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td style="text-align: center;">
+                                                                <label class="custom-switch">
+                                                                    <input type="checkbox" 
+                                                                           name="notifications[emergency][in_app_enabled]" 
+                                                                           {{ $notificationSettings['emergency']->in_app_enabled ? 'checked' : '' }}>
+                                                                    <span class="switch-slider"></span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- SMS Provider Info -->
+                                            <div class="warning-alert">
+                                                <i class="ti-info-alt"></i>
+                                                <div>
+                                                    <strong style="font-size: 0.9375rem;">SMS Configuration</strong>
+                                                    <p style="margin: 5px 0 0 0; font-size: 0.875rem;">
+                                                        SMS notifications are sent via Twilio. Make sure your Twilio credentials are properly configured in the <code>.env</code> file. SMS charges apply based on your Twilio plan.
+                                                    </p>
+                                                </div>
                                             </div>
 
                                             <!-- Form Actions -->
                                             <div class="form-actions">
-                                                <button type="reset" class="btn btn-secondary">
+                                                <button type="reset" class="btn btn-secondary btn-lg">
                                                     <i class="ti-reload"></i> Reset Changes
                                                 </button>
-                                                <button type="submit" class="btn btn-primary">
-                                                    <i class="ti-check"></i> Save Settings
+                                                <button type="submit" class="btn btn-primary btn-lg" style="background-color: #3386f7; border-color: #3386f7;">
+                                                    <i class="ti-check"></i> Save Notification Preferences
                                                 </button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- System Info Tab -->
+                                    <div class="tab-pane fade" id="system">
+                                        <h2 class="section-title">
+                                            <i class="ti-settings"></i> System Information
+                                        </h2>
+
+                                        <div class="setting-card">
+                                            <div class="setting-card-header">
+                                                <div>
+                                                    <h3 class="setting-card-title">Application Details</h3>
+                                                    <p class="setting-card-description">System configuration and version information</p>
+                                                </div>
+                                            </div>
+
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td style="width: 200px; font-weight: 600;">Application Name:</td>
+                                                    <td>{{ config('app.name', 'MLC Classroom') }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight: 600;">Environment:</td>
+                                                    <td>
+                                                        <span class="badge {{ config('app.env') === 'production' ? 'badge-success' : 'badge-warning' }}">
+                                                            {{ strtoupper(config('app.env')) }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight: 600;">Laravel Version:</td>
+                                                    <td>{{ app()->version() }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight: 600;">PHP Version:</td>
+                                                    <td>{{ phpversion() }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight: 600;">Timezone:</td>
+                                                    <td>{{ config('app.timezone') }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight: 600;">Your Email:</td>
+                                                    <td>{{ $admin->email }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight: 600;">Your Role:</td>
+                                                    <td>
+                                                        <span class="badge badge-primary">{{ strtoupper($admin->role) }}</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="info-alert">
+                                            <i class="ti-info-alt"></i>
+                                            <div>
+                                                <strong style="font-size: 0.9375rem;">Note</strong>
+                                                <p style="margin: 5px 0 0 0; font-size: 0.875rem;">
+                                                    System configuration values are managed through the <code>.env</code> file and cannot be modified directly from this interface.
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
-                                </div>                            
-                            </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Footer -->
-                    <div class="row">
+                    <div class="row mt-4">
                         <div class="col-lg-12">
                             <div class="footer">
                                 <p>MLC Classroom - System Settings</p>
@@ -659,153 +789,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        $(document).ready(function() {
-            // Phone number validation - UK format
-            $('#school_phone').on('input', function() {
-                let value = $(this).val();
-                // Remove any characters that aren't numbers, +, -, (, ), or spaces
-                value = value.replace(/[^0-9+\-\(\)\s]/g, '');
-                $(this).val(value);
-            });
-
-            // Auto-format UK phone number
-            $('#school_phone').on('blur', function() {
-                let value = $(this).val().trim();
-                
-                // UK phone number regex - more flexible
-                const ukPhoneRegex = /^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/;
-                
-                if (value) {
-                    // Check minimum length (at least 10 characters for UK numbers)
-                    if (value.length < 10) {
-                        $(this).addClass('is-invalid');
-                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
-                            $(this).after('<span class="invalid-feedback d-block">UK phone number must be at least 10 characters.</span>');
-                        }
-                    } 
-                    // Check if it starts with +44 or 0
-                    else if (!value.startsWith('+44') && !value.startsWith('0')) {
-                        $(this).addClass('is-invalid');
-                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
-                            $(this).after('<span class="invalid-feedback d-block">UK phone number must start with +44 or 0.</span>');
-                        }
-                    }
-                    // Check UK phone format
-                    else if (!ukPhoneRegex.test(value)) {
-                        $(this).addClass('is-invalid');
-                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
-                            $(this).after('<span class="invalid-feedback d-block">Please enter a valid UK phone number.</span>');
-                        }
-                    } else {
-                        $(this).removeClass('is-invalid');
-                        $(this).siblings('.invalid-feedback:not([data-server])').remove();
-                    }
-                }
-            });
-
-            // Maintenance mode confirmation with SweetAlert
-            $('#maintenance_mode').on('change', function() {
-                const checkbox = this;
-                
-                if (checkbox.checked) {
-                    swal({
-                        title: "Enable Maintenance Mode?",
-                        text: "Only administrators will be able to access the system. All other users will see a maintenance page.",
-                        type: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#f0ad4e",
-                        confirmButtonText: "Yes, enable it",
-                        cancelButtonText: "No, cancel",
-                        closeOnConfirm: true,
-                        closeOnCancel: true
-                    }, function(isConfirm) {
-                        if (!isConfirm) {
-                            checkbox.checked = false;
-                        }
-                    });
-                }
-            });
-
-             // Update income preview when hourly rate changes
-            $('#hourly_rate').on('input', function() {
-                const rate = parseFloat($(this).val()) || 0;
-                const weeksPerMonth = 4.33;
-                
-                // Update preview values
-                updateIncomePreview(rate, weeksPerMonth);
-            });
-            
-            function updateIncomePreview(rate, weeksPerMonth) {
-                const $preview = $('.alert.alert-info ul');
-                
-                if (rate > 0) {
-                    $preview.html(`
-                        <li><strong>1 hour/week</strong> = £${(rate * weeksPerMonth).toFixed(2)}/month</li>
-                        <li><strong>2 hours/week</strong> = £${(rate * 2 * weeksPerMonth).toFixed(2)}/month</li>
-                        <li><strong>5 hours/week</strong> = £${(rate * 5 * weeksPerMonth).toFixed(2)}/month</li>
-                    `);
-                }
-            }
-
-            // Form submission validation with SweetAlert
-            $('form').on('submit', function(e) {
-                e.preventDefault(); // Prevent default submission
-                
-                const form = this;
-                const phoneInput = $('#school_phone');
-                const phoneValue = phoneInput.val().trim();
-                const ukPhoneRegex = /^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/;
-                
-                if (phoneValue) {
-                    // Check minimum length
-                    if (phoneValue.length < 10) {
-                        swal({
-                            title: "Invalid Phone Number!",
-                            text: "UK phone number must be at least 10 characters.",
-                            type: "error",
-                            confirmButtonText: "OK"
-                        }, function() {
-                            phoneInput.addClass('is-invalid').focus();
-                        });
-                        return false;
-                    }
-                    
-                    // Check if starts with +44 or 0
-                    if (!phoneValue.startsWith('+44') && !phoneValue.startsWith('0')) {
-                        swal({
-                            title: "Invalid Phone Number!",
-                            text: "UK phone number must start with +44 or 0.",
-                            type: "error",
-                            confirmButtonText: "OK"
-                        }, function() {
-                            phoneInput.addClass('is-invalid').focus();
-                        });
-                        return false;
-                    }
-                    
-                    // Check UK format
-                    if (!ukPhoneRegex.test(phoneValue)) {
-                        swal({
-                            title: "Invalid Phone Number!",
-                            text: "Please enter a valid UK phone number.\n\nExamples:\n+44 20 1234 5678\n020 1234 5678\n07123 456789",
-                            type: "error",
-                            confirmButtonText: "OK"
-                        }, function() {
-                            phoneInput.addClass('is-invalid').focus();
-                        });
-                        return false;
-                    }
-                }
-                
-                // If all validations pass, disable button and submit
-                $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Saving Settings...');
-                form.submit();
-                
-                return true;
-            });
-        });
-    </script>
-@endpush

@@ -12,6 +12,7 @@ use App\Http\Controllers\SuperAdmin\ClassController;
 use App\Http\Controllers\SuperAdmin\ScheduleController;
 use App\Http\Controllers\SuperAdmin\AttendanceController;
 use App\Http\Controllers\SuperAdmin\HomeworkController;
+use App\Http\Controllers\SuperAdmin\HomeworkTopicController;
 use App\Http\Controllers\SuperAdmin\ProgressSheetController;
 use App\Http\Controllers\SuperAdmin\LearningResourceController;
 use App\Http\Controllers\SuperAdmin\SmsConfigurationController;
@@ -111,7 +112,7 @@ use App\Http\Controllers\SuperAdmin\ReportController;
         ->name('homework.bulk-grade');
 
     // Topics management
-    // Route::resource('homework-topics', HomeworkTopicController::class)->except(['show']);
+    Route::resource('homework-topics', HomeworkTopicController::class)->except(['show']);
     
     Route::resource('homework', HomeworkController::class);
         

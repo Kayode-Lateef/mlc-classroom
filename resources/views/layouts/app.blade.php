@@ -130,7 +130,8 @@
     </script>
     <!-- scripit init-->
     {{-- <script src="{{ asset('assets/js/lib/toastr/toastr.init.js') }}"></script> --}}
-    
+    </script>
+
     <script src="{{ asset('assets/js/lib/sweetalert/sweetalert.min.js') }}"></script>
     <!-- scripit init-->
     {{-- <script src="{{ asset('assets/js/lib/sweetalert/sweetalert.init.js') }}"></script> --}}

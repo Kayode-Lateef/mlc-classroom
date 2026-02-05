@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HomeworkTopic;
@@ -17,7 +17,7 @@ class HomeworkTopicController extends Controller
     {
         $topics = HomeworkTopic::orderBy('subject')->orderBy('name')->paginate(20);
         
-        return view('admin.homework-topics.index', compact('topics'));
+        return view('superadmin.homework-topics.index', compact('topics'));
     }
 
     /**
@@ -25,7 +25,7 @@ class HomeworkTopicController extends Controller
      */
     public function create()
     {
-        return view('admin.homework-topics.create');
+        return view('superadmin.homework-topics.create');
     }
 
     /**
@@ -68,7 +68,7 @@ class HomeworkTopicController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
-            return redirect()->route('admin.homework-topics.index')
+            return redirect()->route('superadmin.homework-topics.index')
                 ->with('success', 'Homework topic created successfully!');
 
         } catch (\Exception $e) {
@@ -85,7 +85,7 @@ class HomeworkTopicController extends Controller
      */
     public function edit(HomeworkTopic $homeworkTopic)
     {
-        return view('admin.homework-topics.edit', compact('homeworkTopic'));
+        return view('superadmin.homework-topics.edit', compact('homeworkTopic'));
     }
 
     /**
@@ -128,7 +128,7 @@ class HomeworkTopicController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
-            return redirect()->route('admin.homework-topics.index')
+            return redirect()->route('superadmin.homework-topics.index')
                 ->with('success', 'Homework topic updated successfully!');
 
         } catch (\Exception $e) {
@@ -166,7 +166,7 @@ class HomeworkTopicController extends Controller
                 'user_agent' => request()->userAgent(),
             ]);
 
-            return redirect()->route('admin.homework-topics.index')
+            return redirect()->route('superadmin.homework-topics.index')
                 ->with('success', 'Homework topic deleted successfully!');
 
         } catch (\Exception $e) {

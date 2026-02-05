@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\HomeworkController;
+use App\Http\Controllers\Admin\HomeworkTopicController;
 use App\Http\Controllers\Admin\ProgressSheetController;
 use App\Http\Controllers\Admin\LearningResourceController;
 use App\Http\Controllers\Admin\NotificationController;
@@ -80,7 +81,7 @@ Route::middleware(['auth', 'role:admin', 'check.status'])->group(function () {
         ->name('homework.bulk-grade');
 
     // Topics management
-    // Route::resource('homework-topics', HomeworkTopicController::class)->except(['show']);
+    Route::resource('homework-topics', HomeworkTopicController::class)->except(['show']);
 
     Route::resource('homework', HomeworkController::class);
         

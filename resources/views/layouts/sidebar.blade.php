@@ -115,6 +115,7 @@
                             @else
                                 <li><a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.homework.index' : 'admin.homework.index') }}">All Homework</a></li>
                                 <li><a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.homework.create' : 'admin.homework.create') }}">Create Homework</a></li>
+                                <li><a href="{{ route(auth()->user()->isSuperAdmin() ? 'superadmin.homework-topics.index' : 'admin.homework-topics.index') }}">Manage Topics</a></li>
                             @endif
                         </ul>
                     </li>

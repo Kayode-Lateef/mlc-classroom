@@ -132,7 +132,10 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     Route::get('sms-config', [SmsConfigurationController::class, 'index'])->name('sms-config.index');
     Route::post('sms-config', [SmsConfigurationController::class, 'update'])->name('sms-config.update');
     Route::post('sms-config/test', [SmsConfigurationController::class, 'test'])->name('sms-config.test');
-    
+    Route::post('sms-config/add-balance', [SmsConfigurationController::class, 'addBalance'])->name('sms-config.add-balance');
+    Route::post('sms-config/check-voodoo-balance', [SmsConfigurationController::class, 'checkVoodooBalance'])->name('sms-config.check-voodoo-balance');
+    Route::post('sms-config/refresh-voodoo-balance', [SmsConfigurationController::class, 'refreshVoodooBalance'])->name('sms-config.refresh-voodoo-balance');
+        
     // SMS Logs
     Route::get('sms-logs', [SmsLogController::class, 'index'])->name('sms-logs.index');
     Route::get('sms-logs/{smsLog}', [SmsLogController::class, 'show'])->name('sms-logs.show');

@@ -388,4 +388,18 @@ class NotificationService
             'failed' => $failed,
         ];
     }
+
+
+    // Example of a Voodoo-specific SMS sending method if you want to use Voodoo features directly
+    protected function sendVoodooSMS($phone, $message, $type, $options = [])
+    {
+        // If you want to use Voodoo-specific features like flash SMS for emergencies:
+        $smsOptions = [];
+        
+        if ($type === 'emergency') {
+            $smsOptions['flash'] = 1; // Flash SMS for emergencies
+        }
+        
+        return $this->smsService->sendImmediate($phone, $message, $type);
+    }
 }

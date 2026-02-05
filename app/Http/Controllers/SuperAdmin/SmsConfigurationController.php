@@ -62,6 +62,18 @@ class SmsConfigurationController extends Controller
         
         $successRate = $monthSms > 0 ? round(($successfulSms / $monthSms) * 100, 2) : 0;
 
+        // Check Voodoo SMS balance if it's the active provider
+        $voodooBalance = null;
+        if ($config->is_active && $config->provider === 'voodoo') {
+            $voodooResult = $this->smsService->checkVoodooBalance();
+            if ($voodooResult['success']) {
+                $voodooBalance = [
+                    'credits_remaining' => $voodooResult['credits_remaining'] ?? 0,
+                    'balance' => $voodooResult['balance'] ?? 0,
+                ];
+            }
+        }
+
         // Statistics
         $stats = [
             'balance' => $config->credit_balance,
@@ -74,9 +86,20 @@ class SmsConfigurationController extends Controller
             'is_monthly_limit_reached' => $config->isMonthlyLimitReached(),
             'daily_remaining' => max(0, $config->daily_limit - $todaySms),
             'monthly_remaining' => max(0, $config->monthly_limit - $monthSms),
+            'voodoo_balance' => $voodooBalance,
         ];
 
-        return view('superadmin.sms-config.index', compact('config', 'stats'));
+        // Provider display names
+        $providerNames = [
+            'textlocal' => 'TextLocal (UK)',
+            'messagebird' => 'MessageBird',
+            'twilio' => 'Twilio',
+            'vonage' => 'Vonage (Nexmo)',
+            'bulksms' => 'BulkSMS',
+            'voodoo' => 'Voodoo SMS',
+        ];
+
+        return view('superadmin.sms-config.index', compact('config', 'stats', 'providerNames'));
     }
 
     /**
@@ -84,17 +107,50 @@ class SmsConfigurationController extends Controller
      */
     public function update(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'provider' => 'required|in:twilio,vonage,messagebird,textlocal,bulksms',
-            'api_key' => 'required|string|max:500',
-            'api_secret' => 'nullable|string|max:500',
-            'sender_id' => 'required|string|max:50',
-            'credit_balance' => 'nullable|numeric|min:0',
-            'low_balance_threshold' => 'required|numeric|min:0',
+        // Define validation rules based on provider
+        $provider = $request->provider;
+        
+        $rules = [
+            'provider' => 'required|in:twilio,vonage,messagebird,textlocal,bulksms,voodoo',
             'is_active' => 'required|boolean',
+            'low_balance_threshold' => 'required|numeric|min:0',
             'daily_limit' => 'required|integer|min:1',
             'monthly_limit' => 'required|integer|min:1',
-        ]);
+        ];
+
+        // Conditional validation based on provider
+        switch ($provider) {
+            case 'twilio':
+                $rules['api_key'] = 'required|string|max:500'; // Account SID
+                $rules['api_secret'] = 'required|string|max:500'; // Auth Token
+                $rules['sender_id'] = 'required|string|max:20'; // Twilio phone number
+                break;
+                
+            case 'vonage':
+            case 'messagebird':
+            case 'voodoo':
+                $rules['api_key'] = 'required|string|max:500'; // API Key/Username
+                $rules['api_secret'] = 'required|string|max:500'; // API Secret/Password
+                $rules['sender_id'] = 'required|string|max:50'; // Sender ID/Name
+                break;
+                
+            case 'textlocal':
+                $rules['api_key'] = 'required|string|max:500'; // API Key
+                $rules['sender_id'] = 'required|string|max:11'; // Sender name (max 11 chars)
+                break;
+                
+            case 'bulksms':
+                $rules['api_key'] = 'required|string|max:500'; // Username
+                $rules['api_secret'] = 'required|string|max:500'; // Password
+                break;
+        }
+
+        // Add credit balance validation for non-Voodoo providers
+        if ($provider !== 'voodoo') {
+            $rules['credit_balance'] = 'nullable|numeric|min:0';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -110,12 +166,15 @@ class SmsConfigurationController extends Controller
             $encryptedKey = Crypt::encryptString($request->api_key);
             $encryptedSecret = $request->api_secret ? Crypt::encryptString($request->api_secret) : null;
 
+            // For Voodoo SMS, set credit_balance to 0 since it uses credits
+            $creditBalance = $provider === 'voodoo' ? 0 : ($request->credit_balance ?? $config->credit_balance);
+
             $config->update([
                 'provider' => $request->provider,
                 'api_key' => $encryptedKey,
                 'api_secret' => $encryptedSecret,
-                'sender_id' => $request->sender_id,
-                'credit_balance' => $request->credit_balance ?? $config->credit_balance,
+                'sender_id' => $request->sender_id ?? '',
+                'credit_balance' => $creditBalance,
                 'low_balance_threshold' => $request->low_balance_threshold,
                 'is_active' => $request->is_active,
                 'daily_limit' => $request->daily_limit,
@@ -164,24 +223,47 @@ class SmsConfigurationController extends Controller
         }
 
         try {
+            // Get config to check provider
+            $config = SmsConfiguration::first();
+            
+            if (!$config || !$config->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'SMS service is not configured or not active.',
+                ], 400);
+            }
+
+            // For Voodoo SMS, add test identifier to message
+            $testMessage = $request->test_message;
+            if ($config->provider === 'voodoo') {
+                $testMessage = "[TEST] " . $testMessage;
+            }
+
             // Use SmsService to send test SMS
             $result = $this->smsService->sendImmediate(
                 $request->test_phone,
-                $request->test_message,
+                $testMessage,
                 'test'
             );
 
             if ($result['success']) {
-                return response()->json([
+                $response = [
                     'success' => true,
                     'message' => 'Test SMS sent successfully via ' . $this->smsService->getActiveProvider() . '!',
                     'details' => [
-                        'message_id' => $result['sid'] ?? null,
+                        'message_id' => $result['sid'] ?? $result['message_id'] ?? null,
                         'cost' => $result['cost'] ?? 0,
                         'remaining_balance' => $this->smsService->getCreditBalance(),
                         'provider' => $this->smsService->getActiveProvider(),
                     ],
-                ]);
+                ];
+
+                // Add Voodoo-specific details
+                if ($config->provider === 'voodoo' && isset($result['credits_remaining'])) {
+                    $response['details']['credits_remaining'] = $result['credits_remaining'];
+                }
+
+                return response()->json($response);
             } else {
                 return response()->json([
                     'success' => false,
@@ -216,6 +298,13 @@ class SmsConfigurationController extends Controller
 
         try {
             $config = SmsConfiguration::firstOrFail();
+
+            // Check if provider is Voodoo (Voodoo doesn't use monetary balance)
+            if ($config->provider === 'voodoo') {
+                return redirect()->back()
+                    ->with('error', 'Cannot add balance to Voodoo SMS. Credits are managed directly via Voodoo dashboard.');
+            }
+
             $config->addBalance($request->amount);
 
             // Log activity
@@ -235,6 +324,90 @@ class SmsConfigurationController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Failed to add balance. Please try again.');
+        }
+    }
+
+    /**
+     * Check Voodoo SMS balance (for Voodoo SMS only)
+     */
+    public function checkVoodooBalance(Request $request)
+    {
+        try {
+            $config = SmsConfiguration::first();
+            
+            if (!$config || $config->provider !== 'voodoo') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Voodoo SMS is not the active provider.',
+                ], 400);
+            }
+
+            $result = $this->smsService->checkVoodooBalance();
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Voodoo SMS balance retrieved successfully.',
+                    'balance' => [
+                        'credits_remaining' => $result['credits_remaining'] ?? 0,
+                        'monetary_balance' => $result['balance'] ?? 0,
+                    ],
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['error'] ?? 'Failed to check Voodoo SMS balance.',
+                ], 400);
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Voodoo balance check failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to check balance: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Refresh Voodoo SMS balance (AJAX request)
+     */
+    public function refreshVoodooBalance()
+    {
+        try {
+            $config = SmsConfiguration::first();
+            
+            if (!$config || $config->provider !== 'voodoo') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Voodoo SMS is not the active provider.',
+                ], 400);
+            }
+
+            $result = $this->smsService->checkVoodooBalance();
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'credits_remaining' => $result['credits_remaining'] ?? 0,
+                    'monetary_balance' => $result['balance'] ?? 0,
+                    'formatted' => 'Credits: ' . ($result['credits_remaining'] ?? 0) . ' | Balance: $' . ($result['balance'] ?? 0),
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['error'] ?? 'Failed to refresh balance.',
+                ], 400);
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Voodoo balance refresh failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to refresh balance: ' . $e->getMessage(),
+            ], 500);
         }
     }
 }

@@ -149,6 +149,8 @@ class SmsService
     {
         try {
             switch ($provider) {
+                case 'voodoo':
+                    return $this->sendViaVoodoo($apiKey, $apiSecret, $senderId, $to, $message);
                 case 'textlocal':
                     return $this->sendViaTextLocal($apiKey, $senderId, $to, $message);
                     
@@ -174,6 +176,150 @@ class SmsService
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Send via Voodoo SMS
+     */
+    protected function sendViaVoodoo($username, $password, $senderId, $to, $message)
+    {
+        try {
+            // Format phone number for Voodoo (international format without +)
+            $formattedNumber = $this->formatForVoodoo($to);
+            
+            $response = Http::asForm()->post('https://www.voodoosms.com/vapi/server/sendSMS', [
+                'username' => $username,
+                'password' => $password,
+                'from' => $senderId,
+                'to' => $formattedNumber,
+                'text' => $message,
+                'reference' => uniqid(), // Unique reference for tracking
+                'delivery_report' => 1, // Request delivery report
+                'flash' => 0, // 0 = normal SMS, 1 = flash SMS
+                'unicode' => $this->containsUnicode($message) ? 1 : 0,
+            ]);
+
+            $result = $response->json();
+            
+            Log::info('Voodoo SMS Response:', $result);
+
+            if (isset($result['success']) && $result['success'] === true) {
+                return [
+                    'success' => true,
+                    'message_id' => $result['message_id'] ?? null,
+                    'cost' => $result['credits_used'] ?? 0.04, // Credits used
+                    'credits_remaining' => $result['credits_remaining'] ?? null,
+                ];
+            } else {
+                $error = $this->parseVoodooError($result);
+                return [
+                    'success' => false,
+                    'error' => $error,
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Voodoo SMS Error: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Format phone number for Voodoo SMS
+     * Voodoo expects international format without +
+     */
+    protected function formatForVoodoo($phone)
+    {
+        // Remove all non-numeric characters except +
+        $phone = preg_replace('/[^\d+]/', '', $phone);
+        
+        // Remove leading +
+        $phone = ltrim($phone, '+');
+        
+        // Convert UK format to international
+        if (substr($phone, 0, 2) === '44') {
+            return $phone;
+        }
+        
+        if (substr($phone, 0, 1) === '0') {
+            return '44' . substr($phone, 1);
+        }
+        
+        return $phone;
+    }
+
+    /**
+     * Parse Voodoo SMS error messages
+     */
+    protected function parseVoodooError($result)
+    {
+        $errorMessages = [
+            1001 => 'Authentication failed',
+            1002 => 'Insufficient credits',
+            1003 => 'Invalid sender ID',
+            1004 => 'Invalid recipient number',
+            1005 => 'Invalid message',
+            1006 => 'Network error',
+            1007 => 'Invalid request',
+            1008 => 'Service unavailable',
+        ];
+        
+        if (isset($result['error_code'])) {
+            return $errorMessages[$result['error_code']] ?? 'Unknown error (Code: ' . $result['error_code'] . ')';
+        }
+        
+        return $result['error'] ?? 'Unknown Voodoo SMS error';
+    }
+
+    /**
+     * Check if message contains Unicode characters
+     */
+    protected function containsUnicode($message)
+    {
+        return strlen($message) != mb_strlen($message);
+    }
+
+    /**
+     * Check Voodoo SMS balance (optional method for admin dashboard)
+     */
+    public function checkVoodooBalance()
+    {
+        if (!$this->config || $this->config->provider !== 'voodoo') {
+            return ['success' => false, 'error' => 'Voodoo SMS is not the active provider'];
+        }
+        
+        try {
+            $apiKey = Crypt::decryptString($this->config->api_key);
+            $apiSecret = $this->config->api_secret ? Crypt::decryptString($this->config->api_secret) : null;
+            
+            $response = Http::asForm()->post('https://www.voodoosms.com/vapi/server/getBalance', [
+                'username' => $apiKey, // For Voodoo, api_key is username
+                'password' => $apiSecret, // For Voodoo, api_secret is password
+            ]);
+
+            $result = $response->json();
+            
+            if (isset($result['success']) && $result['success'] === true) {
+                return [
+                    'success' => true,
+                    'balance' => $result['balance'] ?? 0,
+                    'credits_remaining' => $result['credits_remaining'] ?? 0,
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error' => $this->parseVoodooError($result),
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Failed to check balance: ' . $e->getMessage(),
             ];
         }
     }
@@ -661,7 +807,13 @@ class SmsService
      */
     public function sendTest($to)
     {
-        $message = "Test SMS from MLC Classroom Management System. If you receive this, SMS is working correctly via " . ($this->config->provider ?? 'unknown provider') . ".";
+        $providerName = $this->config->provider ?? 'unknown provider';
+        
+        if ($providerName === 'voodoo') {
+            $message = "Test SMS from MLC Classroom via Voodoo SMS. Delivery confirmation requested.";
+        } else {
+            $message = "Test SMS from MLC Classroom Management System. If you receive this, SMS is working correctly via " . $providerName . ".";
+        }
         
         return $this->sendImmediate($to, $message, 'test');
     }

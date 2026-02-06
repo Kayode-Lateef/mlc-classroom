@@ -58,12 +58,21 @@ class HomeworkAssignment extends Model
     }
 
     /**
-     * ✅ NEW: Relationship - Homework belongs to many topics
+     * Relationship - Homework belongs to many topics (with max_score on pivot)
      */
     public function topics()
     {
         return $this->belongsToMany(HomeworkTopic::class, 'homework_assignment_topic')
+            ->withPivot('max_score') 
             ->withTimestamps();
+    }
+
+    /**
+    * Get total possible score across all topics
+    */
+    public function getTotalMaxScoreAttribute(): int
+    {
+        return $this->topics->sum('pivot.max_score') ?? 0;
     }
 
     /**

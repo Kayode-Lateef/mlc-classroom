@@ -29,6 +29,15 @@ class HomeworkTopic extends Model
             ->withTimestamps();
     }
 
+
+    /**
+     * Relationship: Topic has many submission grades
+     */
+    public function submissionGrades()
+    {
+        return $this->hasMany(HomeworkSubmissionTopicGrade::class, 'homework_topic_id');
+    }
+    
     /**
      * Scope: Active topics only
      */

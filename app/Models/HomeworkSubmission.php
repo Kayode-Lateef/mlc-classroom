@@ -95,4 +95,60 @@ class HomeworkSubmission extends Model
     {
         return $query->where('status', 'pending');
     }
+
+    /**
+     * Relationship: Submission has many topic grades
+     */
+    public function topicGrades()
+    {
+        return $this->hasMany(HomeworkSubmissionTopicGrade::class, 'homework_submission_id');
+    }
+
+    /**
+     * Get topic grade for a specific topic
+     */
+    public function getTopicGrade($topicId)
+    {
+        return $this->topicGrades->where('homework_topic_id', $topicId)->first();
+    }
+
+    /**
+     * Check if all topics have been graded
+     */
+    public function allTopicsGraded(): bool
+    {
+        $assignmentTopicCount = $this->homeworkAssignment->topics()->count();
+        if ($assignmentTopicCount === 0) {
+            return false;
+        }
+        return $this->topicGrades()->count() >= $assignmentTopicCount;
+    }
+
+    /**
+     * Get total score across all graded topics
+     */
+    public function getTotalTopicScoreAttribute(): int
+    {
+        return $this->topicGrades->sum('score');
+    }
+
+    /**
+     * Get total max score across all graded topics
+     */
+    public function getTotalTopicMaxScoreAttribute(): int
+    {
+        return $this->topicGrades->sum('max_score');
+    }
+
+    /**
+     * Get overall percentage from topic grades
+     */
+    public function getTopicPercentageAttribute(): float
+    {
+        $maxScore = $this->total_topic_max_score;
+        if ($maxScore <= 0) {
+            return 0;
+        }
+        return round(($this->total_topic_score / $maxScore) * 100, 1);
+    }
 }

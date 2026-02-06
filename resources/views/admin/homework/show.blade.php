@@ -279,6 +279,14 @@
                             </div>
 
 
+
+                            @php $routePrefix = 'admin'; @endphp
+                            @include('partials.homework._topic_grading_section', ['routePrefix' => $routePrefix])
+
+
+
+
+
                             <!-- Student Submissions -->
                             <div class="card alert">
                                 <div class="card-header mb-3">

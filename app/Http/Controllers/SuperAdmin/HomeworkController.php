@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\HomeworkAssignment;
 use App\Models\HomeworkSubmission;
+use App\Models\HomeworkSubmissionTopicGrade;
 use App\Models\HomeworkTopic;
 use App\Models\ClassModel;
 use App\Models\User;
@@ -126,6 +127,12 @@ class HomeworkController extends Controller
             'file.file' => 'Invalid file uploaded.',
             'file.mimes' => 'File must be a PDF, DOC, DOCX, JPG, JPEG, or PNG.',
             'file.max' => 'File size must not exceed 10MB.',
+            'topic_ids.array' => 'Invalid topics selection.',
+            'topic_ids.*.exists' => 'One or more selected topics do not exist.',
+            'topic_max_scores.array' => 'Invalid max scores format.',
+            'topic_max_scores.*.integer' => 'Max score must be a whole number.',
+            'topic_max_scores.*.min' => 'Max score must be at least 1.',
+            'topic_max_scores.*.max' => 'Max score must not exceed 1000.',
         ];
 
         $validator = Validator::make($request->all(), [
@@ -138,13 +145,15 @@ class HomeworkController extends Controller
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'topic_ids' => 'nullable|array',
             'topic_ids.*' => 'exists:homework_topics,id',
+            'topic_max_scores' => 'nullable|array',
+            'topic_max_scores.*' => 'nullable|integer|min:1|max:1000',
         ], $messages);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
-                ->with('error', 'Please fix the errors below.');
+                ->with('error', 'Please fix the validation errors below.');
         }
 
         try {
@@ -154,6 +163,14 @@ class HomeworkController extends Controller
             $filePath = null;
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
+                
+                // Validate file size
+                if ($file->getSize() > 10485760) { // 10MB in bytes
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'File size must not exceed 10MB.');
+                }
+                
                 $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
                 $filePath = $file->storeAs('homework-assignments', $filename, 'public');
             }
@@ -170,15 +187,20 @@ class HomeworkController extends Controller
                 'teacher_id' => auth()->id(),
             ]);
 
-            // Attach topics to homework
-            if ($request->filled('topic_ids') && is_array($request->topic_ids)) {
-                $homework->topics()->attach($request->topic_ids);
+            // Sync topics with max_score pivot data
+            if ($request->has('topic_ids') && is_array($request->topic_ids)) {
+                $topicData = [];
+                foreach ($request->topic_ids as $topicId) {
+                    $topicData[$topicId] = [
+                        'max_score' => $request->input("topic_max_scores.{$topicId}", null),
+                    ];
+                }
+                $homework->topics()->sync($topicData);
             }
-
 
             // Create submissions for all enrolled students
             $class = ClassModel::with('students')->find($request->class_id);
-            foreach ($class->students as $student) {
+            foreach ($class->students()->wherePivot('status', 'active')->get() as $student) {
                 HomeworkSubmission::create([
                     'homework_assignment_id' => $homework->id,
                     'student_id' => $student->id,
@@ -200,6 +222,7 @@ class HomeworkController extends Controller
                     'url' => route('parent.homework.show', $homework->id)
                 ]
             );
+
             // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
@@ -240,8 +263,13 @@ class HomeworkController extends Controller
         $homework->load([
             'class.teacher',
             'teacher',
+            'topics',
             'progressSheet',
-            'submissions.student.parent'
+            'submissions.student.parent',
+            'submissions.submittedByUser',
+            'submissions.gradedByUser',
+            'submissions.topicGrades.topic',
+            'submissions.topicGrades.gradedByUser',
         ]);
 
         // Calculate submission statistics
@@ -281,6 +309,30 @@ class HomeworkController extends Controller
      */
     public function update(Request $request, HomeworkAssignment $homework)
     {
+        // Custom validation messages (same as store)
+        $messages = [
+            'class_id.required' => 'Please select a class.',
+            'class_id.exists' => 'Selected class does not exist.',
+            'progress_sheet_id.exists' => 'Selected progress sheet does not exist.',
+            'title.required' => 'Please enter a homework title.',
+            'title.max' => 'Title must not exceed 255 characters.',
+            'description.max' => 'Description must not exceed 2000 characters.',
+            'assigned_date.required' => 'Please select an assigned date.',
+            'assigned_date.date' => 'Please provide a valid assigned date.',
+            'due_date.required' => 'Please select a due date.',
+            'due_date.date' => 'Please provide a valid due date.',
+            'due_date.after_or_equal' => 'Due date must be on or after the assigned date.',
+            'file.file' => 'Invalid file uploaded.',
+            'file.mimes' => 'File must be a PDF, DOC, DOCX, JPG, JPEG, or PNG.',
+            'file.max' => 'File size must not exceed 10MB.',
+            'topic_ids.array' => 'Invalid topics selection.',
+            'topic_ids.*.exists' => 'One or more selected topics do not exist.',
+            'topic_max_scores.array' => 'Invalid max scores format.',
+            'topic_max_scores.*.integer' => 'Max score must be a whole number.',
+            'topic_max_scores.*.min' => 'Max score must be at least 1.',
+            'topic_max_scores.*.max' => 'Max score must not exceed 1000.',
+        ];
+
         $validator = Validator::make($request->all(), [
             'class_id' => 'required|exists:classes,id',
             'progress_sheet_id' => 'nullable|exists:progress_sheets,id',
@@ -289,13 +341,17 @@ class HomeworkController extends Controller
             'assigned_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:assigned_date',
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
-        ]);
+            'topic_ids' => 'nullable|array',
+            'topic_ids.*' => 'exists:homework_topics,id',
+            'topic_max_scores' => 'nullable|array',
+            'topic_max_scores.*' => 'nullable|integer|min:1|max:1000',
+        ], $messages);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
-                ->with('error', 'Please fix the errors below.');
+                ->with('error', 'Please fix the validation errors below.');
         }
 
         try {
@@ -303,12 +359,20 @@ class HomeworkController extends Controller
 
             // Handle file upload
             if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                
+                // Validate file size
+                if ($file->getSize() > 10485760) { // 10MB in bytes
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'File size must not exceed 10MB.');
+                }
+                
                 // Delete old file
                 if ($homework->file_path && Storage::disk('public')->exists($homework->file_path)) {
                     Storage::disk('public')->delete($homework->file_path);
                 }
 
-                $file = $request->file('file');
                 $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
                 $filePath = $file->storeAs('homework-assignments', $filename, 'public');
                 $homework->file_path = $filePath;
@@ -325,12 +389,16 @@ class HomeworkController extends Controller
             ]);
 
             // Sync topics
-            if ($request->has('topic_ids')) {
-                if (is_array($request->topic_ids) && count($request->topic_ids) > 0) {
-                    $homework->topics()->sync($request->topic_ids);
-                } else {
-                    $homework->topics()->detach();
+            if ($request->has('topic_ids') && is_array($request->topic_ids)) {
+                $topicData = [];
+                foreach ($request->topic_ids as $index => $topicId) {
+                    $topicData[$topicId] = [
+                        'max_score' => $request->input("topic_max_scores.{$topicId}", null),
+                    ];
                 }
+                $homework->topics()->sync($topicData);
+            } else {
+                $homework->topics()->detach();
             }
 
 
@@ -766,6 +834,115 @@ class HomeworkController extends Controller
             
             return redirect()->back()
                 ->with('error', 'Failed to grade submissions. Please try again.');
+        }
+    }
+
+    
+    /**
+     * Grade individual topics for a homework submission (Score/Max format)
+     */
+    public function gradeTopics(Request $request, HomeworkAssignment $homework)
+    {
+        $user = auth()->user();
+
+        $validator = Validator::make($request->all(), [
+            'submission_id' => 'required|exists:homework_submissions,id',
+            'topic_grades' => 'required|array|min:1',
+            'topic_grades.*.topic_id' => 'required|exists:homework_topics,id',
+            'topic_grades.*.score' => 'required|integer|min:0',
+            'topic_grades.*.max_score' => 'required|integer|min:1',
+            'topic_grades.*.comments' => 'nullable|string|max:500',
+        ], [
+            'topic_grades.*.score.required' => 'Please enter a score for each topic.',
+            'topic_grades.*.score.min' => 'Score cannot be negative.',
+            'topic_grades.*.max_score.required' => 'Max score is required for each topic.',
+            'topic_grades.*.max_score.min' => 'Max score must be at least 1.',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->with('error', 'Please provide valid topic scores.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $submission = HomeworkSubmission::where('id', $request->submission_id)
+                ->where('homework_assignment_id', $homework->id)
+                ->firstOrFail();
+
+            // Only allow grading submitted/late/graded submissions
+            if (!in_array($submission->status, ['submitted', 'late', 'graded'])) {
+                return redirect()->back()
+                    ->with('error', 'Cannot grade topics for a pending submission.');
+            }
+
+            $gradedCount = 0;
+
+            foreach ($request->topic_grades as $topicGrade) {
+                // Verify topic belongs to this homework assignment
+                $topicExists = $homework->topics()
+                    ->where('homework_topics.id', $topicGrade['topic_id'])
+                    ->exists();
+
+                if (!$topicExists) {
+                    continue;
+                }
+
+                // Validate score does not exceed max_score
+                if ($topicGrade['score'] > $topicGrade['max_score']) {
+                    continue; // Skip invalid — score can't exceed max
+                }
+
+                HomeworkSubmissionTopicGrade::updateOrCreate(
+                    [
+                        'homework_submission_id' => $submission->id,
+                        'homework_topic_id' => $topicGrade['topic_id'],
+                    ],
+                    [
+                        'score' => $topicGrade['score'],
+                        'max_score' => $topicGrade['max_score'],
+                        'comments' => $topicGrade['comments'] ?? null,
+                        'graded_by' => $user->id, // Track who graded it (admin/superadmin)
+                        'graded_at' => now(),
+                    ]
+                );
+
+                $gradedCount++;
+            }
+
+            // If all topics graded, update submission overall status if not already graded
+            if ($gradedCount > 0 && $submission->status !== 'graded') {
+                $submission->update([
+                    'status' => 'graded',
+                    'graded_at' => now(),
+                    'graded_by' => $user->id,
+                ]);
+            }
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'graded_topics',
+                'model_type' => 'HomeworkSubmission',
+                'model_id' => $submission->id,
+                'description' => "Graded {$gradedCount} topic(s) for {$submission->student->full_name} on: {$homework->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', "{$gradedCount} topic score(s) saved successfully!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Topic grading failed: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'Failed to save topic scores. Please try again.');
         }
     }
 }

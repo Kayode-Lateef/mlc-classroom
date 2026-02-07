@@ -17,7 +17,7 @@
             <strong><i class="ti-info-alt"></i> Topics &amp; Max Scores for this homework:</strong>
             <div style="margin-top: 8px;">
                 @foreach($homework->topics as $index => $topic)
-                    <span class="badge" style="background: #3386f7; color: white; padding: 6px 12px; margin: 3px 4px 3px 0; font-size: 0.875rem;">
+                    <span class="badge" style="background: #3386f7; color: white; padding: 6px 12px; margin: 3px 4px 3px 0;">
                         {{ $topic->name }}
                         @if($topic->pivot->max_score)
                             <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">
@@ -40,21 +40,21 @@
                 <div class="card-header" style="background: #f8f9fa; padding: 12px 15px; border-bottom: 1px solid #e0e0e0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <div>
-                            <strong style="font-size: 1rem;">
+                            <strong>
                                 <i class="ti-user"></i> {{ $submission->student->full_name }}
                             </strong>
                             <span class="badge ml-2
                                 @if($submission->status === 'graded') badge-success
                                 @elseif($submission->status === 'late') badge-warning
                                 @else badge-info @endif"
-                                style="font-size: 0.8rem;">
+                                >
                                 {{ ucfirst($submission->status) }}
                             </span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             {{-- Overall Grade (existing) --}}
                             @if($submission->grade)
-                                <span style="font-size: 0.9rem; color: #666;">
+                                <span style="color: #666;">
                                     Overall: <strong style="color: #28a745;">{{ $submission->grade }}</strong>
                                 </span>
                             @endif
@@ -69,12 +69,12 @@
                             @endphp
 
                             @if($gradedTopicCount > 0)
-                                <span class="badge badge-primary" style="font-size: 0.85rem; padding: 5px 10px; background: #3386f7;">
+                                <span class="badge badge-primary" style="padding: 5px 10px; background: #3386f7;">
                                     <i class="ti-stats-up"></i> {{ $totalScore }}/{{ $totalMax }} ({{ $percentage }}%)
                                 </span>
                             @endif
 
-                            <span class="badge {{ $gradedTopicCount >= $topicCount ? 'badge-success' : 'badge-secondary' }}" style="font-size: 0.8rem;">
+                            <span class="badge {{ $gradedTopicCount >= $topicCount ? 'badge-success' : 'badge-secondary' }}" >
                                 {{ $gradedTopicCount }}/{{ $topicCount }} topics graded
                             </span>
                         </div>
@@ -86,7 +86,7 @@
                         <input type="hidden" name="submission_id" value="{{ $submission->id }}">
 
                         <div class="table-responsive">
-                            <table class="table table-bordered" style="margin-bottom: 10px; font-size: 0.9rem;">
+                            <table class="table table-bordered" style="margin-bottom: 10px;">
                                 <thead style="background: #f8f9fa;">
                                     <tr>
                                         <th style="width: 28%; padding: 10px;">Topic</th>
@@ -134,7 +134,7 @@
                                                 style="width: 75px; margin: 0 auto; background: #f8f9fa;">
                                         </td>
                                         <td style="vertical-align: middle; padding: 10px; text-align: center;">
-                                            <span class="topic-percentage" style="font-weight: 600; font-size: 0.9rem;">
+                                            <span class="topic-percentage" style="font-weight: 600;">
                                                 @if($existingGrade)
                                                     <span style="color: {{ $existingGrade->percentage >= 70 ? '#28a745' : ($existingGrade->percentage >= 50 ? '#e06829' : '#dc3545') }};">
                                                         {{ $existingGrade->percentage }}%
@@ -154,14 +154,14 @@
                                         </td>
                                         <td style="vertical-align: middle; text-align: center; padding: 10px;">
                                             @if($existingGrade)
-                                                <span class="badge badge-success" style="font-size: 0.8rem;">
+                                                <span class="badge badge-success" >
                                                     <i class="ti-check"></i> {{ $existingGrade->formatted_score }}
                                                 </span>
                                                 @if($existingGrade->graded_at)
                                                     <br><small class="text-muted">{{ $existingGrade->graded_at->format('d/m/Y') }}</small>
                                                 @endif
                                             @else
-                                                <span class="badge badge-secondary" style="font-size: 0.8rem;">
+                                                <span class="badge badge-secondary" >
                                                     <i class="ti-time"></i> Pending
                                                 </span>
                                             @endif
@@ -186,7 +186,7 @@
                                                     $tScore = $submission->topicGrades->sum('score');
                                                     $tPct = $tMax > 0 ? round(($tScore / $tMax) * 100, 1) : 0;
                                                 @endphp
-                                                <span style="color: {{ $tPct >= 70 ? '#28a745' : ($tPct >= 50 ? '#e06829' : '#dc3545') }};">
+                                                <span style="color: {{ $tPct >= 70 ? '#28a745' : ($tPct >= 49 ? '#e06829' : '#dc3545') }};">
                                                     {{ $tPct }}%
                                                 </span>
                                             @else
@@ -200,7 +200,7 @@
                         </div>
 
                         <div style="text-align: right;">
-                            <button type="submit" class="btn btn-sm" style="background: #3386f7; color: white; border: none; padding: 8px 24px; font-size: 0.9rem;">
+                            <button type="submit" class="btn btn-sm" style="background: #3386f7; color: white; border: none; padding: 8px 24px;">
                                 <i class="ti-save"></i> Save Topic Scores
                             </button>
                         </div>

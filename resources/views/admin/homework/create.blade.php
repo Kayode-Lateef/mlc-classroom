@@ -147,47 +147,47 @@
                                         @enderror
                                     </div>
 
-                                    
-<!-- Topics Selection with Max Scores -->
-<div class="form-group">
-    <label for="topic_ids">
-        <i class="ti-bookmark-alt"></i> Topics
-        <span class="text-muted">(Select topics and set max scores)</span>
-    </label>
-    <select name="topic_ids[]" id="topic_ids" class="form-control select2" multiple>
-        <option value="">-- Select Topics --</option>
-        @foreach($topics as $topic)
-            <option value="{{ $topic->id }}"
-                {{ in_array($topic->id, old('topic_ids', [])) ? 'selected' : '' }}>
-                {{ $topic->name }}
-                @if($topic->subject)
-                    ({{ $topic->subject }})
-                @endif
-            </option>
-        @endforeach
-    </select>
-    <small class="form-text text-muted">
-        Select the topics this homework covers. You can set max scores below.
-    </small>
-</div>
+                                                                        
+                                    <!-- Topics Selection with Max Scores -->
+                                    <div class="form-group">
+                                        <label for="topic_ids">
+                                            <i class="ti-bookmark-alt"></i> Topics
+                                            <span class="text-muted">(Select topics and set max scores)</span>
+                                        </label>
+                                        <select name="topic_ids[]" id="topic_ids" class="form-control select2" multiple>
+                                            <option value="">-- Select Topics --</option>
+                                            @foreach($topics as $topic)
+                                                <option value="{{ $topic->id }}"
+                                                    {{ in_array($topic->id, old('topic_ids', [])) ? 'selected' : '' }}>
+                                                    {{ $topic->name }}
+                                                    @if($topic->subject)
+                                                        ({{ $topic->subject }})
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            Select the topics this homework covers. You can set max scores below.
+                                        </small>
+                                    </div>
 
-<!-- Dynamic Max Score Inputs (shown after topics are selected) -->
-<div id="topic-max-scores-container" style="display: none;">
-    <label><i class="ti-stats-up"></i> Max Scores per Topic</label>
-    <div class="table-responsive">
-        <table class="table table-bordered" style="font-size: 0.9rem;" id="max-scores-table">
-            <thead style="background: #f8f9fa;">
-                <tr>
-                    <th style="padding: 8px 12px;">Topic</th>
-                    <th style="padding: 8px 12px; width: 150px;">Max Score</th>
-                </tr>
-            </thead>
-            <tbody id="max-scores-body">
-                <!-- Dynamically populated -->
-            </tbody>
-        </table>
-    </div>
-</div>
+                                    <!-- Dynamic Max Score Inputs (shown after topics are selected) -->
+                                    <div id="topic-max-scores-container" style="display: none;" class="mb-4">
+                                        <label><i class="ti-stats-up"></i> Max Scores per Topic</label>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="max-scores-table">
+                                                <thead style="background: #f8f9fa;">
+                                                    <tr>
+                                                        <th style="padding: 8px 12px;">Topic</th>
+                                                        <th style="padding: 8px 12px; width: 150px;">Max Score</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="max-scores-body">
+                                                    <!-- Dynamically populated -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                     <!-- Description -->
                                     <div class="form-group">
                                         <label>Description</label>
@@ -371,16 +371,17 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // File input change handler
-    $('#file-input').on('change', function() {
-        const file = this.files[0];
-        if (file) {
-            $('#file-name span').text(file.name);
-            $('#file-name').show();
-        } else {
-            $('#file-name').hide();
-        }
+    $(document).ready(function() {
+        // File input change handler
+        $('#file-input').on('change', function() {
+            const file = this.files[0];
+            if (file) {
+                $('#file-name span').text(file.name);
+                $('#file-name').show();
+            } else {
+                $('#file-name').hide();
+            }
+        });
     });
 
     // ============================================
@@ -429,6 +430,6 @@ $(document).ready(function() {
             $('#topic_ids').trigger('change');
         }
     });
-});
+
 </script>
 @endpush

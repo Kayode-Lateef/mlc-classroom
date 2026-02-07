@@ -4,12 +4,6 @@
 
 @push('styles')
     <style>
-        .form-section {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
 
         .required-field::after {
             content: " *";

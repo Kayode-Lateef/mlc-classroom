@@ -135,24 +135,47 @@
                                         @enderror
                                     </div>
 
-                                    <!-- Topics Selection -->
+                                    <!-- Topics Selection with Max Scores -->
                                     <div class="form-group">
                                         <label for="topic_ids">
-                                            <i class="ti-bookmark-alt"></i> Topics 
-                                            <span class="text-muted">(Select one or more)</span>
+                                            <i class="ti-bookmark-alt"></i> Topics
+                                            <span class="text-muted">(Select topics and set max scores)</span>
                                         </label>
                                         <select name="topic_ids[]" id="topic_ids" class="form-control select2" multiple>
+                                            <option value="">-- Select Topics --</option>
                                             @foreach($topics as $topic)
                                                 <option value="{{ $topic->id }}"
-                                                    {{ in_array($topic->id, $homework->topics->pluck('id')->toArray()) ? 'selected' : '' }}>
-                                                    {{ $topic->name }} 
+                                                    {{ in_array($topic->id, old('topic_ids', [])) ? 'selected' : '' }}>
+                                                    {{ $topic->name }}
                                                     @if($topic->subject)
-                                                        <small>({{ $topic->subject }})</small>
+                                                        ({{ $topic->subject }})
                                                     @endif
                                                 </option>
                                             @endforeach
                                         </select>
+                                        <small class="form-text text-muted">
+                                            Select the topics this homework covers. You can set max scores below.
+                                        </small>
                                     </div>
+
+                                    <!-- Dynamic Max Score Inputs (shown after topics are selected) -->
+                                    <div id="topic-max-scores-container" style="display: none;" class="mb-4">
+                                        <label><i class="ti-stats-up"></i> Max Scores per Topic</label>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="max-scores-table">
+                                                <thead style="background: #f8f9fa;">
+                                                    <tr>
+                                                        <th style="padding: 8px 12px;">Topic</th>
+                                                        <th style="padding: 8px 12px; width: 150px;">Max Score</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="max-scores-body">
+                                                    <!-- Dynamically populated -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
 
                                     <!-- Description -->
                                     <div class="form-group">
@@ -398,62 +421,132 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // File input change handler
-    $('#file-input').on('change', function() {
-        const file = this.files[0];
-        if (file) {
-            $('#file-name span').text(file.name);
-            $('#file-name').show();
-        } else {
-            $('#file-name').hide();
-        }
+    $(document).ready(function() {
+        // File input change handler
+        $('#file-input').on('change', function() {
+            const file = this.files[0];
+            if (file) {
+                $('#file-name span').text(file.name);
+                $('#file-name').show();
+            } else {
+                $('#file-name').hide();
+            }
+        });
     });
-});
 
-// ==========================================
-// DELETE HOMEWORK CONFIRMATION WITH SWEETALERT V1
-// ==========================================
-function confirmDeleteHomework(submissionCount) {
-    var warningMessage = '';
-    var confirmButtonText = 'Yes, delete it!';
     
-    if (submissionCount > 0) {
-        warningMessage = 'This homework has ' + submissionCount + ' submission(s) from students. ' +
-                       'All submissions will be permanently deleted! ' +
-                       'This action cannot be undone!';
-        confirmButtonText = 'Delete (' + submissionCount + ' submissions)';
-    } else {
-        warningMessage = 'This homework has no submissions yet. ' +
-                       'Are you sure you want to delete it? ' +
-                       'This action cannot be undone!';
-    }
-    
-    swal({
-        title: "Delete Homework?",
-        text: warningMessage,
-        type: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: confirmButtonText,
-        cancelButtonText: "No, keep it",
-        closeOnConfirm: false,
-        closeOnCancel: true
-    }, function(isConfirm) {
-        if (isConfirm) {
-            // Show loading state
-            swal({
-                title: "Deleting...",
-                text: "Please wait while we delete the homework",
-                type: "info",
-                showConfirmButton: false,
-                allowEscapeKey: false
+   // ============================================
+    // DYNAMIC MAX SCORE INPUTS FOR SELECTED TOPICS
+    // ============================================
+    $('#topic_ids').on('change', function() {
+        const selectedOptions = $(this).find(':selected');
+        const container = $('#topic-max-scores-container');
+        const tbody = $('#max-scores-body');
+
+        tbody.empty();
+
+        if (selectedOptions.length > 0) {
+            container.show();
+            selectedOptions.each(function() {
+                const topicId = $(this).val();
+                const topicName = $(this).text().trim();
+                const existingValue = $(`input[name="topic_max_scores[${topicId}]"]`).val() || '';
+
+                tbody.append(`
+                    <tr>
+                        <td style="vertical-align: middle; padding: 8px 12px;">
+                            <strong>${topicName}</strong>
+                        </td>
+                        <td style="padding: 8px 12px;">
+                            <input type="number"
+                                name="topic_max_scores[${topicId}]"
+                                class="form-control form-control-sm"
+                                value="${existingValue}"
+                                placeholder="e.g., 10, 20"
+                                min="1"
+                                max="1000"
+                                style="width: 100px;">
+                        </td>
+                    </tr>
+                `);
             });
-            
-            document.getElementById('deleteForm').submit();
+        } else {
+            container.hide();
         }
     });
-}
+
+    // After the change handler, set existing values for edit forms
+    $(document).ready(function() {
+        @if(isset($homework) && $homework->topics->count() > 0)
+            const existingMaxScores = {
+                @foreach($homework->topics as $topic)
+                    '{{ $topic->id }}': '{{ $topic->pivot->max_score ?? '' }}',
+                @endforeach
+            };
+
+            // Trigger change to build the table
+            $('#topic_ids').trigger('change');
+
+            // Then fill in existing values
+            setTimeout(function() {
+                Object.keys(existingMaxScores).forEach(function(topicId) {
+                    $(`input[name="topic_max_scores[${topicId}]"]`).val(existingMaxScores[topicId]);
+                });
+            }, 100);
+        @endif
+    });
+
+    // Trigger on page load for edit forms with pre-selected topics
+    $(document).ready(function() {
+        if ($('#topic_ids').find(':selected').length > 0) {
+            $('#topic_ids').trigger('change');
+        }
+    });
+
+
+    // ==========================================
+    // DELETE HOMEWORK CONFIRMATION WITH SWEETALERT V1
+    // ==========================================
+    function confirmDeleteHomework(submissionCount) {
+        var warningMessage = '';
+        var confirmButtonText = 'Yes, delete it!';
+        
+        if (submissionCount > 0) {
+            warningMessage = 'This homework has ' + submissionCount + ' submission(s) from students. ' +
+                        'All submissions will be permanently deleted! ' +
+                        'This action cannot be undone!';
+            confirmButtonText = 'Delete (' + submissionCount + ' submissions)';
+        } else {
+            warningMessage = 'This homework has no submissions yet. ' +
+                        'Are you sure you want to delete it? ' +
+                        'This action cannot be undone!';
+        }
+        
+        swal({
+            title: "Delete Homework?",
+            text: warningMessage,
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: "No, keep it",
+            closeOnConfirm: false,
+            closeOnCancel: true
+        }, function(isConfirm) {
+            if (isConfirm) {
+                // Show loading state
+                swal({
+                    title: "Deleting...",
+                    text: "Please wait while we delete the homework",
+                    type: "info",
+                    showConfirmButton: false,
+                    allowEscapeKey: false
+                });
+                
+                document.getElementById('deleteForm').submit();
+            }
+        });
+    }
 </script>
 @endpush

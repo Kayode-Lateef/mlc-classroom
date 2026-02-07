@@ -111,6 +111,9 @@ use App\Http\Controllers\SuperAdmin\ReportController;
     Route::post('homework/{homework}/bulk-grade', [   HomeworkController::class, 'bulkGrade'])
         ->name('homework.bulk-grade');
 
+    Route::post('/homework/{homework}/grade-topics', [HomeworkController::class, 'gradeTopics'])
+        ->name('homework.grade-topics');
+
     // Topics management
     Route::resource('homework-topics', HomeworkTopicController::class)->except(['show']);
     

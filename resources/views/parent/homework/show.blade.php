@@ -318,6 +318,89 @@
                                         @endif
                                     </div>
                                 </div>
+
+                                {{-- Topic-Level Scores (Read Only) --}}
+                                @if($submission->status === 'graded' && $homework->topics->count() > 0 && $submission->topicGrades->count() > 0)
+                                <div style="margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 15px;">
+                                    <h5 style="font-weight: 600; margin-bottom: 12px;">
+                                        <i class="ti-bookmark-alt"></i> Topic Scores
+                                    </h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead style="background: #f8f9fa;">
+                                                <tr>
+                                                    <th style="padding: 10px;">Topic</th>
+                                                    <th style="padding: 10px; width: 100px; text-align: center;">Score</th>
+                                                    <th style="padding: 10px; width: 80px; text-align: center;">%</th>
+                                                    <th style="padding: 10px;">Comments</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($homework->topics as $topic)
+                                                @php
+                                                    $topicGrade = $submission->topicGrades->where('homework_topic_id', $topic->id)->first();
+                                                @endphp
+                                                <tr>
+                                                    <td style="vertical-align: middle; padding: 10px;">
+                                                        <strong>{{ $topic->name }}</strong>
+                                                        @if($topic->subject)
+                                                            <br><small class="text-muted">{{ $topic->subject }}</small>
+                                                        @endif
+                                                    </td>
+                                                    <td style="vertical-align: middle; text-align: center; padding: 10px;">
+                                                        @if($topicGrade)
+                                                            <strong style="color: #3386f7;">
+                                                                {{ $topicGrade->score }}/{{ $topicGrade->max_score }}
+                                                            </strong>
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
+                                                    </td>
+                                                    <td style="vertical-align: middle; text-align: center; padding: 10px;">
+                                                        @if($topicGrade)
+                                                            @php $pct = $topicGrade->percentage; @endphp
+                                                            <span style="font-weight: 600; color: {{ $pct >= 70 ? '#28a745' : ($pct >= 49 ? '#e06829' : '#dc3545') }};">
+                                                                {{ $pct }}%
+                                                            </span>
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
+                                                    </td>
+                                                    <td style="vertical-align: middle; padding: 10px;">
+                                                        @if($topicGrade && $topicGrade->comments)
+                                                            {{ $topicGrade->comments }}
+                                                        @else
+                                                            <span class="text-muted">No comments</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                            {{-- Total --}}
+                                            <tfoot style="background: #f0f6ff; font-weight: 600;">
+                                                <tr>
+                                                    <td style="padding: 10px; text-align: right;">Total:</td>
+                                                    <td style="padding: 10px; text-align: center;">
+                                                        @php
+                                                            $totalScore = $submission->topicGrades->sum('score');
+                                                            $totalMax = $submission->topicGrades->sum('max_score');
+                                                        @endphp
+                                                        <strong style="color: #3386f7;">{{ $totalScore }}/{{ $totalMax }}</strong>
+                                                    </td>
+                                                    <td style="padding: 10px; text-align: center;">
+                                                        @php $overallPct = $totalMax > 0 ? round(($totalScore / $totalMax) * 100, 1) : 0; @endphp
+                                                        <span style="font-weight: 700; color: {{ $overallPct >= 70 ? '#28a745' : ($overallPct >= 49 ? '#e06829' : '#dc3545') }};">
+                                                            {{ $overallPct }}%
+                                                        </span>
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                                @endif
+
                             </div>
                         </div>
 

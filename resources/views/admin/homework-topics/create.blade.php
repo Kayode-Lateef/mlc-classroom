@@ -4,46 +4,6 @@
 
 @push('styles')
     <style>
-        .page-header {
-            margin-bottom: 30px;
-        }
-
-        .form-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .form-card .card-header {
-            background: linear-gradient(135deg, #3386f7 0%, #e06829 100%);
-            color: white;
-            padding: 20px;
-            border: none;
-        }
-
-        .form-card .card-header h2 {
-            margin: 0;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .form-card .card-body {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            font-size: 0.9375rem;
-            color: #495057;
-            margin-bottom: 8px;
-            display: block;
-        }
 
         .form-group label .required {
             color: #dc3545;
@@ -55,26 +15,13 @@
             margin-right: 5px;
         }
 
-        .form-control {
-            font-size: 0.9375rem;
-            padding: 12px 15px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-        }
-
         .form-control:focus {
             border-color: #3386f7;
             box-shadow: 0 0 0 0.2rem rgba(51, 134, 247, 0.25);
         }
 
-        .form-text {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-top: 8px;
-        }
 
         .custom-control-label {
-            font-size: 0.9375rem;
             color: #495057;
             cursor: pointer;
         }
@@ -95,15 +42,8 @@
             border-top: 1px solid #dee2e6;
         }
 
-        .btn {
-            padding: 12px 25px;
-            font-size: 0.9375rem;
-            font-weight: 500;
-        }
-
         .guidelines-box {
             background: #f8f9fa;
-            border-left: 4px solid #3386f7;
             padding: 20px;
             border-radius: 6px;
             margin-bottom: 25px;
@@ -111,7 +51,6 @@
 
         .guidelines-box h4 {
             color: #2c3e50;
-            font-size: 1.125rem;
             margin-bottom: 15px;
         }
 
@@ -127,21 +66,18 @@
 
         .guidelines-box ul li {
             color: #495057;
-            font-size: 0.9375rem;
             margin-bottom: 10px;
             line-height: 1.6;
         }
 
         .examples-box {
             background: #e7f3ff;
-            border-left: 4px solid #e06829;
             padding: 20px;
             border-radius: 6px;
         }
 
         .examples-box h4 {
             color: #2c3e50;
-            font-size: 1.125rem;
             margin-bottom: 15px;
         }
 
@@ -165,7 +101,6 @@
 
         .examples-box .example-item span {
             color: #6c757d;
-            font-size: 0.875rem;
         }
 
         @media (max-width: 768px) {
@@ -193,6 +128,7 @@
                                 <h1><i class="ti-plus"></i> Create Homework Topic</h1>
                             </div>
                         </div>
+                        <span>Add a new homework topic to the system</span>
                     </div>
                     <div class="col-lg-4 p-l-0 title-margin-left">
                         <div class="page-header">
@@ -225,9 +161,9 @@
                 <div class="row">
                     <!-- Main Form -->
                     <div class="col-lg-8">
-                        <div class="form-card card">
-                            <div class="card-header">
-                                <h2><i class="ti-bookmark-alt"></i> Topic Information</h2>
+                        <div class="card">
+                            <div class="card-header mb-4">
+                                <h4><i class="ti-bookmark-alt"></i> Topic Information</h4>
                             </div>
                             <div class="card-body">
                                 <form method="POST" action="{{ route('admin.homework-topics.store') }}" id="topic-form">

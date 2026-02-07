@@ -17,12 +17,12 @@
         margin-bottom: 20px;
     }
 
-        .homework-grid-row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-left: -15px;
-    margin-right: -15px;
-    }
+    .homework-grid-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -15px;
+        margin-right: -15px;
+        }
 
     .homework-card-col {
         display: flex;
@@ -371,7 +371,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="empty-state">
-                                <i class="ti-book"></i>
+                                <i class="ti-book" style="font-size: 4rem"></i>
                                 <h3 class="mb-3">No Homework Assignments Found</h3>
                                 <p class="text-muted mb-4">Get started by creating your first homework assignment.</p>
                                 <a href="{{ route('admin.homework.create') }}" class="btn btn-primary">

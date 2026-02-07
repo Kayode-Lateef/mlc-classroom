@@ -126,6 +126,12 @@ class HomeworkController extends Controller
             'file.file' => 'Invalid file uploaded.',
             'file.mimes' => 'File must be a PDF, DOC, DOCX, JPG, JPEG, or PNG.',
             'file.max' => 'File size must not exceed 10MB.',
+            'topic_ids.array' => 'Invalid topics selection.',
+            'topic_ids.*.exists' => 'One or more selected topics do not exist.',
+            'topic_max_scores.array' => 'Invalid max scores format.',
+            'topic_max_scores.*.integer' => 'Max score must be a whole number.',
+            'topic_max_scores.*.min' => 'Max score must be at least 1.',
+            'topic_max_scores.*.max' => 'Max score must not exceed 1000.',
         ];
 
         $validator = Validator::make($request->all(), [
@@ -136,8 +142,6 @@ class HomeworkController extends Controller
             'assigned_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:assigned_date',
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
-            'topic_ids' => 'nullable|array',
-            'topic_ids.*' => 'exists:homework_topics,id',
             'topic_ids' => 'nullable|array',
             'topic_ids.*' => 'exists:homework_topics,id',
             'topic_max_scores' => 'nullable|array',
@@ -250,37 +254,37 @@ class HomeworkController extends Controller
         }
     }
 
-/**
- * Display the specified homework assignment
- */
-public function show(HomeworkAssignment $homework)
-{
-    $homework->load([
-        'class.teacher',
-        'teacher',
-        'topics',
-        'progressSheet',
-        'submissions.student.parent',
-        'submissions.submittedByUser',
-        'submissions.gradedByUser',
-        'submissions.topicGrades.topic',
-        'submissions.topicGrades.gradedByUser',
-    ]);
+    /**
+     * Display the specified homework assignment
+     */
+    public function show(HomeworkAssignment $homework)
+    {
+        $homework->load([
+            'class.teacher',
+            'teacher',
+            'topics',
+            'progressSheet',
+            'submissions.student.parent',
+            'submissions.submittedByUser',
+            'submissions.gradedByUser',
+            'submissions.topicGrades.topic',
+            'submissions.topicGrades.gradedByUser',
+        ]);
 
-    // Calculate submission statistics
-    $stats = [
-        'total_students' => $homework->submissions->count(),
-        'submitted' => $homework->submissions->whereIn('status', ['submitted', 'late', 'graded'])->count(),
-        'pending' => $homework->submissions->where('status', 'pending')->count(),
-        'graded' => $homework->submissions->where('status', 'graded')->count(),
-        'late' => $homework->submissions->where('status', 'late')->count(),
-    ];
+        // Calculate submission statistics
+        $stats = [
+            'total_students' => $homework->submissions->count(),
+            'submitted' => $homework->submissions->whereIn('status', ['submitted', 'late', 'graded'])->count(),
+            'pending' => $homework->submissions->where('status', 'pending')->count(),
+            'graded' => $homework->submissions->where('status', 'graded')->count(),
+            'late' => $homework->submissions->where('status', 'late')->count(),
+        ];
 
-    // Group submissions by status
-    $submissionsByStatus = $homework->submissions->groupBy('status');
+        // Group submissions by status
+        $submissionsByStatus = $homework->submissions->groupBy('status');
 
-    return view('admin.homework.show', compact('homework', 'stats', 'submissionsByStatus'));
-}
+        return view('admin.homework.show', compact('homework', 'stats', 'submissionsByStatus'));
+    }
 
     /**
      * Show the form for editing the specified homework assignment
@@ -320,6 +324,12 @@ public function show(HomeworkAssignment $homework)
             'file.file' => 'Invalid file uploaded.',
             'file.mimes' => 'File must be a PDF, DOC, DOCX, JPG, JPEG, or PNG.',
             'file.max' => 'File size must not exceed 10MB.',
+            'topic_ids.array' => 'Invalid topics selection.',
+            'topic_ids.*.exists' => 'One or more selected topics do not exist.',
+            'topic_max_scores.array' => 'Invalid max scores format.',
+            'topic_max_scores.*.integer' => 'Max score must be a whole number.',
+            'topic_max_scores.*.min' => 'Max score must be at least 1.',
+            'topic_max_scores.*.max' => 'Max score must not exceed 1000.',
         ];
 
         $validator = Validator::make($request->all(), [

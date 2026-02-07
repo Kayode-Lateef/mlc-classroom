@@ -1,76 +1,125 @@
 # === APPLICATION ===
 APP_NAME="MLC Classroom Management"
-APP_ENV=production
-APP_KEY=base64:GENERATE_NEW_KEY_WITH_ARTISAN
-APP_DEBUG=false
+APP_ENV=local
+APP_KEY=base64:Kp4q4tBOQ5LgZUgl+GCVJ/JYcnvf3pJyrqS7RRHiioQ=
+APP_DEBUG=true
 APP_TIMEZONE=Europe/London
-APP_URL=https://classroom.maidstonelearning.co.uk
+APP_URL=https://mlc-portal.test/
+APP_LOGO=logos/logo-mlc1.png
 
-APP_LOCALE=en
+APP_LOCALE=en_GB  # UK English
 APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_GB
 
 BCRYPT_ROUNDS=12
 
 # === LOGGING ===
-LOG_CHANNEL=daily
-LOG_LEVEL=warning
+LOG_CHANNEL=stack
+LOG_STACK=single
 LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
 
 # === DATABASE ===
 DB_CONNECTION=mysql
-DB_HOST=your_production_host
+DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=your_production_database
-DB_USERNAME=your_production_user
-DB_PASSWORD=your_strong_production_password
+DB_DATABASE=mlc-portal
+DB_USERNAME=root
+DB_PASSWORD=
 
 # === SESSION & CACHE ===
-SESSION_DRIVER=redis
-SESSION_LIFETIME=480
+SESSION_DRIVER=database
+SESSION_LIFETIME=240
 SESSION_ENCRYPT=true
-CACHE_STORE=redis
-QUEUE_CONNECTION=redis
+CACHE_STORE=database
+QUEUE_CONNECTION=database
 
-# === REDIS ===
-REDIS_CLIENT=phpredis
-REDIS_HOST=127.0.0.1
-REDIS_PASSWORD=your_redis_password
-REDIS_PORT=6379
-
-# === MAIL (Production) ===
+# === MAIL (Development - Mailpit) ===
 MAIL_MAILER=smtp
-MAIL_HOST=smtp.sendgrid.net
-MAIL_PORT=587
-MAIL_USERNAME=apikey
-MAIL_PASSWORD=your_sendgrid_api_key
-MAIL_ENCRYPTION=tls
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
 MAIL_FROM_ADDRESS=noreply@maidstonelearning.co.uk
 MAIL_FROM_NAME="MLC Classroom"
 
-# === SMS (Production) ===
-SMS_PROVIDER=africastalking
-SMS_USERNAME=your_production_username
-SMS_API_KEY=your_production_api_key
-SMS_SENDER_ID=MLC_CLASS
-SMS_SANDBOX=false
-SMS_DAILY_LIMIT=1000
-SMS_MONTHLY_LIMIT=10000
-SMS_LOW_BALANCE_THRESHOLD=1000
+# Mailpit Web Interface: http://localhost:8025
 
-# === FILE UPLOADS (Production - S3) ===
-FILESYSTEM_DISK=s3
+
+# === SMS (Voodoo) ===
+SMS_PROVIDER=voodoo  # Change from textlocal to voodoo
+
+# Voodoo SMS Credentials
+VOODOO_USERNAME=your_username
+VOODOO_PASSWORD=your_password
+VOODOO_SENDER_ID="MLC CLASS"
+
+# Keep existing SMS limits
+SMS_DAILY_LIMIT=500
+SMS_MONTHLY_LIMIT=5000
+SMS_LOW_BALANCE_THRESHOLD=50
+
+# === SMS (Development - TextLocal Recommended for UK) ===
+# SMS_PROVIDER=textlocal
+# SMS_API_KEY=your_textlocal_api_key
+# SMS_SENDER_ID="MLC CLASS"
+# SMS_SANDBOX=false
+# SMS_DAILY_LIMIT=500
+# SMS_MONTHLY_LIMIT=5000
+# SMS_LOW_BALANCE_THRESHOLD=50
+
+# Alternative: MessageBird
+# SMS_PROVIDER=messagebird
+# SMS_API_KEY=your_messagebird_api_key
+# SMS_SENDER_ID=MLC CLASS
+
+# Alternative: Twilio
+# SMS_PROVIDER=twilio
+# SMS_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxx
+# SMS_AUTH_TOKEN=your_auth_token
+# SMS_FROM_NUMBER=+447123456789
+
+# Alternative: Vonage
+# SMS_PROVIDER=vonage
+# SMS_API_KEY=your_vonage_api_key
+# SMS_API_SECRET=your_vonage_secret
+# SMS_SENDER_ID=MLC CLASS
+
+# Alternative: BulkSMS
+# SMS_PROVIDER=bulksms
+# SMS_USERNAME=your_username
+# SMS_PASSWORD=your_password
+# SMS_SENDER_ID=MLC CLASS
+
+# Pagination Settings
+PAGINATION_USERS=10
+PAGINATION_STUDENTS=20
+PAGINATION_TEACHERS=20
+PAGINATION_PARENTS=20
+PAGINATION_CLASSES=20
+PAGINATION_ATTENDANCE=50
+PAGINATION_HOMEWORK=20
+PAGINATION_RESOURCES=24
+PAGINATION_LOGS=50
+
+# Attendance Settings
+ATTENDANCE_HISTORY_LIMIT=30
+
+# === FILE UPLOADS ===
+FILESYSTEM_DISK=local
 MAX_UPLOAD_SIZE=10240
 ALLOWED_FILE_TYPES=pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif
-
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-AWS_DEFAULT_REGION=eu-west-2
-AWS_BUCKET=mlc-classroom-uploads
 
 # === ACADEMIC SETTINGS ===
 ACADEMIC_YEAR_START=09-01
 ACADEMIC_YEAR_END=08-31
 ATTENDANCE_MARK_WINDOW=60
+STUDENT_ATTENDANCE_HISTORY=30
+STUDENT_HOMEWORK_HISTORY=20
+STUDENT_MIN_AGE=4
+STUDENT_MAX_AGE=18
+STUDENT_PHOTO_MAX_SIZE=2048
 AUTO_MARK_ABSENT=true
 
 # === NOTIFICATIONS ===
@@ -80,10 +129,22 @@ NOTIFY_TEACHER_ON_SUBMISSION=true
 
 # === SYSTEM ===
 STUDENT_ID_PREFIX=MLC
-ENFORCE_EMAIL_VERIFICATION=true
+ENFORCE_EMAIL_VERIFICATION=false
 PASSWORD_RESET_TIMEOUT=60
-MULTI_CENTER_MODE=true
+MULTI_CENTER_MODE=false
 DEFAULT_CENTER_ID=1
+
+# === REDIS (Optional - Commented out for local) ===
+# REDIS_CLIENT=phpredis
+# REDIS_HOST=127.0.0.1
+# REDIS_PASSWORD=null
+# REDIS_PORT=6379
+
+# === AWS (Optional - For production file storage) ===
+# AWS_ACCESS_KEY_ID=
+# AWS_SECRET_ACCESS_KEY=
+# AWS_DEFAULT_REGION=eu-west-2  # London region
+# AWS_BUCKET=
 
 # === VITE ===
 VITE_APP_NAME="${APP_NAME}"

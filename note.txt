@@ -22,3 +22,11 @@ php artisan logs:cleanup --days=90
 
 # View help for any command
 php artisan sms:process-pending --help
+
+
+
+ssh maidmfwf@162.0.232.115 -p 21098
+
+https://github.com/Kayode-Lateef/mlc-classroom.git
+
+git clone https://github.com/Kayode-Lateef/mlc-classroom.git mlc-portal

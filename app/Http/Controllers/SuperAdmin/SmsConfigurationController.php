@@ -112,7 +112,7 @@ class SmsConfigurationController extends Controller
         
         $rules = [
             'provider' => 'required|in:twilio,vonage,messagebird,textlocal,bulksms,voodoo',
-            'is_active' => 'required|boolean',
+            'is_active' => 'nullable|in:0,1',  // FIX: Changed from 'required|boolean' for checkbox handling
             'low_balance_threshold' => 'required|numeric|min:0',
             'daily_limit' => 'required|integer|min:1',
             'monthly_limit' => 'required|integer|min:1',
@@ -176,7 +176,7 @@ class SmsConfigurationController extends Controller
                 'sender_id' => $request->sender_id ?? '',
                 'credit_balance' => $creditBalance,
                 'low_balance_threshold' => $request->low_balance_threshold,
-                'is_active' => $request->is_active,
+                'is_active' => $request->is_active ? 1 : 0,  // FIX: Properly cast checkbox value
                 'daily_limit' => $request->daily_limit,
                 'monthly_limit' => $request->monthly_limit,
             ]);
@@ -392,7 +392,7 @@ class SmsConfigurationController extends Controller
                     'success' => true,
                     'credits_remaining' => $result['credits_remaining'] ?? 0,
                     'monetary_balance' => $result['balance'] ?? 0,
-                    'formatted' => 'Credits: ' . ($result['credits_remaining'] ?? 0) . ' | Balance: $' . ($result['balance'] ?? 0),
+                    'formatted' => 'Credits: ' . ($result['credits_remaining'] ?? 0) . ' | Balance: £' . number_format($result['balance'] ?? 0, 2),
                 ]);
             } else {
                 return response()->json([

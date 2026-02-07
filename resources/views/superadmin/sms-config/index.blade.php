@@ -19,13 +19,13 @@
     }
 
     .provider-card:hover {
-        border-color: #007bff;
+        border-color: #3386f7;
         background-color: #f8f9fa;
     }
 
     .provider-card.active {
-        border-color: #007bff;
-        background-color: #e7f3ff;
+        border-color: #3386f7;
+        background-color: #e7f1ff;
     }
 
     .balance-warning {
@@ -175,7 +175,7 @@
                         <div class="col-lg-3">
                             <div class="card">
                                 <div class="stat-widget-one">
-                                    <div class="stat-icon dib"><i class="ti-stats-up color-purple border-purple"></i></div>
+                                    <div class="stat-icon dib"><i class="ti-stats-up color-info border-info"></i></div>
                                     <div class="stat-content dib">
                                         <div class="stat-text">This Month</div>
                                         <div class="stat-digit">{{ number_format($stats['month_sms']) }}</div>
@@ -234,10 +234,10 @@
                             <div class="voodoo-balance">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <div>
-                                        <strong style="color: #0d6efd;">Voodoo SMS Balance</strong>
+                                        <strong style="color: #3386f7;">Voodoo SMS Balance</strong>
                                         <p style="margin: 5px 0 0 0; color: #666;">
                                             Credits: <strong>{{ $stats['voodoo_balance']['credits_remaining'] ?? 0 }}</strong> | 
-                                            Balance: <strong>${{ number_format($stats['voodoo_balance']['balance'] ?? 0, 2) }}</strong>
+                                            Balance: <strong>£{{ number_format($stats['voodoo_balance']['balance'] ?? 0, 2) }}</strong>
                                         </p>
                                     </div>
                                     <button type="button" id="refresh-voodoo-balance" class="btn btn-sm btn-info refresh-balance-btn">
@@ -271,16 +271,13 @@
                                         <div class="form-group">
                                             <label class="required-field">Select Provider</label>
                                             <select name="provider" id="provider" required class="form-control">
-                                                <option value="textlocal" {{ old('provider', $config->provider) == 'textlocal' ? 'selected' : '' }}>TextLocal (Recommended for UK)</option>
+                                                <option value="voodoo" {{ old('provider', $config->provider) == 'voodoo' ? 'selected' : '' }}>Voodoo SMS</option>
+                                                <option value="textlocal" {{ old('provider', $config->provider) == 'textlocal' ? 'selected' : '' }}>TextLocal</option>
                                                 <option value="messagebird" {{ old('provider', $config->provider) == 'messagebird' ? 'selected' : '' }}>MessageBird</option>
                                                 <option value="twilio" {{ old('provider', $config->provider) == 'twilio' ? 'selected' : '' }}>Twilio</option>
                                                 <option value="vonage" {{ old('provider', $config->provider) == 'vonage' ? 'selected' : '' }}>Vonage (Nexmo)</option>
                                                 <option value="bulksms" {{ old('provider', $config->provider) == 'bulksms' ? 'selected' : '' }}>BulkSMS</option>
-                                                <option value="voodoo" {{ old('provider', $config->provider) == 'voodoo' ? 'selected' : '' }}>Voodoo SMS</option>
                                             </select>
-                                            <small class="form-text text-muted">
-                                                <strong>TextLocal</strong> is recommended for UK schools (no SDK required, lowest cost)
-                                            </small>
                                             @error('provider')
                                             <span class="invalid-feedback" style="display: block;">{{ $message }}</span>
                                             @enderror
@@ -429,6 +426,8 @@
                                         </div>
 
                                         <div class="form-group">
+                                            {{-- FIX: Hidden input ensures is_active=0 is sent when checkbox is unchecked --}}
+                                            <input type="hidden" name="is_active" value="0">
                                             <div class="form-check">
                                                 <input 
                                                     type="checkbox" 
@@ -495,6 +494,27 @@
                                         <h4><i class="ti-info-alt"></i> Provider Info</h4>
                                     </div>
                                     <div class="card-body">
+                                        <!-- Voodoo SMS Info -->
+                                        <div id="voodoo-info" class="provider-info {{ $config->provider == 'voodoo' ? 'active' : '' }}">
+                                            <h5 style="font-weight: 600; margin-bottom: 10px;">
+                                                <i class="ti-world" style="color: #3386f7;"></i> Voodoo SMS
+                                            </h5>
+                                            <p style="margin-bottom: 10px;">Global SMS provider with excellent African and European coverage.</p>
+                                            <ul style="padding-left: 20px; margin-bottom: 15px;">
+                                                <li><strong>Cost:</strong> Credits based (affordable)</li>
+                                                <li><strong>Setup:</strong> HTTP API (no SDK required)</li>
+                                                <li><strong>Coverage:</strong> 190+ countries</li>
+                                                <li><strong>Delivery reports:</strong> Yes</li>
+                                                <li><strong>Two-way SMS:</strong> Supported</li>
+                                            </ul>
+                                            <a href="https://www.voodoosms.com/" target="_blank" class="btn btn-primary btn-sm">
+                                                <i class="ti-new-window"></i> Sign Up
+                                            </a>
+                                            <a href="https://www.voodoosms.com/api" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="ti-book"></i> API Docs
+                                            </a>
+                                        </div>
+
                                         <!-- TextLocal Info -->
                                         <div id="textlocal-info" class="provider-info {{ $config->provider == 'textlocal' ? 'active' : '' }}">
                                             <h5 style="font-weight: 600; margin-bottom: 10px;">
@@ -584,27 +604,6 @@
                                             </a>
                                             <a href="https://www.bulksms.com/developer/" target="_blank" class="btn btn-info btn-sm">
                                                 <i class="ti-book"></i> Docs
-                                            </a>
-                                        </div>
-
-                                        <!-- Voodoo SMS Info -->
-                                        <div id="voodoo-info" class="provider-info {{ $config->provider == 'voodoo' ? 'active' : '' }}">
-                                            <h5 style="font-weight: 600; margin-bottom: 10px;">
-                                                <i class="ti-world" style="color: #6f42c1;"></i> Voodoo SMS
-                                            </h5>
-                                            <p style="margin-bottom: 10px;">Global SMS provider with excellent African and European coverage.</p>
-                                            <ul style="padding-left: 20px; margin-bottom: 15px;">
-                                                <li><strong>Cost:</strong> Credits based (affordable)</li>
-                                                <li><strong>Setup:</strong> HTTP API (no SDK required)</li>
-                                                <li><strong>Coverage:</strong> 190+ countries</li>
-                                                <li><strong>Delivery reports:</strong> Yes</li>
-                                                <li><strong>Two-way SMS:</strong> Supported</li>
-                                            </ul>
-                                            <a href="https://www.voodoosms.com/" target="_blank" class="btn btn-primary btn-sm">
-                                                <i class="ti-new-window"></i> Sign Up
-                                            </a>
-                                            <a href="https://www.voodoosms.com/api" target="_blank" class="btn btn-info btn-sm">
-                                                <i class="ti-book"></i> API Docs
                                             </a>
                                         </div>
                                     </div>
@@ -811,7 +810,7 @@ $(document).ready(function() {
                         .show();
                     
                     // Update the balance display
-                    const balanceText = `Credits: <strong>${response.credits_remaining}</strong> | Balance: <strong>$${response.monetary_balance}</strong>`;
+                    const balanceText = `Credits: <strong>${response.credits_remaining}</strong> | Balance: <strong>£${parseFloat(response.monetary_balance).toFixed(2)}</strong>`;
                     $('.voodoo-balance p').html(balanceText);
                 } else {
                     resultDiv.removeClass('success').addClass('error')

@@ -139,7 +139,7 @@ class SmsConfiguration extends Model
      */
     public function requiresApiSecret(): bool
     {
-        return in_array($this->provider, ['twilio', 'vonage', 'bulksms']);
+        return in_array($this->provider, ['twilio', 'vonage', 'bulksms', 'voodoo']);
     }
 
     /**
@@ -149,7 +149,17 @@ class SmsConfiguration extends Model
      */
     public function usesHttpApi(): bool
     {
-        return in_array($this->provider, ['textlocal', 'bulksms']);
+        return in_array($this->provider, ['textlocal', 'bulksms', 'voodoo']);
+    }
+
+    /**
+     * Check if provider uses credit-based billing (not monetary)
+     * 
+     * @return bool
+     */
+    public function usesCreditBilling(): bool
+    {
+        return $this->provider === 'voodoo';
     }
 
     /**
@@ -165,6 +175,7 @@ class SmsConfiguration extends Model
             'twilio' => 'Twilio',
             'vonage' => 'Vonage (Nexmo)',
             'bulksms' => 'BulkSMS',
+            'voodoo' => 'Voodoo SMS',
         ];
 
         return $names[$this->provider] ?? ucfirst($this->provider);
@@ -183,6 +194,7 @@ class SmsConfiguration extends Model
             'twilio' => 'https://www.twilio.com/docs/sms',
             'vonage' => 'https://developer.vonage.com/messaging/sms/overview',
             'bulksms' => 'https://www.bulksms.com/developer/',
+            'voodoo' => 'https://www.voodoosms.com/api',
         ];
 
         return $docs[$this->provider] ?? null;

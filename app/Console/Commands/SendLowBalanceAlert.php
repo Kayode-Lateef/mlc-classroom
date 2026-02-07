@@ -94,11 +94,11 @@ class SendLowBalanceAlert extends Command
         $monetaryBalance = $result['balance'] ?? 0;
         
         $this->info("Voodoo Credits Remaining: {$credits}");
-        $this->info("Voodoo Monetary Balance: $" . $monetaryBalance);
+        $this->info("Voodoo Monetary Balance: £" . $monetaryBalance);
         
         // Set a threshold for Voodoo credits (e.g., 100 credits)
         $creditThreshold = 100;
-        $monetaryThreshold = 10; // $10
+        $monetaryThreshold = 10; // £10
         
         if ($credits < $creditThreshold || $monetaryBalance < $monetaryThreshold) {
             $this->warn('⚠ Voodoo SMS balance is LOW!');

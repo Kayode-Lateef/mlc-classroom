@@ -297,12 +297,12 @@
 
                                         <div class="form-group">
                                             <label class="required-field" id="api-key-label">API Key / Username</label>
-                                            <input 
+                                          <input 
                                                 type="text" 
                                                 name="api_key" 
                                                 value="{{ old('api_key') }}"
-                                                placeholder="Enter your API key, Account SID, or username"
-                                                required
+                                                placeholder="{{ $config->api_key ? '••••••••  (saved - leave blank to keep current)' : 'Enter your API key, Account SID, or username' }}"
+                                                {{ $config->api_key ? '' : 'required' }}
                                                 class="form-control"
                                             >
                                             <small class="form-text text-muted" id="api-key-help">
@@ -320,7 +320,7 @@
                                                 name="api_secret" 
                                                 id="api_secret"
                                                 value="{{ old('api_secret') }}"
-                                                placeholder="Enter your API secret, auth token, or password"
+                                                placeholder="{{ $config->api_secret ? '••••••••  (saved - leave blank to keep current)' : 'Enter your API secret, auth token, or password' }}"
                                                 class="form-control"
                                             >
                                             <small class="form-text text-muted" id="api-secret-help">

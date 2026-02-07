@@ -107,6 +107,10 @@ class SmsConfigurationController extends Controller
      */
     public function update(Request $request)
     {
+
+        // Fetch config FIRST (needed for conditional validation)
+        $config = SmsConfiguration::firstOrFail();
+
         // Define validation rules based on provider
         $provider = $request->provider;
         
@@ -121,26 +125,26 @@ class SmsConfigurationController extends Controller
         // Conditional validation based on provider
         switch ($provider) {
             case 'twilio':
-                $rules['api_key'] = 'required|string|max:500'; // Account SID
-                $rules['api_secret'] = 'required|string|max:500'; // Auth Token
+               $rules['api_key'] = ($config->api_key ? 'nullable' : 'required') . '|string|max:500'; // Account SID
+                $rules['api_secret'] = ($config->api_secret ? 'nullable' : 'required') . '|string|max:500'; // Auth Token
                 $rules['sender_id'] = 'required|string|max:20'; // Twilio phone number
                 break;
                 
             case 'vonage':
             case 'messagebird':
             case 'voodoo':
-                $rules['api_key'] = 'required|string|max:500'; // API Key/Username
-                $rules['api_secret'] = 'required|string|max:500'; // API Secret/Password
+               $rules['api_key'] = ($config->api_key ? 'nullable' : 'required') . '|string|max:500'; // API Key/Username
+                $rules['api_secret'] = ($config->api_secret ? 'nullable' : 'required') . '|string|max:500'; // API Secret/Password
                 $rules['sender_id'] = 'required|string|max:50'; // Sender ID/Name
                 break;
                 
             case 'textlocal':
-                $rules['api_key'] = 'required|string|max:500'; // API Key
+               $rules['api_key'] = ($config->api_key ? 'nullable' : 'required') . '|string|max:500'; // API Key
                 $rules['sender_id'] = 'required|string|max:11'; // Sender name (max 11 chars)
                 break;
                 
             case 'bulksms':
-                $rules['api_key'] = 'required|string|max:500'; // Username
+               $rules['api_key'] = ($config->api_key ? 'nullable' : 'required') . '|string|max:500'; // Username
                 $rules['api_secret'] = 'required|string|max:500'; // Password
                 break;
         }
@@ -160,11 +164,15 @@ class SmsConfigurationController extends Controller
         }
 
         try {
-            $config = SmsConfiguration::firstOrFail();
 
-            // Encrypt sensitive data
-            $encryptedKey = Crypt::encryptString($request->api_key);
-            $encryptedSecret = $request->api_secret ? Crypt::encryptString($request->api_secret) : null;
+            // Only update credentials if new values are provided (blank = keep existing)
+            $encryptedKey = $request->filled('api_key') 
+                ? Crypt::encryptString($request->api_key) 
+                : $config->api_key;
+
+            $encryptedSecret = $request->filled('api_secret') 
+                ? Crypt::encryptString($request->api_secret) 
+                : $config->api_secret;
 
             // For Voodoo SMS, set credit_balance to 0 since it uses credits
             $creditBalance = $provider === 'voodoo' ? 0 : ($request->credit_balance ?? $config->credit_balance);
@@ -297,7 +305,6 @@ class SmsConfigurationController extends Controller
         }
 
         try {
-            $config = SmsConfiguration::firstOrFail();
 
             // Check if provider is Voodoo (Voodoo doesn't use monetary balance)
             if ($config->provider === 'voodoo') {

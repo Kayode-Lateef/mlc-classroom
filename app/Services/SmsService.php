@@ -16,7 +16,12 @@ class SmsService
     
     public function __construct()
     {
-        $this->config = SmsConfiguration::where('is_active', true)->first();
+        try {
+            $this->config = SmsConfiguration::where('is_active', true)->first();
+        } catch (\Exception $e) {
+            // Table may not exist yet (pre-migration)
+            $this->config = null;
+        }
     }
     
     /**
@@ -203,7 +208,7 @@ class SmsService
 
             $result = $response->json();
             
-            Log::info('Voodoo SMS Response:', $result);
+            Log::info('Voodoo SMS Response:', $result ?? []);
 
             if (isset($result['success']) && $result['success'] === true) {
                 return [

@@ -113,6 +113,8 @@ use App\Http\Controllers\SuperAdmin\ReportController;
 
     Route::post('/homework/{homework}/grade-topics', [HomeworkController::class, 'gradeTopics'])
         ->name('homework.grade-topics');
+    Route::post('/homework/{homework}/update-submitted-date', [HomeworkController::class, 'updateSubmittedDate'])
+        ->name('homework.update-submitted-date');
 
     // Topics management
     Route::resource('homework-topics', HomeworkTopicController::class)->except(['show']);

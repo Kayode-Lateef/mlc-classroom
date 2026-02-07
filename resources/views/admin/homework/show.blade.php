@@ -54,6 +54,28 @@
         padding: 2px 6px;
         font-size: 11px;
     }
+
+    /* Inline date edit */
+    .edit-date-btn {
+        font-size: 10px;
+        padding: 1px 5px;
+        border-color: #3386f7;
+        color: #3386f7;
+    }
+
+    .edit-date-btn:hover {
+        background: #3386f7;
+        color: white;
+    }
+
+    .date-input {
+        border: 1px solid #3386f7;
+    }
+
+    .date-input:focus {
+        border-color: #3386f7;
+        box-shadow: 0 0 0 0.15rem rgba(51, 134, 247, 0.25);
+    }
 </style>
 @endpush
 
@@ -345,15 +367,47 @@
                                                     @endif
                                                 </td>
 
-                                                <!-- Submitted Date -->
+                                                <!-- Submitted Date (Inline Editable) -->
                                                 <td>
                                                     @if($submission->submitted_date)
-                                                        <small>{{ $submission->submitted_date->format('d/m/Y') }}</small>
-                                                        <br>
-                                                        <small class="text-muted">{{ $submission->submitted_date->format('H:i') }}</small>
-                                                        @if($submission->submittedByUser)
-                                                            <br><small class="text-muted" title="Submitted by">{{ $submission->submittedByUser->name }}</small>
-                                                        @endif
+                                                        {{-- Display Mode --}}
+                                                        <div class="date-display" data-submission-id="{{ $submission->id }}">
+                                                            <small>{{ $submission->submitted_date->format('d/m/Y') }}</small>
+                                                            <br>
+                                                            <small class="text-muted">{{ $submission->submitted_date->format('H:i') }}</small>
+                                                            @if($submission->submittedByUser)
+                                                                <br><small class="text-muted" title="Submitted by">{{ $submission->submittedByUser->name }}</small>
+                                                            @endif
+                                                            <br>
+                                                            <button class="btn btn-xs btn-outline-primary mt-1 edit-date-btn"
+                                                                    data-submission-id="{{ $submission->id }}"
+                                                                    data-current-date="{{ $submission->submitted_date->format('Y-m-d') }}"
+                                                                    title="Edit submitted date">
+                                                                <i class="ti-pencil"></i> Edit
+                                                            </button>
+                                                        </div>
+
+                                                        {{-- Edit Mode (hidden by default) --}}
+                                                        <div class="date-edit" data-submission-id="{{ $submission->id }}" style="display: none;">
+                                                            <input type="date"
+                                                                class="form-control form-control-sm date-input"
+                                                                data-submission-id="{{ $submission->id }}"
+                                                                value="{{ $submission->submitted_date->format('Y-m-d') }}"
+                                                                max="{{ now()->format('Y-m-d') }}"
+                                                                style="width: 140px; font-size: 1rem;">
+                                                            <div class="mt-1">
+                                                                <button class="btn btn-xs btn-success save-date-btn"
+                                                                        data-submission-id="{{ $submission->id }}"
+                                                                        title="Save">
+                                                                    <i class="ti-check"></i>
+                                                                </button>
+                                                                <button class="btn btn-xs btn-secondary cancel-date-btn"
+                                                                        data-submission-id="{{ $submission->id }}"
+                                                                        title="Cancel">
+                                                                    <i class="ti-close"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
@@ -695,6 +749,112 @@ $(document).ready(function() {
             }
         @endforeach
     @endif
+
+    // ========================================
+    // INLINE EDIT SUBMITTED DATE
+    // ========================================
+
+    // Show edit mode
+    $(document).on('click', '.edit-date-btn', function(e) {
+        e.preventDefault();
+        const submissionId = $(this).data('submission-id');
+        $(`.date-display[data-submission-id="${submissionId}"]`).hide();
+        $(`.date-edit[data-submission-id="${submissionId}"]`).show();
+        $(`.date-edit[data-submission-id="${submissionId}"] .date-input`).focus();
+    });
+
+    // Cancel edit
+    $(document).on('click', '.cancel-date-btn', function(e) {
+        e.preventDefault();
+        const submissionId = $(this).data('submission-id');
+        $(`.date-edit[data-submission-id="${submissionId}"]`).hide();
+        $(`.date-display[data-submission-id="${submissionId}"]`).show();
+    });
+
+    // Save date
+    $(document).on('click', '.save-date-btn', function(e) {
+        e.preventDefault();
+        const submissionId = $(this).data('submission-id');
+        const newDate = $(`.date-edit[data-submission-id="${submissionId}"] .date-input`).val();
+
+        if (!newDate) {
+            if (typeof toastr !== 'undefined') {
+                toastr.warning('Please select a date.', 'Warning');
+            }
+            return;
+        }
+
+        const btn = $(this);
+        btn.prop('disabled', true).html('<i class="ti-reload ti-spin"></i>');
+
+        $.ajax({
+            url: '{{ route("admin.homework.update-submitted-date", $homework->id) }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                submission_id: submissionId,
+                submitted_date: newDate
+            },
+            success: function(response) {
+                if (response.success) {
+                    const row = $(`tr[data-submission-id="${submissionId}"]`);
+
+                    // Update the date display
+                    const displayDiv = $(`.date-display[data-submission-id="${submissionId}"]`);
+                    displayDiv.find('small').first().text(response.data.formatted_date);
+                    displayDiv.find('.edit-date-btn').data('current-date', newDate);
+
+                    // Update the status badge
+                    row.find('td:eq(2)').html(response.data.status_badge);
+
+                    // Switch back to display mode
+                    $(`.date-edit[data-submission-id="${submissionId}"]`).hide();
+                    displayDiv.show();
+
+                    // Brief green flash
+                    row.css('background-color', '#d4edda');
+                    setTimeout(function() { row.css('background-color', ''); }, 1500);
+
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(response.message, 'Success', {
+                            closeButton: true,
+                            progressBar: true,
+                            timeOut: 3000
+                        });
+                    }
+                }
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || 'Failed to update date.';
+                if (typeof toastr !== 'undefined') {
+                    toastr.error(msg, 'Error', {
+                        closeButton: true,
+                        progressBar: true,
+                        timeOut: 5000
+                    });
+                } else {
+                    swal({ title: "Error!", text: msg, type: "error" });
+                }
+            },
+            complete: function() {
+                btn.prop('disabled', false).html('<i class="ti-check"></i>');
+            }
+        });
+    });
+
+    // Save on Enter key
+    $(document).on('keydown', '.date-input', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const submissionId = $(this).data('submission-id');
+            $(`.save-date-btn[data-submission-id="${submissionId}"]`).trigger('click');
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            const submissionId = $(this).data('submission-id');
+            $(`.cancel-date-btn[data-submission-id="${submissionId}"]`).trigger('click');
+        }
+    });
 });
 
 // ==========================================

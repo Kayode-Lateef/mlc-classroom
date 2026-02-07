@@ -275,17 +275,14 @@
                                             <small class="text-muted">
                                                 <i class="ti-calendar"></i> Due: {{ $submission->homeworkAssignment->due_date->format('d M Y') }}
                                             </small>
-                                            {{-- <a href="{{ route('parent.homework.show', ['child_id' => $child->id]) }}" class="btn btn-sm btn-info">
-                                                <i class="ti-eye"></i> View
-                                            </a> --}}
-                                            <a href="{{ route('parent.homework.show', [$selectedChild, $submission]) }}" class="btn btn-sm btn-info">
+                                            <a href="{{ route('parent.homework.show', $submission->homeworkAssignment->id) }}" class="btn btn-sm btn-info">
                                                 <i class="ti-eye"></i> View
                                             </a>
                                         </div>
                                     </div>
                                     @endforeach
                                     <div class="text-center mt-3 pt-3 border-top">
-                                        <a href="{{ route('parent.homework.index', $selectedChild) }}" class="btn btn-primary">View All Homework</a>
+                                        <a href="{{ route('parent.homework.index') }}" class="btn btn-primary">View All Homework</a>
                                     </div>
                                 @else
                                     <p class="text-center text-muted py-5">No upcoming homework assignments.</p>

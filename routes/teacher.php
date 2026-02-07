@@ -49,6 +49,8 @@ use App\Http\Controllers\Teacher\LearningResourceController;
         ->name('homework.bulk-grade');
     Route::post('/homework/{homework}/grade-topics', [HomeworkController::class, 'gradeTopics'])
         ->name('homework.grade-topics');
+    Route::post('/homework/{homework}/update-submitted-date', [HomeworkController::class, 'updateSubmittedDate'])
+        ->name('homework.update-submitted-date');
     
     Route::resource('homework', HomeworkController::class);
     

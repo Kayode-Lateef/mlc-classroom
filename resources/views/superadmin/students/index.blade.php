@@ -396,6 +396,8 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
+
+            
             // Handle student deletion with SweetAlert
             $('.delete-student-form').on('submit', function(e) {
                 e.preventDefault(); // Prevent default submission

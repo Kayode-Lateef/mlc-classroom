@@ -1030,4 +1030,114 @@ class HomeworkController extends Controller
                 ->with('error', 'Failed to save topic scores. Please try again.');
         }
     }
+
+    /**
+     * Update the submitted date for a homework submission
+     */
+    public function updateSubmittedDate(Request $request, HomeworkAssignment $homework)
+    {
+        $teacher = auth()->user();
+
+        // Teacher ownership check
+        if ($homework->teacher_id !== $teacher->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorised.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'submission_id' => 'required|exists:homework_submissions,id',
+            'submitted_date' => 'required|date',
+        ], [
+            'submission_id.required' => 'Submission is required.',
+            'submission_id.exists' => 'Submission does not exist.',
+            'submitted_date.required' => 'Please select a date.',
+            'submitted_date.date' => 'Please provide a valid date.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        try {
+            $submission = HomeworkSubmission::where('id', $request->submission_id)
+                ->where('homework_assignment_id', $homework->id)
+                ->firstOrFail();
+
+            // Only allow editing for submitted/late/graded submissions
+            if ($submission->status === 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot edit date for a pending submission.',
+                ], 422);
+            }
+
+            $oldDate = $submission->submitted_date;
+            $newDate = \Carbon\Carbon::parse($request->submitted_date);
+
+            // Re-evaluate status based on new date vs due date
+            // Only update status if not already graded
+            $newStatus = $submission->status;
+            if ($submission->status !== 'graded') {
+                $newStatus = $newDate->gt($homework->due_date) ? 'late' : 'submitted';
+            }
+
+            $submission->update([
+                'submitted_date' => $newDate,
+                'status' => $newStatus,
+            ]);
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => $teacher->id,
+                'action' => 'updated_submitted_date',
+                'model_type' => 'HomeworkSubmission',
+                'model_id' => $submission->id,
+                'description' => "Updated submitted date for {$submission->student->full_name} from " .
+                    ($oldDate ? $oldDate->format('d/m/Y') : 'N/A') .
+                    " to {$newDate->format('d/m/Y')}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Submitted date updated successfully!',
+                'data' => [
+                    'formatted_date' => $newDate->format('d/m/Y'),
+                    'formatted_time' => $newDate->format('H:i'),
+                    'status' => $newStatus,
+                    'status_badge' => $this->getStatusBadgeHtml($newStatus),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to update submitted date: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update submitted date. Please try again.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper: Generate status badge HTML for AJAX response
+     */
+    private function getStatusBadgeHtml(string $status): string
+    {
+        switch ($status) {
+            case 'pending':
+                return '<span class="badge badge-secondary">Pending</span>';
+            case 'submitted':
+                return '<span class="badge badge-warning">Submitted</span>';
+            case 'late':
+                return '<span class="badge badge-danger">Late</span>';
+            case 'graded':
+                return '<span class="badge badge-success">Graded</span>';
+            default:
+                return '<span class="badge badge-secondary">' . ucfirst($status) . '</span>';
+        }
+    }
 }

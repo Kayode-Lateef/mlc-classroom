@@ -595,27 +595,26 @@ class StudentController extends Controller
             abort(403, 'You do not have permission to delete students.');
         }
 
-        // ✅ ADDED: Database transaction for data integrity
+        // Check for existing data BEFORE starting transaction
+        $hasEnrollments = $student->enrollments()->count() > 0;
+        $hasAttendance = $student->attendance()->count() > 0;
+        $hasHomework = $student->homeworkSubmissions()->count() > 0;
+        $hasProgress = $student->progressNotes()->count() > 0;
+
+        if ($hasEnrollments || $hasAttendance || $hasHomework || $hasProgress) {
+            $relationships = [];
+            if ($hasEnrollments) $relationships[] = $student->enrollments()->count() . ' class enrollment(s)';
+            if ($hasAttendance) $relationships[] = $student->attendance()->count() . ' attendance record(s)';
+            if ($hasHomework) $relationships[] = $student->homeworkSubmissions()->count() . ' homework submission(s)';
+            if ($hasProgress) $relationships[] = $student->progressNotes()->count() . ' progress note(s)';
+
+            return back()->with('error', 
+                'Cannot delete student with existing data: ' . implode(', ', $relationships) . 
+                '. Please change student status to Withdrawn or Graduated instead.');
+        }
+
         DB::beginTransaction();
-        
         try {
-            // ✅ ENHANCED: Check for ALL relationships before deleting
-            $hasEnrollments = $student->enrollments()->count() > 0;
-            $hasAttendance = $student->attendance()->count() > 0;
-            $hasHomework = $student->homeworkSubmissions()->count() > 0;
-            $hasProgress = $student->progressNotes()->count() > 0;
-
-            if ($hasEnrollments || $hasAttendance || $hasHomework || $hasProgress) {
-                $relationships = [];
-                if ($hasEnrollments) $relationships[] = $student->enrollments()->count() . ' class enrollment(s)';
-                if ($hasAttendance) $relationships[] = $student->attendance()->count() . ' attendance record(s)';
-                if ($hasHomework) $relationships[] = $student->homeworkSubmissions()->count() . ' homework submission(s)';
-                if ($hasProgress) $relationships[] = $student->progressNotes()->count() . ' progress note(s)';
-
-                return back()->with('error', 
-                    'Cannot delete student with existing data: ' . implode(', ', $relationships) . 
-                    '. Please change student status to "Withdrawn" or "Graduated" instead.');
-            }
 
             $studentName = "{$student->first_name} {$student->last_name}";
             $studentId = $student->id;

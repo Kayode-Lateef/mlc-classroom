@@ -35,6 +35,8 @@ class SmsService
      */
     public function sendImmediate($to, $message, $type = 'general')
     {
+        Log::info('SMS sendImmediate called. Config exists: ' . ($this->config ? 'YES' : 'NO') . ', Active: ' . ($this->config ? $this->config->is_active : 'N/A'));
+        
         if (!$this->config || !$this->config->is_active) {
             Log::error('SMS Service: SMS not configured or not active');
             return ['success' => false, 'error' => 'SMS service not configured'];
@@ -67,8 +69,10 @@ class SmsService
         
         try {
             // Decrypt credentials
+            Log::info('SMS: Attempting to decrypt credentials for provider: ' . $this->config->provider);
             $apiKey = Crypt::decryptString($this->config->api_key);
             $apiSecret = $this->config->api_secret ? Crypt::decryptString($this->config->api_secret) : null;
+            Log::info('SMS: Credentials decrypted, calling sendViaProvider');
             
             // Send via selected provider
             $result = $this->sendViaProvider(
@@ -94,8 +98,8 @@ class SmsService
                     'sent_at' => now(),
                 ]);
                 
-                // Deduct from balance
-                if (isset($result['cost']) && $result['cost'] > 0) {
+                // Deduct from balance (skip for Voodoo - uses credits, not monetary)
+                if ($this->config->provider !== 'voodoo' && isset($result['cost']) && $result['cost'] > 0) {
                     $this->config->deductBalance($result['cost']);
                 }
                 
@@ -186,42 +190,47 @@ class SmsService
     }
 
     /**
-     * Send via Voodoo SMS
+     * Send via Voodoo SMS (REST API)
+     * Docs: https://help.voodoosms.com/en/categories/15-rest-api
      */
-    protected function sendViaVoodoo($username, $password, $senderId, $to, $message)
+    protected function sendViaVoodoo($apiKey, $password, $senderId, $to, $message)
     {
         try {
             // Format phone number for Voodoo (international format without +)
             $formattedNumber = $this->formatForVoodoo($to);
             
-            $response = Http::asForm()->post('https://www.voodoosms.com/vapi/server/sendSMS', [
-                'username' => $username,
-                'password' => $password,
-                'from' => $senderId,
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->post('https://api.voodoosms.com/sendsms', [
                 'to' => $formattedNumber,
-                'text' => $message,
-                'reference' => uniqid(), // Unique reference for tracking
-                'delivery_report' => 1, // Request delivery report
-                'flash' => 0, // 0 = normal SMS, 1 = flash SMS
-                'unicode' => $this->containsUnicode($message) ? 1 : 0,
+                'from' => $senderId,
+                'msg' => $message,
             ]);
 
-            $result = $response->json();
+            $responseBody = $response->body();
+            $result = json_decode($responseBody, true);
             
-            Log::info('Voodoo SMS Response:', $result ?? []);
-
-            if (isset($result['success']) && $result['success'] === true) {
-                return [
-                    'success' => true,
-                    'message_id' => $result['message_id'] ?? null,
-                    'cost' => $result['credits_used'] ?? 0.04, // Credits used
-                    'credits_remaining' => $result['credits_remaining'] ?? null,
-                ];
-            } else {
-                $error = $this->parseVoodooError($result);
+            // If JSON decode failed, return raw body in error
+            if ($result === null) {
                 return [
                     'success' => false,
-                    'error' => $error,
+                    'error' => 'Voodoo returned non-JSON (HTTP ' . $response->status() . '): ' . substr($responseBody, 0, 500),
+                ];
+            }
+
+            if ($response->successful() && isset($result['count']) && $result['count'] > 0) {
+                return [
+                    'success' => true,
+                    'message_id' => $result['messages'][0]['id'] ?? null,
+                    'cost' => $result['messages'][0]['credits'] ?? 1,
+                    'credits_remaining' => $result['credit_remaining'] ?? null,
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error' => $result['message'] ?? $result['resultText'] ?? 'Voodoo API error (HTTP ' . $response->status() . ')',
                 ];
             }
 
@@ -277,7 +286,7 @@ class SmsService
             return $errorMessages[$result['error_code']] ?? 'Unknown error (Code: ' . $result['error_code'] . ')';
         }
         
-        return $result['error'] ?? 'Unknown Voodoo SMS error';
+        return $result['error'] ?? 'Unknown Voodoo SMS error. Raw: ' . json_encode($result);
     }
 
     /**
@@ -289,7 +298,7 @@ class SmsService
     }
 
     /**
-     * Check Voodoo SMS balance (optional method for admin dashboard)
+     * Check Voodoo SMS balance
      */
     public function checkVoodooBalance()
     {
@@ -299,25 +308,24 @@ class SmsService
         
         try {
             $apiKey = Crypt::decryptString($this->config->api_key);
-            $apiSecret = $this->config->api_secret ? Crypt::decryptString($this->config->api_secret) : null;
             
-            $response = Http::asForm()->post('https://www.voodoosms.com/vapi/server/getBalance', [
-                'username' => $apiKey, // For Voodoo, api_key is username
-                'password' => $apiSecret, // For Voodoo, api_secret is password
-            ]);
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Accept' => 'application/json',
+            ])->get('https://api.voodoosms.com/getCredit');
 
             $result = $response->json();
             
-            if (isset($result['success']) && $result['success'] === true) {
+            if ($response->successful() && $result !== null) {
                 return [
                     'success' => true,
                     'balance' => $result['balance'] ?? 0,
-                    'credits_remaining' => $result['credits_remaining'] ?? 0,
+                    'credits_remaining' => $result['credit'] ?? $result['balance'] ?? 0,
                 ];
             } else {
                 return [
                     'success' => false,
-                    'error' => $this->parseVoodooError($result),
+                    'error' => 'Failed to get balance: HTTP ' . $response->status(),
                 ];
             }
 

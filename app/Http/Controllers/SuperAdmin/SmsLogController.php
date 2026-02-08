@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SmsLog;
+use App\Models\SmsConfiguration;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -73,11 +74,14 @@ class SmsLogController extends Controller
                 ->sum('cost'),
         ];
 
+        $activeProvider = SmsConfiguration::where('is_active', true)->value('provider');
+
         return view('superadmin.sms-logs.index', compact(
             'logs',
             'recipients',
             'providers',
-            'stats'
+            'stats',
+            'activeProvider'
         ));
     }
 

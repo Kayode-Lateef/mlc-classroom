@@ -90,10 +90,16 @@
                         <div class="col-lg-3">
                             <div class="card">
                                 <div class="stat-widget-one">
-                                    <div class="stat-icon dib"><i class="ti-money color-purple border-purple"></i></div>
+                                    <div class="stat-icon dib"><i class="ti-money color-info border-info"></i></div>
                                     <div class="stat-content dib">
-                                        <div class="stat-text">Month Cost</div>
-                                        <div class="stat-digit">£{{ number_format($stats['month_cost'], 2) }}</div>
+                                        <div class="stat-text">Month {{ $activeProvider === 'voodoo' ? 'Credits' : 'Cost' }}</div>
+                                        <div class="stat-digit">
+                                            @if($activeProvider === 'voodoo')
+                                                {{ number_format($stats['month_cost']) }} credits
+                                            @else
+                                                £{{ number_format($stats['month_cost'], 2) }}
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -225,8 +231,14 @@
                                     </div>
 
                                     <div style="text-align: right;">
-                                        @if($log->cost)
-                                        <p style="margin: 0 0 10px 0; font-weight: 600; color: #007bff;">£{{ number_format($log->cost, 4) }}</p>
+                                            @if($log->cost)
+                                                <p style="margin: 0 0 10px 0; font-weight: 600; color: #3386f7;">
+                                            @if($log->provider === 'voodoo')
+                                                {{ number_format($log->cost) }} credit{{ $log->cost != 1 ? 's' : '' }}
+                                            @else
+                                                £{{ number_format($log->cost, 4) }}
+                                            @endif
+                                        </p>
                                         @endif
                                         <a href="{{ route('superadmin.sms-logs.show', $log) }}" class="btn btn-primary btn-sm">
                                             <i class="ti-eye"></i> View

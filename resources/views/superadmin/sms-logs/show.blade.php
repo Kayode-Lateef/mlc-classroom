@@ -29,11 +29,10 @@
         color: #212529;
     }
 
-    .message-box {
+.message-box {
         background-color: #f8f9fa;
         padding: 20px;
-        border-radius: 8px;
-        border-left: 4px solid #007bff;
+        border-left: 4px solid #3386f7;
     }
 </style>
 @endpush
@@ -167,7 +166,15 @@
                                 @if($smsLog->cost)
                                 <div class="info-row">
                                     <div class="info-label">Cost</div>
-                                    <div class="info-value"><strong style="color: #007bff;">£{{ number_format($smsLog->cost, 4) }}</strong></div>
+                                    <div class="info-value">
+                                        <strong style="color: #3386f7;">
+                                            @if($smsLog->provider === 'voodoo')
+                                                {{ number_format($smsLog->cost) }} credit{{ $smsLog->cost != 1 ? 's' : '' }}
+                                            @else
+                                                £{{ number_format($smsLog->cost, 4) }}
+                                            @endif
+                                        </strong>
+                                    </div>
                                 </div>
                                 @endif
 

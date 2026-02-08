@@ -658,7 +658,7 @@ $(document).ready(function() {
         $(`#${provider}-info`).addClass('active');
         
         // Update API Secret requirement based on provider
-        const requiresSecret = ['twilio', 'vonage', 'bulksms', 'voodoo'].includes(provider);
+        const requiresSecret = ['twilio', 'vonage', 'bulksms'].includes(provider);
         const $apiSecret = $('#api_secret');
         const $apiSecretLabel = $('#api-secret-label');
         const $apiSecretHelp = $('#api-secret-help');
@@ -757,16 +757,21 @@ $(document).ready(function() {
                 let details = '';
                 if (response.details) {
                     const provider = response.details.provider || 'N/A';
-                    const cost = response.details.cost || '0.00';
-                    const balance = response.details.remaining_balance || '0.00';
-                    const credits = response.details.credits_remaining;
+                    const isCreditBased = response.details.is_credit_based || false;
                     
-                    details = `<br><small>Provider: ${provider} | Cost: £${cost}`;
+                    details = `<br><small>Provider: ${provider}`;
                     
-                    if (credits !== undefined) {
-                        details += ` | Credits: ${credits}`;
+                    if (isCreditBased) {
+                        const creditsUsed = response.details.credits_used || 1;
+                        const creditsRemaining = response.details.credits_remaining;
+                        details += ` | Used: ${creditsUsed} credit(s)`;
+                        if (creditsRemaining !== null && creditsRemaining !== undefined) {
+                            details += ` | Remaining: ${creditsRemaining} credits`;
+                        }
                     } else {
-                        details += ` | Balance: £${balance}`;
+                        const cost = response.details.cost || '0.00';
+                        const balance = response.details.remaining_balance || '0.00';
+                        details += ` | Cost: £${cost} | Balance: £${balance}`;
                     }
                     
                     details += '</small>';

@@ -132,10 +132,15 @@ class SmsConfigurationController extends Controller
                 
             case 'vonage':
             case 'messagebird':
+               $rules['api_key'] = ($config->api_key ? 'nullable' : 'required') . '|string|max:500';
+                $rules['api_secret'] = ($config->api_secret ? 'nullable' : 'required') . '|string|max:500';
+                $rules['sender_id'] = 'required|string|max:50';
+                break;
+
             case 'voodoo':
-               $rules['api_key'] = ($config->api_key ? 'nullable' : 'required') . '|string|max:500'; // API Key/Username
-                $rules['api_secret'] = ($config->api_secret ? 'nullable' : 'required') . '|string|max:500'; // API Secret/Password
-                $rules['sender_id'] = 'required|string|max:50'; // Sender ID/Name
+                $rules['api_key'] = ($config->api_key ? 'nullable' : 'required') . '|string|max:500'; // API Key (Bearer token)
+                $rules['api_secret'] = 'nullable|string|max:500'; // Not needed for REST API
+                $rules['sender_id'] = 'required|string|max:50';
                 break;
                 
             case 'textlocal':
@@ -263,12 +268,14 @@ class SmsConfigurationController extends Controller
                         'cost' => $result['cost'] ?? 0,
                         'remaining_balance' => $this->smsService->getCreditBalance(),
                         'provider' => $this->smsService->getActiveProvider(),
+                        'is_credit_based' => $config->provider === 'voodoo',
                     ],
                 ];
 
                 // Add Voodoo-specific details
-                if ($config->provider === 'voodoo' && isset($result['credits_remaining'])) {
-                    $response['details']['credits_remaining'] = $result['credits_remaining'];
+                if ($config->provider === 'voodoo') {
+                    $response['details']['credits_remaining'] = $result['credits_remaining'] ?? null;
+                    $response['details']['credits_used'] = $result['cost'] ?? 1;
                 }
 
                 return response()->json($response);

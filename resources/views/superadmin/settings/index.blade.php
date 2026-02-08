@@ -521,7 +521,8 @@
                                                                 <i class="ti-info-alt"></i>
                                                                 <div>
                                                                     <p style="font-size: 1.2rem; font-weight: 500; margin-bottom: 5px;">SMS Provider Configuration</p>
-                                                                    <p style="font-size: 1.2rem; margin: 0;">SMS credentials are configured in your .env file. Provider: Twilio</p>
+                                                                    {{-- <p style="font-size: 1.2rem; margin: 0;">SMS credentials are configured in your .env file. Provider: Twilio</p> --}}
+                                                                    <p style="font-size: 1.2rem; margin: 0;">SMS credentials are configured in your .env file.</p>
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -149,10 +149,14 @@
                                         <i class="ti-wallet {{ $stats['is_balance_low'] ? 'color-danger border-danger' : 'color-success border-success' }}"></i>
                                     </div>
                                     <div class="stat-content dib">
-                                        <div class="stat-text">Credit Balance</div>
+                                        <div class="stat-text">{{ $config->provider === 'voodoo' ? 'SMS Credits' : 'Credit Balance' }}</div>
                                         <div class="stat-digit">
-                                            @if($config->provider === 'voodoo' && $stats['voodoo_balance'])
-                                                {{ $stats['voodoo_balance']['credits_remaining'] ?? 0 }} credits
+                                            @if($config->provider === 'voodoo')
+                                                @if($stats['voodoo_balance'])
+                                                    {{ $stats['voodoo_balance']['credits_remaining'] ?? 0 }} credits
+                                                @else
+                                                    <span style="font-size: 1rem; color: #6c757d;">Unable to fetch</span>
+                                                @endif
                                             @else
                                                 £{{ number_format($stats['balance'], 2) }}
                                             @endif
@@ -188,8 +192,14 @@
                                 <div class="stat-widget-one">
                                     <div class="stat-icon dib"><i class="ti-money color-danger border-danger"></i></div>
                                     <div class="stat-content dib">
-                                        <div class="stat-text">Month Cost</div>
-                                        <div class="stat-digit">£{{ number_format($stats['month_cost'], 2) }}</div>
+                                        <div class="stat-text">Month {{ $config->provider === 'voodoo' ? 'Credits Used' : 'Cost' }}</div>
+                                        <div class="stat-digit">
+                                            @if($config->provider === 'voodoo')
+                                                {{ number_format($stats['month_cost']) }} credits
+                                            @else
+                                                £{{ number_format($stats['month_cost'], 2) }}
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>

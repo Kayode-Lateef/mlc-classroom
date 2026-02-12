@@ -109,8 +109,13 @@
                     <div class="login-content">
                         <div class="login-logo">
                             <a href="{{ url('/') }}">
+                                @php
+                                    // Get logo from database, fallback to .env
+                                    $logo = \App\Models\SystemSetting::get('school_logo') ?? config('app.logo');
+                                @endphp
+                
                                 @if(config('app.logo'))
-                                    <img src="{{ asset('storage/' . config('app.logo')) }}" alt="{{ config('app.name', 'MLC Classroom') }}" class="logo-img">
+                                    <img src="{{ asset('storage/' . $logo) . '?v=' . time() }}" alt="{{ config('app.name', 'MLC Classroom') }}" class="logo-img">
                                 @else
                                     {{-- <span>MLC Classroom</span> --}}
                                 @endif

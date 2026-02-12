@@ -207,9 +207,9 @@
                                                             type="number" 
                                                             name="capacity" 
                                                             id="capacity" 
-                                                            value="{{ old('capacity', 20) }}" 
+                                                            value="{{ old('capacity') }}" 
                                                             min="1"
-                                                            max="100"
+                                                            max="{{ (int) \App\Models\SystemSetting::get('max_class_capacity', 100) }}"max="100"
                                                             required
                                                             class="form-control @error('capacity') is-invalid @enderror"
                                                         >
@@ -353,7 +353,7 @@
                 }
 
                 // Validate capacity
-                if (capacity < 1 || capacity > 100) {
+              if (capacity < 1 || capacity > {{ (int) \App\Models\SystemSetting::get('max_class_capacity', 100) }}) {
                     swal({
                         title: "Invalid Capacity!",
                         text: "Capacity must be between 1 and 100 students.",

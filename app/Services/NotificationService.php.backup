@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\NotificationSetting;
-use App\Models\SystemSetting;
 use App\Models\PendingEmail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -20,12 +19,7 @@ class NotificationService
     }
     
     /**
-     * Send notification via multiple channels based on user preferences.
-     * 
-     * WIRING: System-level gate checks email_enabled/sms_enabled from SystemSetting
-     * BEFORE checking user-level NotificationSetting preferences.
-     * If SuperAdmin disables email/SMS globally, no emails/SMS are sent for ANY user.
-     * In-app notifications are NOT affected by these system toggles.
+     * Send notification via multiple channels based on user preferences
      * 
      * @param User|array $users User or array of users
      * @param string $type Notification type (absence, homework_assigned, etc.)
@@ -37,6 +31,7 @@ class NotificationService
      */
     public function send($users, $type, $title, $message, $data = [], $immediate = false)
     {
+        // Ensure $users is an array
         if (!is_array($users)) {
             $users = [$users];
         }
@@ -44,35 +39,13 @@ class NotificationService
         $results = [
             'email_sent' => 0,
             'email_queued' => 0,
-            'email_skipped_system' => 0,
             'sms_sent' => 0,
             'sms_queued' => 0,
-            'sms_skipped_system' => 0,
             'in_app_created' => 0,
         ];
-
-        // =============================================================
-        // SYSTEM-LEVEL GATE (wired to SuperAdmin → System Settings)
-        // If the SuperAdmin has disabled email or SMS globally,
-        // the channel is completely off regardless of user preferences.
-        // =============================================================
-        $systemEmailEnabled = SystemSetting::isEmailEnabled();
-        $systemSmsEnabled   = SystemSetting::isSmsEnabled();
-
-        if (!$systemEmailEnabled) {
-            Log::info("NotificationService: Email globally disabled — skipping email channel for type '{$type}'");
-        }
-        if (!$systemSmsEnabled) {
-            Log::info("NotificationService: SMS globally disabled — skipping SMS channel for type '{$type}'");
-        }
         
         foreach ($users as $user) {
-            // Skip null users (e.g. student with no parent linked)
-            if (!$user) {
-                continue;
-            }
-
-            // Get user-level notification preferences
+            // Get user notification preferences
             $settings = NotificationSetting::where('user_id', $user->id)
                 ->where('notification_type', $type)
                 ->first();
@@ -88,16 +61,14 @@ class NotificationService
                 ]);
             }
             
-            // In-app notification (NOT affected by email/SMS system toggles)
+            // In-app notification (always create if enabled)
             if ($settings->in_app_enabled) {
                 $this->createInAppNotification($user, $type, $title, $message, $data);
                 $results['in_app_created']++;
             }
             
-            // ==========================================================
-            // EMAIL: System gate → then user preference → then send/queue
-            // ==========================================================
-            if ($systemEmailEnabled && $settings->email_enabled && $user->email) {
+            // Email notification
+            if ($settings->email_enabled && $user->email) {
                 if ($immediate) {
                     $this->sendEmail($user->email, $title, $message, $data);
                     $results['email_sent']++;
@@ -105,15 +76,10 @@ class NotificationService
                     $this->queueEmail($user->id, $user->email, $title, $message, $data);
                     $results['email_queued']++;
                 }
-            } elseif (!$systemEmailEnabled && $settings->email_enabled) {
-                // User wants email but system has it disabled
-                $results['email_skipped_system']++;
             }
             
-            // ==========================================================
-            // SMS: System gate → then user preference → then send/queue
-            // ==========================================================
-            if ($systemSmsEnabled && $settings->sms_enabled && $user->phone) {
+            // SMS notification
+            if ($settings->sms_enabled && $user->phone) {
                 if ($immediate) {
                     $result = $this->smsService->sendImmediate($user->phone, $message, $type);
                     if ($result['success']) {
@@ -123,9 +89,6 @@ class NotificationService
                     $this->smsService->queueSms($user->id, $user->phone, $message, $type);
                     $results['sms_queued']++;
                 }
-            } elseif (!$systemSmsEnabled && $settings->sms_enabled) {
-                // User wants SMS but system has it disabled
-                $results['sms_skipped_system']++;
             }
         }
         
@@ -134,6 +97,9 @@ class NotificationService
     
     /**
      * Send student absence notification
+     * 
+     * @param object $attendance Attendance record
+     * @return array
      */
     public function sendAbsenceNotification($attendance)
     {
@@ -159,12 +125,16 @@ class NotificationService
     
     /**
      * Send homework assigned notification
+     * 
+     * @param object $homework Homework assignment
+     * @param array $students Array of students
+     * @return array
      */
     public function sendHomeworkAssignedNotification($homework, $students)
     {
         $parents = [];
         foreach ($students as $student) {
-            if ($student->parent && !in_array($student->parent_id, array_column($parents, 'id'))) {
+            if (!in_array($student->parent_id, array_column($parents, 'id'))) {
                 $parents[] = $student->parent;
             }
         }
@@ -187,6 +157,9 @@ class NotificationService
     
     /**
      * Send homework graded notification
+     * 
+     * @param object $submission Homework submission
+     * @return array
      */
     public function sendHomeworkGradedNotification($submission)
     {
@@ -211,25 +184,30 @@ class NotificationService
     
     /**
      * Send progress report notification
+     * 
+     * @param object $progressSheet Progress sheet
+     * @param array $students Array of students
+     * @return array
      */
     public function sendProgressReportNotification($progressSheet, $students)
     {
         $parents = [];
         foreach ($students as $student) {
-            if ($student->parent && !in_array($student->parent_id, array_column($parents, 'id'))) {
+            if (!in_array($student->parent_id, array_column($parents, 'id'))) {
                 $parents[] = $student->parent;
             }
         }
         
         $title = 'New Progress Report';
         $message = "New progress report available for {$progressSheet->class->name} - " .
-                   "{$progressSheet->topic}";
+                   $progressSheet->topic;
         
         $data = [
             'progress_sheet_id' => $progressSheet->id,
             'class_name' => $progressSheet->class->name,
             'topic' => $progressSheet->topic,
-            'url' => route('parent.progress.show', $progressSheet),
+            'date' => $progressSheet->date->format('Y-m-d'),
+            'url' => route('parent.progress.index'),
         ];
         
         // Queue for cron (non-urgent)
@@ -237,57 +215,191 @@ class NotificationService
     }
     
     /**
-     * Create in-app notification using Laravel's notification system
+     * Send schedule change notification
+     * 
+     * @param object $schedule Schedule
+     * @param string $changeType Type of change (created, updated, deleted)
+     * @return array
      */
-    protected function createInAppNotification($user, $type, $title, $message, $data = [])
+    public function sendScheduleChangeNotification($schedule, $changeType)
     {
-        try {
-            $user->notify(new \App\Notifications\GeneralNotification([
-                'type' => $type,
-                'title' => $title,
-                'message' => $message,
-                'data' => $data,
-            ]));
-        } catch (\Exception $e) {
-            Log::error("Failed to create in-app notification: " . $e->getMessage());
+        $class = $schedule->class;
+        $students = $class->students;
+        $parents = [];
+        
+        foreach ($students as $student) {
+            if (!in_array($student->parent_id, array_column($parents, 'id'))) {
+                $parents[] = $student->parent;
+            }
         }
+        
+        $title = 'Schedule Change';
+        $message = "Schedule change for {$class->name}: {$changeType}. " .
+                   "{$schedule->day_of_week} at " . 
+                   \Carbon\Carbon::parse($schedule->start_time)->format('H:i');
+        
+        $data = [
+            'class_name' => $class->name,
+            'day' => $schedule->day_of_week,
+            'time' => $schedule->start_time,
+            'change_type' => $changeType,
+        ];
+        
+        // Send immediately for schedule changes
+        return $this->send($parents, 'schedule_change', $title, $message, $data, true);
+    }
+    
+    /**
+     * Send emergency notification
+     * 
+     * @param string $message Emergency message
+     * @param array $recipients Array of users or 'all'
+     * @return array
+     */
+    public function sendEmergencyNotification($message, $recipients = 'all')
+    {
+        if ($recipients === 'all') {
+            $recipients = User::where('role', 'parent')->get()->toArray();
+        }
+        
+        $title = 'Emergency Alert';
+        $data = [
+            'priority' => 'high',
+            'type' => 'emergency',
+        ];
+        
+        // Send immediately for emergencies
+        return $this->send($recipients, 'emergency', $title, $message, $data, true);
+    }
+    
+    /**
+     * Create in-app notification
+     * 
+     * @param User $user
+     * @param string $type
+     * @param string $title
+     * @param string $message
+     * @param array $data
+     * @return void
+     */
+    protected function createInAppNotification($user, $type, $title, $message, $data)
+    {
+        $user->notify(new \App\Notifications\GeneralNotification([
+            'type' => $type,
+            'title' => $title,
+            'message' => $message,
+            'data' => $data,
+        ]));
     }
     
     /**
      * Send email immediately
+     * 
+     * @param string $to
+     * @param string $subject
+     * @param string $message
+     * @param array $data
+     * @return void
      */
-    protected function sendEmail($email, $title, $message, $data = [])
+    protected function sendEmail($to, $subject, $message, $data = [])
     {
         try {
-            Mail::send('emails.general-notification', [
-                'title' => $title,
-                'messageContent' => $message,
+            Mail::send('emails.notification', [
+                'subject' => $subject,
+                'message' => $message,
                 'data' => $data,
-            ], function ($mail) use ($email, $title) {
-                $mail->to($email)
-                     ->subject($title);
+            ], function ($mail) use ($to, $subject) {
+                $mail->to($to)
+                     ->subject($subject);
             });
+            
+            Log::info('Email sent to ' . $to);
+            
         } catch (\Exception $e) {
-            Log::error("Failed to send email to {$email}: " . $e->getMessage());
+            Log::error('Email send failed: ' . $e->getMessage());
         }
     }
     
     /**
-     * Queue email for cron processing (shared hosting)
+     * Queue email for cron processing
+     * 
+     * @param int $userId
+     * @param string $email
+     * @param string $subject
+     * @param string $body
+     * @param array $data
+     * @return PendingEmail
      */
-    protected function queueEmail($userId, $email, $title, $message, $data = [])
+    protected function queueEmail($userId, $email, $subject, $body, $data = [])
     {
-        try {
-            PendingEmail::create([
-                'user_id' => $userId,
-                'to_email' => $email,
-                'subject' => $title,
-                'body' => $message,
-                'data' => json_encode($data),
-                'status' => 'pending',
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Failed to queue email for {$email}: " . $e->getMessage());
+        return PendingEmail::create([
+            'user_id' => $userId,
+            'email' => $email,
+            'subject' => $subject,
+            'body' => $body,
+            'status' => 'pending',
+            'scheduled_at' => now()->addMinutes(5),
+            'attempts' => 0,
+        ]);
+    }
+    
+    /**
+     * Process pending emails (called by cron command)
+     * 
+     * @param int $limit
+     * @return array
+     */
+    public function processPendingEmails($limit = 5)
+    {
+        $pending = PendingEmail::where('status', 'pending')
+            ->where('scheduled_at', '<=', now())
+            ->where('attempts', '<', 3)
+            ->limit($limit)
+            ->get();
+        
+        $processed = 0;
+        $sent = 0;
+        $failed = 0;
+        
+        foreach ($pending as $email) {
+            try {
+                $this->sendEmail($email->email, $email->subject, $email->body);
+                
+                $email->update(['status' => 'sent']);
+                $sent++;
+                
+            } catch (\Exception $e) {
+                $email->increment('attempts');
+                
+                if ($email->attempts >= 3) {
+                    $email->update(['status' => 'failed']);
+                    $failed++;
+                }
+                
+                Log::error('Email processing failed: ' . $e->getMessage());
+            }
+            
+            $processed++;
         }
+        
+        return [
+            'processed' => $processed,
+            'sent' => $sent,
+            'failed' => $failed,
+        ];
+    }
+
+
+    // Example of a Voodoo-specific SMS sending method if you want to use Voodoo features directly
+    protected function sendVoodooSMS($phone, $message, $type, $options = [])
+    {
+        // If you want to use Voodoo-specific features like flash SMS for emergencies:
+        $smsOptions = [];
+        
+        if ($type === 'emergency') {
+            $smsOptions['flash'] = 1; // Flash SMS for emergencies
+        }
+        
+        return $this->smsService->sendImmediate($phone, $message, $type);
     }
 }

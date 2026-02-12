@@ -89,7 +89,7 @@ class ClassController extends Controller
             'level' => 'nullable|string|max:100',
             'room_number' => 'nullable|string|max:50',
             'teacher_id' => 'nullable|exists:users,id',
-            'capacity' => 'required|integer|min:1|max:100',
+            'capacity' => 'required|integer|min:1|max:' . (int) \App\Models\SystemSetting::get('max_class_capacity', 100),
             'description' => 'nullable|string',
         ]);
 
@@ -216,7 +216,7 @@ class ClassController extends Controller
             'level' => 'nullable|string|max:100',
             'room_number' => 'nullable|string|max:50',
             'teacher_id' => 'nullable|exists:users,id',
-            'capacity' => 'required|integer|min:1|max:100',
+            'capacity' => 'required|integer|min:1|max:' . (int) \App\Models\SystemSetting::get('max_class_capacity', 100),
             'description' => 'nullable|string',
         ]);
 

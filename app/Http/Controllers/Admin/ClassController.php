@@ -120,7 +120,7 @@ class ClassController extends Controller
             'level' => 'nullable|string|max:100',
             'room_number' => 'nullable|string|max:50',
             'teacher_id' => 'nullable|exists:users,id',
-            'capacity' => 'required|integer|min:1|max:100',
+            'capacity' => 'required|integer|min:1|max:' . (int) \App\Models\SystemSetting::get('max_class_capacity', 100),
             'description' => 'nullable|string',
         ], [
             'name.required' => 'Class name is required.',
@@ -133,7 +133,7 @@ class ClassController extends Controller
             'capacity.required' => 'Class capacity is required.',
             'capacity.integer' => 'Capacity must be a number.',
             'capacity.min' => 'Capacity must be at least 1 student.',
-            'capacity.max' => 'Capacity cannot exceed 100 students.',
+            'capacity.max' => 'Capacity cannot exceed ' . (int) \App\Models\SystemSetting::get('max_class_capacity', 100) . ' students.',
         ]);
 
         // ✅ ADDED: Database transaction for data integrity
@@ -355,7 +355,7 @@ class ClassController extends Controller
             'level' => 'nullable|string|max:100',
             'room_number' => 'nullable|string|max:50',
             'teacher_id' => 'nullable|exists:users,id',
-            'capacity' => 'required|integer|min:1|max:100',
+            'capacity' => 'required|integer|min:1|max:' . (int) \App\Models\SystemSetting::get('max_class_capacity', 100),
             'description' => 'nullable|string',
         ], [
             'name.required' => 'Class name is required.',
@@ -368,7 +368,7 @@ class ClassController extends Controller
             'capacity.required' => 'Class capacity is required.',
             'capacity.integer' => 'Capacity must be a number.',
             'capacity.min' => 'Capacity must be at least 1 student.',
-            'capacity.max' => 'Capacity cannot exceed 100 students.',
+            'capacity.max' => 'Capacity cannot exceed ' . (int) \App\Models\SystemSetting::get('max_class_capacity', 100) . ' students.',
         ]);
 
         // ✅ ADDED: Database transaction for data integrity

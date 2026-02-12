@@ -262,7 +262,7 @@
                                                             id="capacity" 
                                                             value="{{ old('capacity', $class->capacity) }}" 
                                                             min="{{ $enrolledCount }}"
-                                                            max="100"
+                                                            max="{{ (int) \App\Models\SystemSetting::get('max_class_capacity', 100) }}"
                                                             required
                                                             class="form-control @error('capacity') is-invalid @enderror"
                                                         >
@@ -396,7 +396,7 @@
                     return false;
                 }
 
-                if (capacity < 1 || capacity > 100) {
+                if (capacity < 1 || capacity > {{ (int) \App\Models\SystemSetting::get('max_class_capacity', 100) }}) {
                     e.preventDefault();
                     alert('Capacity must be between 1 and 100 students.');
                     $('#capacity').focus();

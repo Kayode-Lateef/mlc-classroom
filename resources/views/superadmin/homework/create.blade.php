@@ -228,7 +228,7 @@
                                                 <input 
                                                     type="date" 
                                                     name="due_date" 
-                                                    value="{{ old('due_date', now()->addDays(7)->format('Y-m-d')) }}"
+                                                    value="{{ old('due_date', now()->addDays((int) \App\Models\SystemSetting::get('homework_due_days', 7))->format('Y-m-d')) }}"
                                                     required
                                                     class="form-control"
                                                 >

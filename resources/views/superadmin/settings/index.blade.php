@@ -558,35 +558,12 @@
                                                 </div>
                                             </div>
 
-                                            {{-- Attendance Settings --}}
-                                            <div class="setting-section">
-                                                <h4 class="setting-section-title">Attendance Settings</h4>
-                                                {{-- BOOLEAN FIX: isChecked() handles 'true'/'false' strings --}}
-                                                <label class="toggle-label">
-                                                    <input type="checkbox" name="attendance_required" value="1"
-                                                        {{ isChecked('attendance_required', $settingsMap) ? 'checked' : '' }}>
-                                                    <div class="toggle-description">
-                                                        <span>Require Attendance Marking</span>
-                                                        <p>When enabled, teachers must mark attendance for each class session</p>
-                                                    </div>
-                                                </label>
-                                            </div>
-
+                                   
                                             {{-- Homework Settings --}}
                                             <div class="setting-section">
                                                 <h4 class="setting-section-title">Homework Settings</h4>
                                                 <div class="row">
-                                                    <div class="col-lg-6">
-                                                        {{-- BOOLEAN FIX: isChecked() handles 'true'/'false' strings --}}
-                                                        <label class="toggle-label" style="margin-bottom: 20px;">
-                                                            <input type="checkbox" name="late_homework_penalty" value="1"
-                                                                {{ isChecked('late_homework_penalty', $settingsMap) ? 'checked' : '' }}>
-                                                            <div class="toggle-description">
-                                                                <span>Apply Late Homework Penalty</span>
-                                                                <p>Flag homework submitted after the due date</p>
-                                                            </div>
-                                                        </label>
-                                                    </div>
+                                                    
                                                     <div class="col-lg-6">
                                                         <div class="form-group">
                                                             <label>Default Homework Due Days</label>
@@ -599,25 +576,7 @@
                                                 </div>
                                             </div>
 
-                                            {{-- Progress Report Settings --}}
-                                            <div class="setting-section">
-                                                <h4 class="setting-section-title">Progress Report Settings</h4>
-                                                <div class="row">
-                                                    <div class="col-lg-6">
-                                                        <div class="form-group">
-                                                            <label>Progress Report Frequency</label>
-                                                            <select name="progress_report_frequency" class="form-control">
-                                                                @php $currentFreq = old('progress_report_frequency', $settingsMap['progress_report_frequency'] ?? 'monthly'); @endphp
-                                                                <option value="weekly" {{ $currentFreq === 'weekly' ? 'selected' : '' }}>Weekly</option>
-                                                                <option value="biweekly" {{ $currentFreq === 'biweekly' ? 'selected' : '' }}>Bi-weekly</option>
-                                                                <option value="monthly" {{ $currentFreq === 'monthly' ? 'selected' : '' }}>Monthly</option>
-                                                                <option value="termly" {{ $currentFreq === 'termly' ? 'selected' : '' }}>Termly</option>
-                                                            </select>
-                                                            <small class="form-text text-muted">How often progress reports should be generated</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                           
                                         </div>
 
                                     </div>{{-- end tab-content --}}

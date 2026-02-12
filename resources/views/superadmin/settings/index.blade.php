@@ -4,92 +4,57 @@
 
 @push('styles')
     <style>
-
-        .stat-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-        }
-
-        .stat-widget-one .stat-value {
-            /* font-size: 24px; */
-            font-weight: bold;
-        }
-
-
-        .tab-content {
-            padding: 30px;
-        }
+        /* ============================================ */
+        /* MLC SETTINGS STYLES                          */
+        /* Colours: #3386f7 (blue) and #e06829 (orange) */
+        /* ============================================ */
 
         .setting-section {
+            background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 20px;
+            padding: 20px 25px;
             margin-bottom: 20px;
         }
 
         .setting-section-title {
             font-weight: 600;
+            font-size: 1.1rem;
+            color: #2d3748;
             margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3386f7;
         }
 
-        .info-box {
-            background-color: #e7f3ff;
-            border-radius: 6px;
-            padding: 15px;
-            display: flex;
-            align-items: flex-start;
-        }
 
-        .info-box i {
-            color: #007bff;
-            margin-right: 12px;
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .logo-preview {
-            max-height: 80px;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
-            padding: 5px;
-            background-color: #fff;
-        }
-
-        .form-actions {
-            padding: 20px 30px;
-            background-color: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .status-enabled {
-            color: #28a745;
-            font-weight: 600;
-        }
-
-        .status-disabled {
-            color: #dc3545;
-            font-weight: 600;
+        .nav-tabs .nav-link i {
+            margin-right: 6px;
         }
 
         .toggle-label {
             display: flex;
             align-items: flex-start;
+            cursor: pointer;
         }
 
         .toggle-label input[type="checkbox"] {
             margin-top: 6px;
+            width: 18px;
+            height: 18px;
+            accent-color: #3386f7;
         }
 
         .toggle-description {
             margin-left: 10px;
+        }
+
+        .toggle-description span {
+            font-weight: 500;
+        }
+
+        .toggle-description p {
+            color: #6c757d;
+            margin: 3px 0 0;
         }
 
         .required-field::after {
@@ -97,13 +62,100 @@
             color: #dc3545;
         }
 
+        .logo-preview {
+            max-width: 200px;
+            max-height: 80px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .info-box {
+            background: rgba(51,134,247,0.06);
+            border: 1px solid rgba(51,134,247,0.15);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .info-box i {
+            color: #3386f7;
+            margin-top: 2px;
+        }
+
+        .info-box p {
+            margin: 0;
+            color: #4a5568;
+        }
+
+        .btn-save-settings {
+            background: linear-gradient(135deg, #3386f7 0%, #2a6fd6 100%);
+            border: none;
+            color: #fff;
+            padding: 12px 35px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        } 
+
+        .btn-save-settings:hover {
+            background: linear-gradient(135deg, #2a6fd6 0%, #1e5bb5 100%);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(51,134,247,0.3);
+        } 
+
+        .income-preview {
+            background: rgba(224,104,41,0.06);
+            border: 1px solid rgba(224,104,41,0.15);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .income-preview h5 {
+            color: #e06829;
+            font-weight: 600;
+        }
+
     </style>
 @endpush
+
+{{-- ================================================================ --}}
+{{-- BOOLEAN CHECKBOX FIX                                             --}}
+{{--                                                                  --}}
+{{-- The database stores booleans as strings: 'true' / 'false'        --}}
+{{-- PHP treats the string 'false' as TRUTHY (non-empty string).      --}}
+{{-- This isChecked() helper uses filter_var() which correctly maps:  --}}
+{{--   'true'  → true    'false' → false                             --}}
+{{--   '1'     → true    '0'     → false                             --}}
+{{--   1       → true    0       → false                             --}}
+{{--                                                                  --}}
+{{-- It also respects old() input after validation failures.          --}}
+{{-- ================================================================ --}}
+@php
+    function isChecked($key, $settingsMap) {
+        // old() returns null if the field wasn't in the previous request,
+        // but for checkboxes we need to check if old input EXISTS at all.
+        // If the form was submitted (old('_token') exists), use old() value.
+        // Otherwise, use the database value from settingsMap.
+        if (old('_token') !== null) {
+            // Form was submitted — old() is available
+            // For checkboxes: old($key) will be '1' if checked, null if unchecked
+            return old($key) !== null && old($key) !== '' && old($key) !== '0';
+        }
+
+        // No form submission — use database value
+        $value = $settingsMap[$key] ?? false;
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
+@endphp
 
 @section('content')
     <div class="content-wrap">
         <div class="main">
             <div class="container-fluid">
+
                 <!-- Page Header -->
                 <div class="row">
                     <div class="col-lg-8 p-r-0 title-margin-right">
@@ -126,7 +178,34 @@
                     </div>
                 </div>
 
-                <div id="main-content">
+
+                {{-- Flash Messages --}}
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="ti-check"></i> {{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="ti-alert"></i> {{ session('error') }}
+                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong><i class="ti-alert"></i> Please fix the following errors:</strong>
+                        <ul class="mb-0 mt-2">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    </div>
+                @endif
+
 
                     <!-- Statistics Cards -->
                     <div class="row">
@@ -144,10 +223,23 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
-                                    <div class="stat-icon dib"><i class="ti-email color-success border-success"></i></div>
+                                    <div class="stat-icon dib"><i class="ti-time color-warning border-warning"></i></div>
                                     <div class="stat-content dib">
-                                        <div class="stat-text">Email Status</div>
-                                        <div class="stat-value {{ $stats['email_enabled'] ? 'status-enabled' : 'status-disabled' }}">
+                                        <div class="stat-text">Last Updated</div>
+                                        <div class="stat-value">{{ $stats['last_updated'] ? $stats['last_updated']->diffForHumans() : 'Never' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="stat-widget-one" style="display: flex; align-items: center;">
+                                    <div class="stat-icon dib">
+                                        <i class="ti-email {{ $stats['email_enabled'] ? 'color-success border-success' : 'grey' }}"></i>
+                                    </div>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">Email Notifications</div>
+                                        <div class="stat-value" style="font-weight: 600; color: {{ $stats['email_enabled'] ? '#28a745' : '#dc3545' }};">
                                             {{ $stats['email_enabled'] ? 'Enabled' : 'Disabled' }}
                                         </div>
                                     </div>
@@ -157,552 +249,394 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="card">
                                 <div class="stat-widget-one" style="display: flex; align-items: center;">
-                                    <div class="stat-icon dib"><i class="ti-comment-alt color-pink border-pink"></i></div>
+                                    <div class="stat-icon dib"><i class="ti-comment-alt {{ $stats['sms_enabled'] ? 'color-pink border-pink' : 'grey' }}"></i></div>
                                     <div class="stat-content dib">
-                                        <div class="stat-text">SMS Status</div>
-                                        <div class="stat-value {{ $stats['sms_enabled'] ? 'status-enabled' : 'status-disabled' }}">
+                                        <div class="stat-text">SMS Notifications</div>
+                                        <div class="stat-value" style="font-weight: 600; color: {{ $stats['sms_enabled'] ? '#28a745' : '#dc3545' }};">
                                             {{ $stats['sms_enabled'] ? 'Enabled' : 'Disabled' }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                            <div class="card">
-                                <div class="stat-widget-one" style="display: flex; align-items: center;">
-                                    <div class="stat-icon dib"><i class="ti-time color-warning border-warning"></i></div>
-                                    <div class="stat-content dib">
-                                        <div class="stat-text">Last Updated</div>
-                                        <div class="stat-value">{{ $stats['last_updated'] ? $stats['last_updated']->diffForHumans() : 'Never' }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
                       
                     </div>
 
-                    <!--Error Messages -->
-            
 
-                    @if(session('error'))
-                        <div class="row mt-3">
-                            <div class="col-lg-12">
-                                <div class="alert alert-danger fade in alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <i class="ti-alert"></i> {{ session('error') }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                {{-- Settings Form --}}
+                <!-- Settings Form -->
+                <div class="row mt-4">
+                    <div class="col-lg-12">
+                        <form method="POST" action="{{ route('superadmin.settings.update') }}" enctype="multipart/form-data">
+                            @csrf
 
-                    <!-- Settings Form -->
-                    <div class="row mt-4">
-                        <div class="col-lg-12">
-                            <form method="POST" action="{{ route('superadmin.settings.update') }}" enctype="multipart/form-data">
-                                @csrf
-                                
-                                <div class="card alert">                                         
-                                    <div class="card-body">
-                                        <div class="custom-tab">
-                                            <ul class="nav nav-tabs" role="tablist">
-                                                <li role="presentation" class="active"><a href="#school-tab" aria-controls="school-tab" role="tab" data-toggle="tab"><i class="ti-home"></i> School Information</a></li>
-                                                <li role="presentation"><a href="#system-tab" aria-controls="system-tab" role="tab" data-toggle="tab"><i class="ti-settings"></i> System Settings</a></li>
-                                                <li role="presentation"><a href="#notifications-tab" aria-controls="notifications-tab" role="tab" data-toggle="tab"><i class="ti-bell"></i> Notifications</a></li>
-                                                <li role="presentation"><a href="#academic-tab" aria-controls="academic-tab" role="tab" data-toggle="tab"><i class="ti-book"></i> Academic Settings</a></li>
-                                            </ul>
-                                            <div class="tab-content">
-                                                <!-- School Information Tab -->
-                                                <div role="tabpanel" class="tab-pane active" id="school-tab">
-                                                        <h3 style="font-weight: 600; margin-bottom: 25px;">School Information</h3>                                                       
-                                                        <div class="row">
-                                                            <!-- School Name -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Name</label>
-                                                                    <input 
-                                                                        type="text" 
-                                                                        name="school_name" 
-                                                                        value="{{ old('school_name', $settings->get('school')->firstWhere('key', 'school_name')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('school_name') is-invalid @enderror"
-                                                                    >
-                                                                    @error('school_name')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
+                            <div class="card" style="border-radius: 8px;">
+                                <div class="card-body" style="padding: 0;">
 
-                                                            <!-- School Email -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Email</label>
-                                                                    <input 
-                                                                        type="email" 
-                                                                        name="school_email" 
-                                                                        value="{{ old('school_email', $settings->get('school')->firstWhere('key', 'school_email')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('school_email') is-invalid @enderror"
-                                                                    >
-                                                                    @error('school_email')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- School Phone -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Phone</label>
-                                                                    <input 
-                                                                        type="text" 
-                                                                        name="school_phone" 
-                                                                        id="school_phone"
-                                                                        value="{{ old('school_phone', $settings->get('school')->firstWhere('key', 'school_phone')?->value) }}"
-                                                                        placeholder="+44 20 1234 5678 or 020 1234 5678"
-                                                                        required
-                                                                        minlength="10"
-                                                                        maxlength="20"
-                                                                        pattern="(\+44\s?|0)[0-9\s\-\(\)]{9,}"
-                                                                        class="form-control @error('school_phone') is-invalid @enderror"
-                                                                    >
-                                                                    <small class="form-text text-muted">
-                                                                        <i class="ti-info-alt"></i> UK phone number format: +44 20 1234 5678 or 020 1234 5678
-                                                                    </small>
-                                                                    @error('school_phone')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- School Address -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">School Address</label>
-                                                                    <textarea 
-                                                                        name="school_address" 
-                                                                        rows="3"
-                                                                        required
-                                                                        class="form-control @error('school_address') is-invalid @enderror"
-                                                                    >{{ old('school_address', $settings->get('school')->firstWhere('key', 'school_address')?->value) }}</textarea>
-                                                                    @error('school_address')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- School Logo -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label>School Logo</label>
-                                                                    @php
-                                                                        $currentLogo = $settings->get('school')->firstWhere('key', 'school_logo')?->value;
-                                                                    @endphp
-                                                                    @if($currentLogo)
-                                                                    <div style="margin-bottom: 15px;">
-                                                                        <img src="{{ asset('storage/' . $currentLogo) }}" alt="Current Logo" class="logo-preview">
-                                                                        <p style="font-size: 0.875rem; color: #6c757d; margin-top: 5px;">Current logo</p>
-                                                                    </div>
-                                                                    @endif
-                                                                    <input 
-                                                                        type="file" 
-                                                                        name="school_logo" 
-                                                                        accept="image/*"
-                                                                        class="form-control-file @error('school_logo') is-invalid @enderror"
-                                                                    >
-                                                                    <small class="form-text text-muted">Max size: 2MB. Formats: JPG, PNG, GIF</small>
-                                                                    @error('school_logo')
-                                                                    <span class="invalid-feedback d-block">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                    {{-- Tabs --}}
+                                        <div class="card alert">                                         
+                                            <div class="card-body">
+                                                <div class="custom-tab">
+                                                    <ul class="nav nav-tabs" role="tablist">
+                                                        <li role="presentation" class="active"><a href="#school-tab" aria-controls="school-tab" role="tab" data-toggle="tab"><i class="ti-home"></i> School Info</a></li>
+                                                        <li role="presentation"><a href="#system-tab" aria-controls="system-tab" role="tab" data-toggle="tab"><i class="ti-settings"></i> System</a></li>
+                                                        <li role="presentation"><a href="#notifications-tab" aria-controls="notifications-tab" role="tab" data-toggle="tab"><i class="ti-bell"></i> Notifications</a></li>
+                                                        <li role="presentation"><a href="#academic-tab" aria-controls="academic-tab" role="tab" data-toggle="tab"><i class="ti-book"></i> Academic</a></li>
+                                                    </ul>
+                                                
                                                 </div>
-                                                <!-- System Settings Tab -->
-                                                <div role="tabpanel" class="tab-pane" id="system-tab">
-                                                        <h3 style="font-weight: 600; margin-bottom: 25px;">System Settings</h3>                                                       
-                                                        <div class="row">
-                                                            <!-- Max Class Capacity -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">Maximum Class Capacity</label>
-                                                                    <input 
-                                                                        type="number" 
-                                                                        name="max_class_capacity" 
-                                                                        value="{{ old('max_class_capacity', $settings->get('system')->firstWhere('key', 'max_class_capacity')?->value ?? 20) }}"
-                                                                        min="1"
-                                                                        max="100"
-                                                                        required
-                                                                        class="form-control @error('max_class_capacity') is-invalid @enderror"
-                                                                    >
-                                                                    <small class="form-text text-muted">Default maximum students per class</small>
-                                                                    @error('max_class_capacity')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
+                                            </div>
+                                        </div>
 
-                                                            <!-- Term Start Date -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">Current Term Start Date</label>
-                                                                    <input 
-                                                                        type="date" 
-                                                                        name="term_start_date" 
-                                                                        value="{{ old('term_start_date', $settings->get('system')->firstWhere('key', 'term_start_date')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('term_start_date') is-invalid @enderror"
-                                                                    >
-                                                                    @error('term_start_date')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
 
-                                                            <!-- Term End Date -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label class="required-field">Current Term End Date</label>
-                                                                    <input 
-                                                                        type="date" 
-                                                                        name="term_end_date" 
-                                                                        value="{{ old('term_end_date', $settings->get('system')->firstWhere('key', 'term_end_date')?->value) }}"
-                                                                        required
-                                                                        class="form-control @error('term_end_date') is-invalid @enderror"
-                                                                    >
-                                                                    @error('term_end_date')
-                                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
+                                    <div class="tab-content" style="padding: 25px;">
 
-                                                            <!-- Timezone -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Timezone</label>
-                                                                    <select name="timezone" class="form-control">
-                                                                        <option value="Europe/London" {{ old('timezone', $settings->get('system')->firstWhere('key', 'timezone')?->value ?? 'Europe/London') === 'Europe/London' ? 'selected' : '' }}>
-                                                                            Europe/London (GMT/BST)
-                                                                        </option>
-                                                                        <option value="UTC" {{ old('timezone', $settings->get('system')->firstWhere('key', 'timezone')?->value) === 'UTC' ? 'selected' : '' }}>
-                                                                            UTC
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
+                                        {{-- ========================================== --}}
+                                        {{-- SCHOOL INFORMATION TAB                      --}}
+                                        {{-- ========================================== --}}
+                                        <div class="tab-pane active" id="school-tab" role="tabpanel">
+                                            <h3 style="font-weight: 600; margin-bottom: 25px;">School Information</h3>
 
-                                                            <!-- Date Format -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Date Format</label>
-                                                                    <select name="date_format" class="form-control">
-                                                                        <option value="d/m/Y" {{ old('date_format', $settings->get('system')->firstWhere('key', 'date_format')?->value ?? 'd/m/Y') === 'd/m/Y' ? 'selected' : '' }}>
-                                                                            DD/MM/YYYY ({{ date('d/m/Y') }})
-                                                                        </option>
-                                                                        <option value="m/d/Y" {{ old('date_format', $settings->get('system')->firstWhere('key', 'date_format')?->value) === 'm/d/Y' ? 'selected' : '' }}>
-                                                                            MM/DD/YYYY ({{ date('m/d/Y') }})
-                                                                        </option>
-                                                                        <option value="Y-m-d" {{ old('date_format', $settings->get('system')->firstWhere('key', 'date_format')?->value) === 'Y-m-d' ? 'selected' : '' }}>
-                                                                            YYYY-MM-DD ({{ date('Y-m-d') }})
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Time Format -->
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Time Format</label>
-                                                                    <select name="time_format" class="form-control">
-                                                                        <option value="H:i" {{ old('time_format', $settings->get('system')->firstWhere('key', 'time_format')?->value ?? 'H:i') === 'H:i' ? 'selected' : '' }}>
-                                                                            24 Hour ({{ date('H:i') }})
-                                                                        </option>
-                                                                        <option value="h:i A" {{ old('time_format', $settings->get('system')->firstWhere('key', 'time_format')?->value) === 'h:i A' ? 'selected' : '' }}>
-                                                                            12 Hour ({{ date('h:i A') }})
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Maintenance Mode -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label class="toggle-label">
-                                                                        <input 
-                                                                            type="checkbox" 
-                                                                            name="maintenance_mode" 
-                                                                            value="1"
-                                                                            id="maintenance_mode"
-                                                                            {{ old('maintenance_mode', $settings->get('system')->firstWhere('key', 'maintenance_mode')?->value) ? 'checked' : '' }}
-                                                                        >
-                                                                        <div class="toggle-description">
-                                                                            <span style="font-weight: 500;">Enable Maintenance Mode</span>
-                                                                            <p style="font-size: 1rem; color: #6c757d; margin: 5px 0 0 0;">When enabled, only administrators can access the system</p>
-                                                                        </div>
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Maintenance Message -->
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group">
-                                                                    <label>Maintenance Message</label>
-                                                                    <textarea 
-                                                                        name="maintenance_message" 
-                                                                        rows="3"
-                                                                        placeholder="System is undergoing maintenance. Please check back later."
-                                                                        class="form-control"
-                                                                    >{{ old('maintenance_message', $settings->get('system')->firstWhere('key', 'maintenance_message')?->value) }}</textarea>
-                                                                    <small class="form-text text-muted">Message shown to users when maintenance mode is enabled</small>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="form-group">
+                                                        <label class="required-field">School Name</label>
+                                                        <input type="text" name="school_name"
+                                                            value="{{ old('school_name', $settingsMap['school_name'] ?? '') }}"
+                                                            required
+                                                            class="form-control @error('school_name') is-invalid @enderror">
+                                                        @error('school_name')
+                                                            <span class="invalid-feedback">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
                                                 </div>
-                                                <!-- Notifications Tab -->
-                                                <div role="tabpanel" class="tab-pane" id="notifications-tab">
-                                                        <h3 style="font-weight: 600; margin-bottom: 25px;">Notification Settings</h3>
-                                                        <!-- Email Notifications -->
-                                                        <div class="setting-section">
-                                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                                                                <div>
-                                                                    <h4 class="setting-section-title">Email Notifications</h4>
-                                                                    <p style="font-size: 1.2rem; color: #6c757d;">Configure email notification settings</p>
-                                                                </div>
-                                                                <label class="toggle-label">
-                                                                    <input 
-                                                                        type="checkbox" 
-                                                                        name="email_enabled" 
-                                                                        value="1"
-                                                                        {{ old('email_enabled', $settings->get('notifications')->firstWhere('key', 'email_enabled')?->value) ? 'checked' : '' }}
-                                                                    >
-                                                                    <span style="margin-left: 8px; font-weight: 500;">Enable Email</span>
-                                                                </label>
-                                                            </div>
 
-                                                            <div class="row">
-                                                                <div class="col-lg-6">
-                                                                    <div class="form-group">
-                                                                        <label class="required-field">Admin Notification Email</label>
-                                                                        <input 
-                                                                            type="email" 
-                                                                            name="admin_notification_email" 
-                                                                            value="{{ old('admin_notification_email', $settings->get('notifications')->firstWhere('key', 'admin_notification_email')?->value) }}"
-                                                                            required
-                                                                            class="form-control @error('admin_notification_email') is-invalid @enderror"
-                                                                        >
-                                                                        <small class="form-text text-muted">Email for receiving system notifications</small>
-                                                                        @error('admin_notification_email')
-                                                                        <span class="invalid-feedback">{{ $message }}</span>
-                                                                        @enderror
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- SMS Notifications -->
-                                                        <div class="setting-section">
-                                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                                                                <div>
-                                                                    <h4 class="setting-section-title">SMS Notifications</h4>
-                                                                    <p style="font-size: 1.2rem; color: #6c757d;">Configure SMS notification settings (Twilio)</p>
-                                                                </div>
-                                                                <label class="toggle-label">
-                                                                    <input 
-                                                                        type="checkbox" 
-                                                                        name="sms_enabled" 
-                                                                        value="1"
-                                                                        {{ old('sms_enabled', $settings->get('notifications')->firstWhere('key', 'sms_enabled')?->value) ? 'checked' : '' }}
-                                                                    >
-                                                                    <span style="margin-left: 8px; font-weight: 500;">Enable SMS</span>
-                                                                </label>
-                                                            </div>
-
-                                                            <div class="info-box">
-                                                                <i class="ti-info-alt"></i>
-                                                                <div>
-                                                                    <p style="font-size: 1.2rem; font-weight: 500; margin-bottom: 5px;">SMS Provider Configuration</p>
-                                                                    {{-- <p style="font-size: 1.2rem; margin: 0;">SMS credentials are configured in your .env file. Provider: Twilio</p> --}}
-                                                                    <p style="font-size: 1.2rem; margin: 0;">SMS credentials are configured in your .env file.</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    
+                                                <div class="col-lg-6">
+                                                    <div class="form-group">
+                                                        <label class="required-field">School Email</label>
+                                                        <input type="email" name="school_email"
+                                                            value="{{ old('school_email', $settingsMap['school_email'] ?? '') }}"
+                                                            required
+                                                            class="form-control @error('school_email') is-invalid @enderror">
+                                                        @error('school_email')
+                                                            <span class="invalid-feedback">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
                                                 </div>
-                                                <!-- Academic Settings Tab -->
-                                                <div role="tabpanel" class="tab-pane" id="academic-tab">
-                                                    <h3 style="font-weight: 600; margin-bottom: 25px;">Academic Settings</h3>
 
-                                                    <!-- ============================================ -->
-                                                    <!-- HOURLY RATE SETTING -->
-                                                    <!-- ============================================ -->
-                                                    <div class="setting-section">
-                                                        <h4 class="setting-section-title">Income & Billing Settings</h4>
-                                                        
-                                                        <div class="row">
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label for="hourly_rate" class="required-field">
-                                                                        <i class="ti-money"></i> Hourly Teaching Rate
-                                                                    </label>
-                                                                    <div class="input-group">
-                                                                        <div class="input-group-prepend">
-                                                                            <span class="input-group-text">£</span>
-                                                                        </div>
-                                                                        <input 
-                                                                            type="number" 
-                                                                            id="hourly_rate"
-                                                                            name="hourly_rate" 
-                                                                            value="{{ old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50.00) }}"
-                                                                            min="0"
-                                                                            max="1000"
-                                                                            step="0.01"
-                                                                            class="form-control @error('hourly_rate') is-invalid @enderror"
-                                                                            required
-                                                                        >
-                                                                        <div class="input-group-append">
-                                                                            <span class="input-group-text">/hour</span>
-                                                                        </div>
-                                                                        @error('hourly_rate')
-                                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                                        @enderror
-                                                                    </div>
-                                                                    <small class="form-text text-muted">
-                                                                        <i class="ti-info-alt"></i> Used for calculating weekly, monthly, and annual income projections on the dashboard
-                                                                    </small>
-                                                                </div>
-                                                            </div>
+                                                <div class="col-lg-6">
+                                                    <div class="form-group">
+                                                        <label class="required-field">School Phone</label>
+                                                        <input type="text" name="school_phone"
+                                                            value="{{ old('school_phone', $settingsMap['school_phone'] ?? '') }}"
+                                                            required placeholder="+44 20 1234 5678"
+                                                            class="form-control @error('school_phone') is-invalid @enderror">
+                                                        <small class="form-text text-muted">UK format: +44... or 0...</small>
+                                                        @error('school_phone')
+                                                            <span class="invalid-feedback">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
 
-                                                            <div class="col-lg-6">
-                                                                <!-- Income Preview -->
-                                                                <div class="alert alert-info" style="margin-top: 32px;">
-                                                                    <h5 style="margin-bottom: 10px; font-weight: 600;">
-                                                                        <i class="ti-bar-chart"></i> Income Preview
-                                                                    </h5>
-                                                                    <p style="margin: 0;">
-                                                                        Based on current hourly rate, a student with:
-                                                                    </p>
-                                                                    <ul style="margin: 10px 0;">
-                                                                        <li><strong>1 hour/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 4.33), 2) }}/month</li>
-                                                                        <li><strong>2 hours/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 2 * 4.33), 2) }}/month</li>
-                                                                        <li><strong>5 hours/week</strong> = £{{ number_format((old('hourly_rate', $settings->get('academic')->firstWhere('key', 'hourly_rate')?->value ?? 50) * 5 * 4.33), 2) }}/month</li>
-                                                                    </ul>
-                                                                    <small class="text-muted">
-                                                                        <i class="ti-info-alt"></i> Monthly calculations use 4.33 weeks average per month
-                                                                    </small>
-                                                                </div>
+                                                <div class="col-lg-12">
+                                                    <div class="form-group">
+                                                        <label class="required-field">School Address</label>
+                                                        <textarea name="school_address" rows="3" required
+                                                            class="form-control @error('school_address') is-invalid @enderror">{{ old('school_address', $settingsMap['school_address'] ?? '') }}</textarea>
+                                                        @error('school_address')
+                                                            <span class="invalid-feedback">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-12">
+                                                    <div class="form-group">
+                                                        <label>School Logo</label>
+                                                        @if(!empty($settingsMap['school_logo']))
+                                                            <div style="margin-bottom: 15px;">
+                                                                <img src="{{ asset('storage/' . $settingsMap['school_logo']) }}" alt="Current Logo" class="logo-preview">
+                                                                <p style="color: #6c757d; margin-top: 5px;">Current logo</p>
                                                             </div>
+                                                        @endif
+                                                        <input type="file" name="school_logo" accept="image/*"
+                                                            class="form-control-file @error('school_logo') is-invalid @enderror">
+                                                        <small class="form-text text-muted">Max size: 2MB. Formats: JPG, PNG, GIF</small>
+                                                        @error('school_logo')
+                                                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- ========================================== --}}
+                                        {{-- SYSTEM SETTINGS TAB                        --}}
+                                        {{-- ========================================== --}}
+                                        <div class="tab-pane" id="system-tab" role="tabpanel">
+                                            <h3 style="font-weight: 600; margin-bottom: 25px;">System Settings</h3>
+
+                                            <div class="setting-section">
+                                                <h4 class="setting-section-title">Capacity & Term Dates</h4>
+                                                <div class="row">
+                                                    <div class="col-lg-4">
+                                                        <div class="form-group">
+                                                            <label class="required-field">Maximum Class Capacity</label>
+                                                            <input type="number" name="max_class_capacity"
+                                                                value="{{ old('max_class_capacity', $settingsMap['max_class_capacity'] ?? 20) }}"
+                                                                min="1" max="100" required
+                                                                class="form-control @error('max_class_capacity') is-invalid @enderror">
+                                                            @error('max_class_capacity')
+                                                                <span class="invalid-feedback">{{ $message }}</span>
+                                                            @enderror
                                                         </div>
                                                     </div>
-
-                                                    <!-- ============================================ -->
-                                                    <!-- ATTENDANCE SETTINGS -->
-                                                    <!-- ============================================ -->
-                                                    <div class="setting-section">
-                                                        <h4 class="setting-section-title">Attendance Settings</h4>
-                                                        
-                                                        <label class="toggle-label">
-                                                            <input 
-                                                                type="checkbox" 
-                                                                name="attendance_required" 
-                                                                value="1"
-                                                                {{ old('attendance_required', $settings->get('academic')->firstWhere('key', 'attendance_required')?->value) ? 'checked' : '' }}
-                                                            >
-                                                            <div class="toggle-description">
-                                                                <span style="font-weight: 500;">Require Attendance Marking</span>
-                                                                <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Teachers must mark attendance for each class session</p>
-                                                            </div>
-                                                        </label>
+                                                    <div class="col-lg-4">
+                                                        <div class="form-group">
+                                                            <label class="required-field">Term Start Date</label>
+                                                            <input type="date" name="term_start_date"
+                                                                value="{{ old('term_start_date', $settingsMap['term_start_date'] ?? '') }}"
+                                                                required
+                                                                class="form-control @error('term_start_date') is-invalid @enderror">
+                                                            @error('term_start_date')
+                                                                <span class="invalid-feedback">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
                                                     </div>
+                                                    <div class="col-lg-4">
+                                                        <div class="form-group">
+                                                            <label class="required-field">Term End Date</label>
+                                                            <input type="date" name="term_end_date"
+                                                                value="{{ old('term_end_date', $settingsMap['term_end_date'] ?? '') }}"
+                                                                required
+                                                                class="form-control @error('term_end_date') is-invalid @enderror">
+                                                            @error('term_end_date')
+                                                                <span class="invalid-feedback">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                                    <!-- ============================================ -->
-                                                    <!-- HOMEWORK SETTINGS -->
-                                                    <!-- ============================================ -->
-                                                    <div class="setting-section">
-                                                        <h4 class="setting-section-title">Homework Settings</h4>
-                                                        
-                                                        <div style="margin-bottom: 20px;">
+                                            <div class="setting-section">
+                                                <h4 class="setting-section-title">Maintenance Mode</h4>
+                                                <div class="row">
+                                                    <div class="col-lg-12">
+                                                        <div class="form-group" style="margin-bottom: 15px;">
+                                                            {{-- BOOLEAN FIX: isChecked() uses filter_var to safely handle 'true'/'false'/1/0 --}}
                                                             <label class="toggle-label">
-                                                                <input 
-                                                                    type="checkbox" 
-                                                                    name="late_homework_penalty" 
-                                                                    value="1"
-                                                                    {{ old('late_homework_penalty', $settings->get('academic')->firstWhere('key', 'late_homework_penalty')?->value) ? 'checked' : '' }}
-                                                                >
+                                                                <input type="checkbox" name="maintenance_mode" value="1"
+                                                                    {{ isChecked('maintenance_mode', $settingsMap) ? 'checked' : '' }}>
                                                                 <div class="toggle-description">
-                                                                    <span style="font-weight: 500;">Apply Late Homework Penalty</span>
-                                                                    <p style="font-size: 1.2rem; color: #6c757d; margin: 5px 0 0 0;">Mark homework as "late" if submitted after due date</p>
+                                                                    <span>Enable Maintenance Mode</span>
+                                                                    <p>When enabled, only administrators can access the system</p>
                                                                 </div>
                                                             </label>
                                                         </div>
-
-                                                        <div class="row">
-                                                            <div class="col-lg-4">
-                                                                <div class="form-group">
-                                                                    <label>Default Homework Due Days</label>
-                                                                    <input 
-                                                                        type="number" 
-                                                                        name="homework_due_days" 
-                                                                        value="{{ old('homework_due_days', $settings->get('academic')->firstWhere('key', 'homework_due_days')?->value ?? 7) }}"
-                                                                        min="1"
-                                                                        max="30"
-                                                                        class="form-control"
-                                                                    >
-                                                                    <small class="form-text text-muted">Default number of days until homework is due</small>
-                                                                </div>
-                                                            </div>
+                                                    </div>
+                                                    <div class="col-lg-12">
+                                                        <div class="form-group">
+                                                            <label>Maintenance Message</label>
+                                                            <textarea name="maintenance_message" rows="3" class="form-control"
+                                                                placeholder="System is undergoing maintenance. Please check back later.">{{ old('maintenance_message', $settingsMap['maintenance_message'] ?? '') }}</textarea>
+                                                            <small class="form-text text-muted">Message shown to users when maintenance mode is enabled</small>
                                                         </div>
                                                     </div>
-
-                                                    <!-- ============================================ -->
-                                                    <!-- PROGRESS REPORT SETTINGS -->
-                                                    <!-- ============================================ -->
-                                                    <div class="setting-section">
-                                                        <h4 class="setting-section-title">Progress Report Settings</h4>
-                                                        
-                                                        <div class="row">
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>Progress Report Frequency</label>
-                                                                    <select name="progress_report_frequency" class="form-control">
-                                                                        <option value="weekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'weekly' ? 'selected' : '' }}>
-                                                                            Weekly
-                                                                        </option>
-                                                                        <option value="biweekly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'biweekly' ? 'selected' : '' }}>
-                                                                            Bi-weekly
-                                                                        </option>
-                                                                        <option value="monthly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value ?? 'monthly') === 'monthly' ? 'selected' : '' }}>
-                                                                            Monthly
-                                                                        </option>
-                                                                        <option value="quarterly" {{ old('progress_report_frequency', $settings->get('academic')->firstWhere('key', 'progress_report_frequency')?->value) === 'quarterly' ? 'selected' : '' }}>
-                                                                            Quarterly
-                                                                        </option>
-                                                                    </select>
-                                                                    <small class="form-text text-muted">How often progress reports should be generated</small>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
                                                 </div>
-
-                                                
-                                            </div>
-
-                                            <!-- Form Actions -->
-                                            <div class="form-actions">
-                                                <button type="reset" class="btn btn-secondary">
-                                                    <i class="ti-reload"></i> Reset Changes
-                                                </button>
-                                                <button type="submit" class="btn btn-primary">
-                                                    <i class="ti-check"></i> Save Settings
-                                                </button>
                                             </div>
                                         </div>
+
+                                        {{-- ========================================== --}}
+                                        {{-- NOTIFICATIONS TAB                           --}}
+                                        {{-- ========================================== --}}
+                                        <div class="tab-pane" id="notifications-tab" role="tabpanel">
+                                            <h3 style="font-weight: 600; margin-bottom: 25px;">Notification Settings</h3>
+
+                                            <div class="setting-section">
+                                                <div class="d-flex justify-content-between align-items-start" style="margin-bottom: 15px;">
+                                                    <div>
+                                                        <h4 class="setting-section-title" style="margin-bottom: 5px;">Email Notifications</h4>
+                                                        <p style="color: #6c757d;">Configure email notification settings</p>
+                                                    </div>
+                                                    {{-- BOOLEAN FIX: isChecked() handles 'true'/'false' strings --}}
+                                                    <label class="toggle-label">
+                                                        <input type="checkbox" name="email_enabled" value="1"
+                                                            {{ isChecked('email_enabled', $settingsMap) ? 'checked' : '' }}>
+                                                        <span style="margin-left: 8px; font-weight: 500;">Enable Email</span>
+                                                    </label>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-lg-6">
+                                                        <div class="form-group">
+                                                            <label class="required-field">Admin Notification Email</label>
+                                                            <input type="email" name="admin_notification_email"
+                                                                value="{{ old('admin_notification_email', $settingsMap['admin_notification_email'] ?? '') }}"
+                                                                required
+                                                                class="form-control @error('admin_notification_email') is-invalid @enderror">
+                                                            <small class="form-text text-muted">Email for receiving system notifications</small>
+                                                            @error('admin_notification_email')
+                                                                <span class="invalid-feedback">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="setting-section">
+                                                <div class="d-flex justify-content-between align-items-start" style="margin-bottom: 15px;">
+                                                    <div>
+                                                        <h4 class="setting-section-title" style="margin-bottom: 5px;">SMS Notifications</h4>
+                                                        <p style="color: #6c757d;">Configure SMS notification settings</p>
+                                                    </div>
+                                                    {{-- BOOLEAN FIX: isChecked() handles 'true'/'false' strings --}}
+                                                    <label class="toggle-label">
+                                                        <input type="checkbox" name="sms_enabled" value="1"
+                                                            {{ isChecked('sms_enabled', $settingsMap) ? 'checked' : '' }}>
+                                                        <span style="margin-left: 8px; font-weight: 500;">Enable SMS</span>
+                                                    </label>
+                                                </div>
+
+                                                <div class="info-box">
+                                                    <i class="ti-info-alt"></i>
+                                                    <div>
+                                                        <p style="font-weight: 500; margin-bottom: 5px;">SMS Provider Configuration</p>
+                                                        <p>SMS credentials are configured in the <a href="{{ route('superadmin.sms-config.index') }}">SMS Configuration</a> page.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- ========================================== --}}
+                                        {{-- ACADEMIC SETTINGS TAB                       --}}
+                                        {{-- ========================================== --}}
+                                        <div class="tab-pane" id="academic-tab" role="tabpanel">
+                                            <h3 style="font-weight: 600; margin-bottom: 25px;">Academic Settings</h3>
+
+                                            {{-- Hourly Rate --}}
+                                            <div class="setting-section">
+                                                <h4 class="setting-section-title">Income & Billing Settings</h4>
+                                                <div class="row">
+                                                    <div class="col-lg-6">
+                                                        <div class="form-group">
+                                                            <label for="hourly_rate" class="required-field">
+                                                                <i class="ti-money"></i> Hourly Teaching Rate
+                                                            </label>
+                                                            <div class="input-group">
+                                                                <div class="input-group-prepend">
+                                                                    <span class="input-group-text">&pound;</span>
+                                                                </div>
+                                                                <input type="number" id="hourly_rate" name="hourly_rate"
+                                                                    value="{{ old('hourly_rate', $settingsMap['hourly_rate'] ?? 50.00) }}"
+                                                                    min="0" max="1000" step="0.01" required
+                                                                    class="form-control @error('hourly_rate') is-invalid @enderror">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">/hour</span>
+                                                                </div>
+                                                                @error('hourly_rate')
+                                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                                @enderror
+                                                            </div>
+                                                            <small class="form-text text-muted">
+                                                                <i class="ti-info-alt"></i> Used for calculating income projections on the dashboard
+                                                            </small>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-6">
+                                                        <div class="income-preview" style="margin-top: 32px;">
+                                                            <h5><i class="ti-bar-chart"></i> Income Preview</h5>
+                                                            <p style="margin: 0 0 8px;">Based on current hourly rate:</p>
+                                                            <ul style="margin: 0; padding-left: 18px;">
+                                                                <li><strong>1 hour/week</strong> = &pound;<span id="preview-1hr">0.00</span>/month</li>
+                                                                <li><strong>2 hours/week</strong> = &pound;<span id="preview-2hr">0.00</span>/month</li>
+                                                                <li><strong>5 hours/week</strong> = &pound;<span id="preview-5hr">0.00</span>/month</li>
+                                                            </ul>
+                                                            <small class="text-muted"><i class="ti-info-alt"></i> Monthly = rate &times; hours &times; 4.33 weeks</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Attendance Settings --}}
+                                            <div class="setting-section">
+                                                <h4 class="setting-section-title">Attendance Settings</h4>
+                                                {{-- BOOLEAN FIX: isChecked() handles 'true'/'false' strings --}}
+                                                <label class="toggle-label">
+                                                    <input type="checkbox" name="attendance_required" value="1"
+                                                        {{ isChecked('attendance_required', $settingsMap) ? 'checked' : '' }}>
+                                                    <div class="toggle-description">
+                                                        <span>Require Attendance Marking</span>
+                                                        <p>When enabled, teachers must mark attendance for each class session</p>
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            {{-- Homework Settings --}}
+                                            <div class="setting-section">
+                                                <h4 class="setting-section-title">Homework Settings</h4>
+                                                <div class="row">
+                                                    <div class="col-lg-6">
+                                                        {{-- BOOLEAN FIX: isChecked() handles 'true'/'false' strings --}}
+                                                        <label class="toggle-label" style="margin-bottom: 20px;">
+                                                            <input type="checkbox" name="late_homework_penalty" value="1"
+                                                                {{ isChecked('late_homework_penalty', $settingsMap) ? 'checked' : '' }}>
+                                                            <div class="toggle-description">
+                                                                <span>Apply Late Homework Penalty</span>
+                                                                <p>Flag homework submitted after the due date</p>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                    <div class="col-lg-6">
+                                                        <div class="form-group">
+                                                            <label>Default Homework Due Days</label>
+                                                            <input type="number" name="homework_due_days"
+                                                                value="{{ old('homework_due_days', $settingsMap['homework_due_days'] ?? 7) }}"
+                                                                min="1" max="30" class="form-control">
+                                                            <small class="form-text text-muted">Default number of days until homework is due</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Progress Report Settings --}}
+                                            <div class="setting-section">
+                                                <h4 class="setting-section-title">Progress Report Settings</h4>
+                                                <div class="row">
+                                                    <div class="col-lg-6">
+                                                        <div class="form-group">
+                                                            <label>Progress Report Frequency</label>
+                                                            <select name="progress_report_frequency" class="form-control">
+                                                                @php $currentFreq = old('progress_report_frequency', $settingsMap['progress_report_frequency'] ?? 'monthly'); @endphp
+                                                                <option value="weekly" {{ $currentFreq === 'weekly' ? 'selected' : '' }}>Weekly</option>
+                                                                <option value="biweekly" {{ $currentFreq === 'biweekly' ? 'selected' : '' }}>Bi-weekly</option>
+                                                                <option value="monthly" {{ $currentFreq === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                                                <option value="termly" {{ $currentFreq === 'termly' ? 'selected' : '' }}>Termly</option>
+                                                            </select>
+                                                            <small class="form-text text-muted">How often progress reports should be generated</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>{{-- end tab-content --}}
+
+                                    {{-- Save Button --}}
+                                    <div style="padding: 20px 25px; border-top: 1px solid #e9ecef; background: #f8f9fa; border-radius: 0 0 8px 8px;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted"><i class="ti-info-alt"></i> Changes take effect immediately across the platform.</small>
+                                            <button type="submit" class="btn btn-save-settings">
+                                                <i class="ti-save"></i> Save All Settings
+                                            </button>
+                                            
+                                        </div>
                                     </div>
-                                </div>                            
-                            </form>
-                        </div>
-                    </div>
+
+                                </div>{{-- end card-body --}}
+                            </div>{{-- end card --}}
+                        </form>
+                    </div> 
 
                     <!-- Footer -->
                     <div class="row">
@@ -713,157 +647,69 @@
                         </div>
                     </div>
                 </div>
-            </div>
+
+            </div>{{-- end container-fluid --}}
         </div>
     </div>
 @endsection
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            // Phone number validation - UK format
-            $('#school_phone').on('input', function() {
-                let value = $(this).val();
-                // Remove any characters that aren't numbers, +, -, (, ), or spaces
-                value = value.replace(/[^0-9+\-\(\)\s]/g, '');
-                $(this).val(value);
-            });
+<script>
+    // ============================================
+    // Live Income Preview Calculator
+    // ============================================
+    (function() {
+        const rateInput = document.getElementById('hourly_rate');
+        const preview1 = document.getElementById('preview-1hr');
+        const preview2 = document.getElementById('preview-2hr');
+        const preview5 = document.getElementById('preview-5hr');
 
-            // Auto-format UK phone number
-            $('#school_phone').on('blur', function() {
-                let value = $(this).val().trim();
-                
-                // UK phone number regex - more flexible
-                const ukPhoneRegex = /^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/;
-                
-                if (value) {
-                    // Check minimum length (at least 10 characters for UK numbers)
-                    if (value.length < 10) {
-                        $(this).addClass('is-invalid');
-                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
-                            $(this).after('<span class="invalid-feedback d-block">UK phone number must be at least 10 characters.</span>');
-                        }
-                    } 
-                    // Check if it starts with +44 or 0
-                    else if (!value.startsWith('+44') && !value.startsWith('0')) {
-                        $(this).addClass('is-invalid');
-                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
-                            $(this).after('<span class="invalid-feedback d-block">UK phone number must start with +44 or 0.</span>');
-                        }
-                    }
-                    // Check UK phone format
-                    else if (!ukPhoneRegex.test(value)) {
-                        $(this).addClass('is-invalid');
-                        if (!$(this).siblings('.invalid-feedback:not([data-server])').length) {
-                            $(this).after('<span class="invalid-feedback d-block">Please enter a valid UK phone number.</span>');
-                        }
-                    } else {
-                        $(this).removeClass('is-invalid');
-                        $(this).siblings('.invalid-feedback:not([data-server])').remove();
-                    }
-                }
-            });
+        function updatePreview() {
+            const rate = parseFloat(rateInput.value) || 0;
+            preview1.textContent = (rate * 1 * 4.33).toFixed(2);
+            preview2.textContent = (rate * 2 * 4.33).toFixed(2);
+            preview5.textContent = (rate * 5 * 4.33).toFixed(2);
+        }
 
-            // Maintenance mode confirmation with SweetAlert
-            $('#maintenance_mode').on('change', function() {
-                const checkbox = this;
-                
-                if (checkbox.checked) {
-                    swal({
-                        title: "Enable Maintenance Mode?",
-                        text: "Only administrators will be able to access the system. All other users will see a maintenance page.",
-                        type: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#f0ad4e",
-                        confirmButtonText: "Yes, enable it",
-                        cancelButtonText: "No, cancel",
-                        closeOnConfirm: true,
-                        closeOnCancel: true
-                    }, function(isConfirm) {
-                        if (!isConfirm) {
-                            checkbox.checked = false;
-                        }
-                    });
-                }
-            });
+        rateInput.addEventListener('input', updatePreview);
+        // Run on page load
+        updatePreview();
+    })();
 
-             // Update income preview when hourly rate changes
-            $('#hourly_rate').on('input', function() {
-                const rate = parseFloat($(this).val()) || 0;
-                const weeksPerMonth = 4.33;
-                
-                // Update preview values
-                updateIncomePreview(rate, weeksPerMonth);
-            });
-            
-            function updateIncomePreview(rate, weeksPerMonth) {
-                const $preview = $('.alert.alert-info ul');
-                
-                if (rate > 0) {
-                    $preview.html(`
-                        <li><strong>1 hour/week</strong> = £${(rate * weeksPerMonth).toFixed(2)}/month</li>
-                        <li><strong>2 hours/week</strong> = £${(rate * 2 * weeksPerMonth).toFixed(2)}/month</li>
-                        <li><strong>5 hours/week</strong> = £${(rate * 5 * weeksPerMonth).toFixed(2)}/month</li>
-                    `);
-                }
-            }
+    // ============================================
+    // Preserve active tab on page reload
+    // ============================================
+    (function() {
+        const activeTab = localStorage.getItem('settingsActiveTab');
+        if (activeTab) {
+            const tab = document.querySelector('a[href="' + activeTab + '"]');
+            if (tab) tab.click();
+        }
 
-            // Form submission validation with SweetAlert
-            $('form').on('submit', function(e) {
-                e.preventDefault(); // Prevent default submission
-                
-                const form = this;
-                const phoneInput = $('#school_phone');
-                const phoneValue = phoneInput.val().trim();
-                const ukPhoneRegex = /^(\+44\s?|0)[0-9\s\-\(\)]{9,}$/;
-                
-                if (phoneValue) {
-                    // Check minimum length
-                    if (phoneValue.length < 10) {
-                        swal({
-                            title: "Invalid Phone Number!",
-                            text: "UK phone number must be at least 10 characters.",
-                            type: "error",
-                            confirmButtonText: "OK"
-                        }, function() {
-                            phoneInput.addClass('is-invalid').focus();
-                        });
-                        return false;
-                    }
-                    
-                    // Check if starts with +44 or 0
-                    if (!phoneValue.startsWith('+44') && !phoneValue.startsWith('0')) {
-                        swal({
-                            title: "Invalid Phone Number!",
-                            text: "UK phone number must start with +44 or 0.",
-                            type: "error",
-                            confirmButtonText: "OK"
-                        }, function() {
-                            phoneInput.addClass('is-invalid').focus();
-                        });
-                        return false;
-                    }
-                    
-                    // Check UK format
-                    if (!ukPhoneRegex.test(phoneValue)) {
-                        swal({
-                            title: "Invalid Phone Number!",
-                            text: "Please enter a valid UK phone number.\n\nExamples:\n+44 20 1234 5678\n020 1234 5678\n07123 456789",
-                            type: "error",
-                            confirmButtonText: "OK"
-                        }, function() {
-                            phoneInput.addClass('is-invalid').focus();
-                        });
-                        return false;
-                    }
-                }
-                
-                // If all validations pass, disable button and submit
-                $('#submitBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Saving Settings...');
-                form.submit();
-                
-                return true;
+        document.querySelectorAll('.nav-tabs .nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                localStorage.setItem('settingsActiveTab', this.getAttribute('href'));
             });
         });
-    </script>
+    })();
+
+    // ============================================
+    // Unsaved changes warning
+    // ============================================
+    (function() {
+        let formChanged = false;
+        const form = document.querySelector('form');
+
+        form.addEventListener('change', function() { formChanged = true; });
+        form.addEventListener('input', function() { formChanged = true; });
+        form.addEventListener('submit', function() { formChanged = false; });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    })();
+</script>
 @endpush

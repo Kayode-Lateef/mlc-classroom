@@ -205,57 +205,59 @@
                 You can now access the platform using the credentials below.</p>
             </div>
             
-            <!-- Credentials Box -->
-            @if(isset($temporary_password))
+            <!-- Password Setup Section -->
+            @if(isset($setup_url))
             <div class="credentials-box">
-                <h3>🔑 Your Login Credentials</h3>
-                
+                <h3>🔑 Set Your Password</h3>
+
                 <div class="credential-row">
                     <div class="credential-label">Email Address</div>
                     <div class="credential-value">{{ $user_email }}</div>
                 </div>
-                
-                <div class="credential-row">
-                    <div class="credential-label">Temporary Password</div>
-                    <div class="credential-value">{{ $temporary_password }}</div>
-                </div>
-            </div>
-            
-            <div class="warning-box">
-                <div class="icon">⚠️</div>
-                <p>
-                    <strong>Important:</strong> Please change your password after your first login for security. 
-                    You can do this from your profile settings.
+
+                <p style="margin: 15px 0 5px 0; color: #555; font-size: 15px;">
+                    Click the button below to set your password and access your account:
                 </p>
             </div>
-            @endif
-            
-            @if(isset($requires_verification) && $requires_verification)
-            <div class="info-box">
-                <h4>📧 Email Verification Required</h4>
-                <p>Before you can log in, you need to verify your email address. 
-                Please check your inbox for a verification email and click the verification link.</p>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="{{ $setup_url }}" class="button" style="background: #28a745; padding: 16px 50px;">
+                    Set My Password
+                </a>
+            </div>
+
+            <div class="warning-box">
+                <div class="icon">⏰</div>
+                <p>
+                    <strong>Important:</strong> This link will expire in 60 minutes for security.
+                    If it expires, use the "Forgot Password" option on the login page.
+                </p>
             </div>
             @else
-            <div style="text-align: center;">
-                <a href="{{ $url ?? route('login') }}" class="button">Login to Your Account</a>
+            <!-- Fallback: User already has password set (e.g. email verification flow) -->
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="{{ $login_url ?? route('login') }}" class="button">
+                    Log In to Your Account
+                </a>
             </div>
             @endif
+            
             
             <!-- Next Steps -->
             <div class="info-box">
                 <h4>📋 Next Steps</h4>
                 <ul>
                     @if(isset($requires_verification) && $requires_verification)
-                    <li>Check your email for verification link</li>
+                    <li>Check your email for the verification link</li>
                     <li>Click the link to verify your email address</li>
                     @endif
-                    <li>Login with your credentials</li>
-                    <li>Change your password in profile settings</li>
+                    <li>Set your password using the button above</li>
+                    <li>Login to your account</li>
                     <li>Complete your profile information</li>
                     <li>Explore the platform features</li>
                 </ul>
             </div>
+            
         </div>
         
         <!-- Footer -->

@@ -341,7 +341,7 @@
                                    'due_date', 'grade', 'weekly_hours'];
                     
                     $displayData = array_filter($data, function($key) use ($excludeKeys) {
-                        return !in_array($key, $excludeKeys);
+                        return !in_array($key, ['url', 'type', 'title', 'message', 'icon', 'temporary_password', 'setup_url', 'password']);
                     }, ARRAY_FILTER_USE_KEY);
                 @endphp
                 
@@ -388,16 +388,18 @@
                 @endif
             @endif
             
-            {{-- Temporary Password Display --}}
-            @if(isset($data['temporary_password']))
-                <div class="alert-box warning">
-                    <strong>🔑 Login Credentials</strong>
-                    <p style="margin: 10px 0; color: #856404;">
-                        <strong>Email:</strong> {{ $data['user_email'] ?? 'Your registered email' }}<br>
-                        <strong>Temporary Password:</strong> <code style="background: #fff; padding: 5px 10px; border-radius: 3px; font-size: 14px;">{{ $data['temporary_password'] }}</code>
+            {{-- Password Setup Link (replaces plaintext password display) --}}
+            @if(isset($data['setup_url']))
+                <div class="alert-box success">
+                    <strong>🔑 Set Your Password</strong>
+                    <p style="margin: 10px 0; color: #155724;">
+                        Click the button below to set your password and access your account.
                     </p>
-                    <p style="margin: 5px 0 0 0; color: #856404; font-size: 14px;">
-                        ⚠️ Please change your password after your first login for security.
+                    <div style="text-align: center; margin: 15px 0;">
+                        <a href="{{ $data['setup_url'] }}" class="button" style="background: #28a745;">Set My Password</a>
+                    </div>
+                    <p style="margin: 5px 0 0 0; color: #155724; font-size: 14px;">
+                        This link will expire in 60 minutes for security. If it expires, use the "Forgot Password" option on the login page.
                     </p>
                 </div>
             @endif

@@ -402,18 +402,26 @@ class NotificationHelper
 
     // NEW EMAILS AND NOTIFICATIONS BELOW
     /**
-     * ✅ NEW: Notify user when account is created
+     * ✅ SECURITY FIX (C-1): Notify user when account is created  app/Helpers/NotificationHelper.php
+     * No longer accepts or transmits passwords. Uses setup link instead.
      */
-    public static function notifyAccountCreated($user, $password = null, $createdBy = null)
+    public static function notifyAccountCreated($user, $createdBy = null)
     {
         try {
             $creatorName = $createdBy ? $createdBy->name : 'System Administrator';
-            
-            // In-app notification
+
+            // Generate password setup token
+            $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
+            $setupUrl = url(route('password.reset', [
+                'token' => $token,
+                'email' => $user->email,
+            ], false));
+
+            // In-app notification (NO password data stored)
             $user->notify(new GeneralNotification([
                 'type' => 'account_created',
                 'title' => 'Welcome to MLC Classroom',
-                'message' => "Your account has been created by {$creatorName}. Please check your email for login details.",
+                'message' => "Your account has been created by {$creatorName}. Please check your email for your password setup link.",
                 'data' => [
                     'role' => $user->role,
                     'created_by' => $creatorName,
@@ -421,16 +429,21 @@ class NotificationHelper
                 ]
             ]));
 
-            // Send welcome email with credentials
+            // Send welcome email with setup link (NOT credentials)
             $data = [
+                'type' => 'account_created',
                 'user' => $user,
-                'password' => $password,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'role' => $user->role,
                 'created_by' => $creatorName,
-                'login_url' => route('login')
+                'setup_url' => $setupUrl,
+                'login_url' => route('login'),
+                'url' => $setupUrl,
             ];
 
-            self::sendEmailImmediate($user, 'Welcome to MLC Classroom', 
-                "Your account has been created. Please use the credentials below to log in.", $data);
+            self::sendEmailImmediate($user, 'Welcome to MLC Classroom - Set Your Password',
+                "Your account has been created. Please click the link below to set your password.", $data);
 
             return 1;
 

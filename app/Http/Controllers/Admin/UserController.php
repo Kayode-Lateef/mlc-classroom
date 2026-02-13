@@ -126,7 +126,7 @@ class UserController extends Controller
 
    /**
      * Store a newly created user
-     * Admin can create: admin, teacher, parent (NOT superadmin)
+     * Admin can create: admin, teacher, parent (NOT superadmin) app/Http/Controllers/Admin/UserController.php
      */
     public function store(Request $request)
     {
@@ -228,12 +228,10 @@ class UserController extends Controller
             // ✅ NEW: Send appropriate notification based on verification requirement
             try {
                 if ($request->requires_verification) {
-                    // Send verification email
                     event(new Registered($user));
-                    $this->notifyNewUserWithVerification($user);
+                    $this->notifyNewUserWithSetupLink($user, true);
                 } else {
-                    // Send welcome email with credentials (immediate access)
-                    $this->notifyNewUserWithCredentials($user, $request->password);
+                    $this->notifyNewUserWithSetupLink($user, false);
                 }
 
                 // ✅ ADDED: Notify other admins and superadmins of new user creation
@@ -259,9 +257,9 @@ class UserController extends Controller
                 // Don't fail the request if notifications fail
             }
 
-            $successMessage = $request->requires_verification 
-                ? 'User created successfully! Verification email has been sent.'
-                : 'User created successfully! Welcome email with credentials has been sent.';
+            $successMessage = $request->requires_verification
+            ? 'User created successfully! Verification email has been sent.'
+            : 'User created successfully! Welcome email with password setup link has been sent.';
 
             return redirect()->route('admin.users.index')
                 ->with('success', $successMessage);
@@ -286,67 +284,49 @@ class UserController extends Controller
     }
 
 
-       /**
-     * ✅ NEW: Notify new user with verification email
-     */
-    private function notifyNewUserWithVerification(User $user)
-    {
-        try {
-            $message = "Your account has been created. Please verify your email address to access the system. ";
-            $message .= "Role: " . ucfirst($user->role) . ". ";
-            $message .= "Check your email for the verification link.";
-
-            NotificationHelper::notifyUser(
-                $user,
-                'Account Created - Verify Email',
-                $message,
-                'general',
-                [
-                    'role' => $user->role,
-                    'created_by' => auth()->user()->name,
-                    'requires_verification' => true,
-                    'url' => route('login')
-                ]
-            );
-
-            \Log::info("Verification email sent to: {$user->email}");
-
-        } catch (\Exception $e) {
-            \Log::error("Failed to send verification email to {$user->id}: " . $e->getMessage());
-        }
-    }
 
     /**
-     * ✅ NEW: Notify new user with their credentials (immediate access)
+     * ✅ SECURITY FIX (C-1):
+     * Instead of sending plaintext passwords, generate a password reset token
+     * and send a "Set Your Password" link. This prevents password exposure in:
+     * - Email content (traverses network unencrypted)
+     * - Notifications table (stored as JSON in database)
+     * - Activity logs or any downstream data consumers
      */
-    private function notifyNewUserWithCredentials(User $user, $temporaryPassword)
+    private function notifyNewUserWithSetupLink(User $user)
     {
         try {
+            // Generate a password reset token using Laravel's built-in Password broker
+            $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
+            $setupUrl = url(route('password.reset', [
+                'token' => $token,
+                'email' => $user->email,
+            ], false));
+
             $message = "Your account has been created with immediate access. ";
             $message .= "Role: " . ucfirst($user->role) . ". ";
-            $message .= "Please login and change your password.";
+            $message .= "Please click the link below to set your password and log in.";
 
             NotificationHelper::notifyUser(
                 $user,
-                'Account Created - Immediate Access',
+                'Welcome to MLC Classroom - Set Your Password',
                 $message,
-                'general',
+                'account_created',
                 [
                     'role' => $user->role,
                     'created_by' => auth()->user()->name,
-                    'temporary_password' => $temporaryPassword,
                     'requires_verification' => false,
-                    'url' => route('login')
+                    'setup_url' => $setupUrl,
+                    'url' => $setupUrl, // Also set as primary CTA url
                 ]
             );
 
-            \Log::info("Welcome email sent to: {$user->email}");
+            \Log::info("Welcome email with setup link sent to: {$user->email}");
 
         } catch (\Exception $e) {
-            \Log::error("Failed to notify new user {$user->id}: " . $e->getMessage());
+            \Log::error("Failed to send setup link to new user {$user->id}: " . $e->getMessage());
         }
     }
-
 
     /**
      * Display the specified user

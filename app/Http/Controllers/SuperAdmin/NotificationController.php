@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\DatabaseNotification;
+use App\Models\SystemSetting;
 
 class NotificationController extends Controller
 {
@@ -109,6 +110,27 @@ class NotificationController extends Controller
             $sentCount = 0;
             $failedCount = 0;
 
+            // System-level gate: check global email/SMS toggles from SuperAdmin Settings
+            $skippedChannels = [];
+            if (in_array('email', $channels) && !SystemSetting::isEmailEnabled()) {
+                $channels = array_diff($channels, ['email']);
+                $skippedChannels[] = 'Email (globally disabled in System Settings)';
+                Log::info('NotificationController: Email channel removed — globally disabled');
+            }
+            if (in_array('sms', $channels) && !SystemSetting::isSmsEnabled()) {
+                $channels = array_diff($channels, ['sms']);
+                $skippedChannels[] = 'SMS (globally disabled in System Settings)';
+                Log::info('NotificationController: SMS channel removed — globally disabled');
+            }
+
+            // If all selected channels were disabled, inform the user
+            if (empty($channels)) {
+                $disabledList = implode(' and ', $skippedChannels);
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', "Cannot send notification: {$disabledList}. Please enable them in System Settings or select a different channel.");
+            }
+
             // Prepare notification data
             $notificationData = [
                 'type' => $request->notification_type,
@@ -161,6 +183,9 @@ class NotificationController extends Controller
             $message = "Notification sent successfully to {$sentCount} recipient(s)";
             if ($failedCount > 0) {
                 $message .= ". Warning: {$failedCount} failed to send.";
+            }
+            if (!empty($skippedChannels)) {
+                $message .= " Note: " . implode(', ', $skippedChannels) . " — channel skipped.";
             }
 
             return redirect()->route('superadmin.notifications.index')

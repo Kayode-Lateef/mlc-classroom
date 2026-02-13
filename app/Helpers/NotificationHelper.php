@@ -9,6 +9,7 @@ use App\Models\PendingEmail;
 use App\Notifications\GeneralNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Models\SystemSetting;
 
 class NotificationHelper
 {
@@ -18,6 +19,12 @@ class NotificationHelper
     private static function sendEmailImmediate($user, $title, $messageText, $data = [])
     {
         try {
+            // System-level gate: respect global email toggle from SuperAdmin Settings
+            if (!SystemSetting::isEmailEnabled()) {
+                Log::info("NotificationHelper: Email globally disabled — skipping immediate email to {$user->email}");
+                return false;
+            }
+
             if (!$user->email) {
                 Log::warning("User {$user->id} has no email address");
                 return false;
@@ -74,6 +81,12 @@ class NotificationHelper
     private static function queueEmail($user, $title, $messageText, $data = [])
     {
         try {
+            // System-level gate: respect global email toggle from SuperAdmin Settings
+            if (!SystemSetting::isEmailEnabled()) {
+                Log::info("NotificationHelper: Email globally disabled — skipping queued email to {$user->email}");
+                return false;
+            }
+
             if (!$user->email) {
                 Log::warning("User {$user->id} has no email address");
                 return false;

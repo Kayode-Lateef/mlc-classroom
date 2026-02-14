@@ -313,6 +313,8 @@ class UserController extends Controller
                 $message,
                 'account_created',
                 [
+                    'user_name' => $user->name,  
+                    'user_email' => $user->email, 
                     'role' => $user->role,
                     'created_by' => auth()->user()->name,
                     'requires_verification' => false,

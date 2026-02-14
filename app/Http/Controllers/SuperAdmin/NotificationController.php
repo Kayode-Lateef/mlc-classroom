@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\DatabaseNotification;
 use App\Models\SystemSetting;
+use App\Helpers\NotificationHelper;
 
 class NotificationController extends Controller
 {
@@ -266,18 +267,18 @@ class NotificationController extends Controller
     }
 
     /**
-     * Send email notification
+     * ✅ C-2 FIX: Route through NotificationHelper for consistent
+     * system gate checks and template selection
      */
     protected function sendEmail($recipient, $data)
     {
         try {
-            Mail::send('emails.general-notification', $data, function($message) use ($recipient, $data) {
-                $message->to($recipient->email, $recipient->name)
-                    ->subject($data['title']);
-            });
-
-            return true;
-
+            return \App\Helpers\NotificationHelper::sendNotificationEmail(
+                $recipient,
+                $data['title'],
+                $data['message'],
+                $data
+            );
         } catch (\Exception $e) {
             Log::error("Email sending failed for user {$recipient->id}: " . $e->getMessage());
             throw $e;

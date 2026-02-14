@@ -15,6 +15,7 @@ class PendingEmail extends Model
         'subject',
         'body',
         'data',
+        'template',
         'status',
         'scheduled_at',
         'sent_at',

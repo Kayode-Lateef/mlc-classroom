@@ -58,17 +58,26 @@ class ProcessPendingEmails extends Command
                 $data = is_string($email->data) ? json_decode($email->data, true) : $email->data;
                 $data = $data ?? [];
                 
-                Mail::send('emails.notification', [
+                // Use stored template name, fall back to default
+                $template = $email->template ?? 'emails.notification';
+
+                // Verify template exists, fall back if not
+                if (!view()->exists($template)) {
+                    Log::warning("Template '{$template}' not found for pending email #{$email->id}, using default");
+                    $template = 'emails.notification';
+                }
+
+                Mail::send($template, array_merge([
                     'title' => $email->subject,
                     'content' => $email->body,
                     'url' => $data['url'] ?? null,
                     'data' => $data,
                     'type' => $data['type'] ?? 'general',
-                ], function ($mail) use ($email) {
+                ], $data), function ($mail) use ($email) {
                     $mail->to($email->email)
-                         ->subject($email->subject);
+                        ->subject($email->subject);
                 });
-                
+
                 $email->markAsSent();
                 $sent++;
                 

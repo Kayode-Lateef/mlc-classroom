@@ -13,6 +13,24 @@ use App\Models\SystemSetting;
 
 class NotificationHelper
 {
+
+    /**
+     * Public entry point for sending a single notification email.
+     * Used by NotificationControllers and any code that needs to send
+     * an email through the unified pipeline with system gate checks
+     * and template selection.
+     *
+     * @param User $user Recipient
+     * @param string $title Email subject
+     * @param string $messageText Email body text
+     * @param array $data Additional data (must include 'type' for template selection)
+     * @return bool Whether email was sent
+     */
+    public static function sendNotificationEmail($user, $title, $messageText, $data = [])
+    {
+        return self::sendEmailImmediate($user, $title, $messageText, $data);
+    }
+
     /**
      * ✅ SEND EMAIL IMMEDIATELY (for critical notifications, 1-3 recipients)
      */
@@ -59,10 +77,12 @@ class NotificationHelper
         $specializedTemplates = [
             'enrollment' => 'emails.student.enrolled',
             'student_enrolled' => 'emails.student.enrolled',
-            'account_created' => 'emails.user.account_created',
+            'account_created' => 'emails.user.account-created',
             'homework_assigned' => 'emails.homework.assigned',
+            'homework_graded' => 'emails.homework.graded',
+            'attendance_marked' => 'emails.attendance.marked',
         ];
-        
+            
         // Check if specialized template exists
         if (isset($specializedTemplates[$type])) {
             $templatePath = str_replace('.', '/', $specializedTemplates[$type]) . '.blade.php';
@@ -97,7 +117,8 @@ class NotificationHelper
                 'email' => $user->email,
                 'subject' => $title,
                 'body' => $messageText,
-                'data' => json_encode($data),
+                'data' => $data, 
+                'template' => self::selectEmailTemplate($data['type'] ?? 'general', $data),
                 'status' => 'pending',
                 'scheduled_at' => now()->addMinutes(5),
                 'attempts' => 0,

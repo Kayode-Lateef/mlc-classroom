@@ -260,9 +260,10 @@ class NotificationService
     {
         try {
             Mail::send('emails.general-notification', [
-                'title' => $title,
-                'messageContent' => $message,
-                'data' => $data,
+            'title' => $title,
+            'content' => $message,      // ✅ M-4: Use canonical variable name
+            'messageContent' => $message, // ✅ Backward compat until all templates updated
+            'data' => $data,
             ], function ($mail) use ($email, $title) {
                 $mail->to($email)
                      ->subject($title);

@@ -136,7 +136,8 @@ class NotificationController extends Controller
             $notificationData = [
                 'type' => $request->notification_type,
                 'title' => $request->title,
-                'message' => $request->message,
+                'content' => $request->message,  // ✅ M-4: Canonical name
+                'message' => $request->message,  // ✅ Backward compat
                 'sent_by' => auth()->user()->name,
                 'sent_at' => now()->format('d M Y, H:i'),
             ];

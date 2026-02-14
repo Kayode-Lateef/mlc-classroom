@@ -60,12 +60,36 @@ class NotificationHelper
                 $mail->to($user->email, $user->name)
                     ->subject($title);
             });
-
+            
             Log::info("Email sent immediately to: {$user->email}");
+
+            // ✅ M-3: Log email delivery
+            \App\Models\EmailLog::create([
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'subject' => $title,
+                'template' => $template,
+                'type' => $data['type'] ?? 'general',
+                'method' => 'immediate',
+                'status' => 'sent',
+                'sent_at' => now(),
+            ]);
+
             return true;
 
         } catch (\Exception $e) {
             Log::error("Failed to send email to {$user->email}: " . $e->getMessage());
+            // ✅ M-3: Log email failure
+            \App\Models\EmailLog::create([
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'subject' => $title,
+                'template' => $template ?? 'emails.notification',
+                'type' => $data['type'] ?? 'general',
+                'method' => 'immediate',
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
             return false;
         }
     }
@@ -112,16 +136,29 @@ class NotificationHelper
                 return false;
             }
 
+            $template = self::selectEmailTemplate($data['type'] ?? 'general', $data);
+
             PendingEmail::create([
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'subject' => $title,
                 'body' => $messageText,
                 'data' => $data, 
-                'template' => self::selectEmailTemplate($data['type'] ?? 'general', $data),
+                'template' => $template,
                 'status' => 'pending',
                 'scheduled_at' => now()->addMinutes(5),
                 'attempts' => 0,
+            ]);
+
+            // ✅ M-3: Log queued email
+            \App\Models\EmailLog::create([
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'subject' => $title,
+                'template' => $template,
+                'type' => $data['type'] ?? 'general',
+                'method' => 'queued',
+                'status' => 'queued',
             ]);
 
             Log::info("Email queued for: {$user->email}");

@@ -79,6 +79,17 @@ class ProcessPendingEmails extends Command
                 });
 
                 $email->markAsSent();
+                // Update log status from queued → sent
+                \App\Models\EmailLog::where('user_id', $email->user_id)
+                    ->where('email', $email->email)
+                    ->where('subject', $email->subject)
+                    ->where('status', 'queued')
+                    ->latest()
+                    ->first()
+                    ?->update([
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                    ]);
                 $sent++;
                 
             } catch (\Exception $e) {
@@ -87,6 +98,20 @@ class ProcessPendingEmails extends Command
                 
                 if ($email->attempts >= 3) {
                     $failed++;
+                }
+
+                // ✅ M-3: Update log status to failed
+                if ($email->attempts >= 3) {
+                    \App\Models\EmailLog::where('user_id', $email->user_id)
+                        ->where('email', $email->email)
+                        ->where('subject', $email->subject)
+                        ->where('status', 'queued')
+                        ->latest()
+                        ->first()
+                        ?->update([
+                            'status' => 'failed',
+                            'error_message' => $errorMessage,
+                        ]);
                 }
                 
                 Log::error("Email send error for #{$email->id}: " . $errorMessage);

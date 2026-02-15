@@ -105,6 +105,10 @@ class NotificationHelper
             'homework_assigned' => 'emails.homework.assigned',
             'homework_graded' => 'emails.homework.graded',
             'attendance_marked' => 'emails.attendance.marked',
+            'homework_reminder' => 'emails.homework-reminder',
+            'homework_overdue' => 'emails.homework-overdue',
+            'low_attendance' => 'emails.low-attendance-alert',
+            'class_assignment' => 'emails.class-assigned',
         ];
             
         // Check if specialized template exists

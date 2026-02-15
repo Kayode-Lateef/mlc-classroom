@@ -1,287 +1,204 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title }}</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 30px auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Welcome hero - MLC Orange to Blue gradient */
-        .hero {
-            background: linear-gradient(135deg, #E06829 0%, #3386F7 100%);
-            color: white;
-            padding: 50px 30px;
-            text-align: center;
-        }
-        .hero-icon {
-            font-size: 56px;
-            margin-bottom: 15px;
-        }
-        .hero h1 {
-            margin: 0;
-            font-size: 32px;
-            font-weight: 700;
-        }
-        .hero p {
-            margin: 15px 0 0 0;
-            font-size: 18px;
-            opacity: 0.95;
-        }
-        
-        .content {
-            padding: 40px 30px;
-        }
-        
-        .welcome-message {
-            font-size: 16px;
-            color: #555;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .credentials-box {
-            background: #fff3e0;
-            border-left: 4px solid #E06829;
-            padding: 25px;
-            margin: 30px 0;
-            border-radius: 4px;
-        }
-        .credentials-box h3 {
-            margin: 0 0 15px 0;
-            color: #E06829;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .credential-row {
-            background: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 4px;
-            border: 1px solid #e9ecef;
-        }
-        .credential-label {
-            font-weight: 600;
-            color: #6c757d;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-        .credential-value {
-            font-size: 16px;
-            color: #333;
-            font-weight: 500;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .role-badge {
-            display: inline-block;
-            background: #3386F7;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 14px;
-            margin: 20px 0;
-        }
-        
-        .info-box {
-            background: #e3f2fd;
-            border-left: 4px solid #3386F7;
-            padding: 20px;
-            margin: 25px 0;
-            border-radius: 4px;
-        }
-        .info-box h4 {
-            margin: 0 0 10px 0;
-            color: #3386F7;
-            font-size: 16px;
-        }
-        .info-box ul {
-            margin: 10px 0 0 0;
-            padding-left: 20px;
-        }
-        .info-box li {
-            margin: 8px 0;
-            color: #555;
-        }
-        
-        .warning-box {
-            background: #fff3e0;
-            padding: 15px 20px;
-            margin: 20px 0;
-            border-radius: 4px;
-            border-left: 4px solid #E06829;
-            display: flex;
-            align-items: start;
-            gap: 12px;
-        }
-        .warning-box .icon {
-            font-size: 24px;
-            flex-shrink: 0;
-        }
-        .warning-box p {
-            margin: 0;
-            color: #856404;
-            font-size: 14px;
-        }
-        
-        .button {
-            display: inline-block;
-            padding: 16px 40px;
-            background: #3386F7;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            margin: 25px 0;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        .button:hover {
-            background: #2872d9;
-            box-shadow: 0 4px 12px rgba(51, 134, 247, 0.3);
-        }
-        
-        .footer {
-            background-color: #f8f9fc;
-            padding: 30px;
-            text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
-        }
-        
-        @media only screen and (max-width: 600px) {
-            .container {
-                margin: 10px;
-            }
-            .hero h1 {
-                font-size: 26px;
-            }
-            .content {
-                padding: 30px 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Hero Section -->
-        <div class="hero">
-            <div class="hero-icon">🎉</div>
-            <h1>Welcome to MLC Classroom!</h1>
-            <p>Your account has been created successfully</p>
-        </div>
-        
-        <!-- Content -->
-        <div class="content">
-            <div style="text-align: center;">
-                <span class="role-badge">{{ ucfirst($role) }} Account</span>
-            </div>
-            
-            <div class="welcome-message">
-                <p>Hello <strong>{{ $user_name }}</strong>,</p>
-                <p>Your MLC Classroom account has been created by <strong>{{ $created_by }}</strong>. 
-                You can now access the platform using the credentials below.</p>
-            </div>
-            
-            <!-- Password Setup Section -->
-            @if(isset($setup_url))
-            <div class="credentials-box">
-                <h3>🔑 Set Your Password</h3>
+@extends('emails.layouts.base')
 
-                <div class="credential-row">
-                    <div class="credential-label">Email Address</div>
-                    <div class="credential-value">{{ $user_email }}</div>
-                </div>
+@section('additional-styles')
+    /* Account Created — unique styles */
+    .welcome-banner {
+        background: linear-gradient(135deg, #E06829 0%, #3386F7 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    .welcome-banner .hero-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    .welcome-banner h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    .welcome-banner p {
+        margin: 10px 0 0 0;
+        font-size: 16px;
+        opacity: 0.95;
+    }
 
-                <p style="margin: 15px 0 5px 0; color: #555; font-size: 15px;">
-                    Click the button below to set your password and access your account:
-                </p>
-            </div>
+    .role-badge {
+        display: inline-block;
+        background: #3386F7;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        margin: 15px 0;
+    }
 
-            <div style="text-align: center; margin: 20px 0;">
-                <a href="{{ $setup_url }}" class="button" style="background: #28a745; padding: 16px 50px;">
-                    Set My Password
-                </a>
-            </div>
+    .welcome-message {
+        font-size: 16px;
+        color: #555;
+        line-height: 1.8;
+        margin-bottom: 25px;
+        text-align: center;
+    }
 
-            <div class="warning-box">
-                <div class="icon">⏰</div>
-                <p>
-                    <strong>Important:</strong> This link will expire in 60 minutes for security.
-                    If it expires, use the "Forgot Password" option on the login page.
-                </p>
-            </div>
-            @else
-            <!-- Fallback: User already has password set (e.g. email verification flow) -->
-            <div style="text-align: center; margin: 20px 0;">
-                <a href="{{ $login_url ?? route('login') }}" class="button">
-                    Log In to Your Account
-                </a>
-            </div>
-            @endif
-            
-            
-            <!-- Next Steps -->
-            <div class="info-box">
-                <h4>📋 Next Steps</h4>
-                <ul>
-                    @if(isset($requires_verification) && $requires_verification)
-                    <li>Check your email for the verification link</li>
-                    <li>Click the link to verify your email address</li>
-                    @endif
-                    <li>Set your password using the button above</li>
-                    <li>Login to your account</li>
-                    <li>Complete your profile information</li>
-                    <li>Explore the platform features</li>
-                </ul>
-            </div>
-            
-        </div>
-        
-        <!-- Footer -->
-        <div class="footer">
-            <p style="color: #6c757d; font-size: 13px;">
-                <strong>Maidstone Learning Centre</strong><br>
-                Maidstone, Kent, United Kingdom
-            </p>
-            
-            <p style="margin-top: 20px;">
-                <a href="{{ config('app.url') }}" style="color: #3386F7; text-decoration: none;">Visit Website</a>
-                <span style="color: #dee2e6; margin: 0 8px;">|</span>
-                <a href="{{ route('login') }}" style="color: #3386F7; text-decoration: none;">Login to Portal</a>
-            </p>
-            
-            <p style="margin-top: 15px; font-size: 12px; color: #868e96;">
-                This is an automated notification from MLC Classroom Management System.<br>
-                Please do not reply directly to this email.
-            </p>
-            
-            <p style="margin-top: 10px; font-size: 11px; color: #adb5bd;">
-                © {{ date('Y') }} Maidstone Learning Centre. All rights reserved.
-            </p>
-        </div>
+    .credentials-box {
+        background: #fff3e0;
+        border-left: 4px solid #E06829;
+        padding: 25px;
+        margin: 25px 0;
+        border-radius: 4px;
+    }
+    .credentials-box h3 {
+        margin: 0 0 15px 0;
+        color: #E06829;
+        font-size: 18px;
+    }
+    .credential-row {
+        background: white;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+    }
+    .credential-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    .credential-value {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+        font-family: 'Courier New', monospace;
+    }
+
+    .steps-box {
+        background: #e3f2fd;
+        border-left: 4px solid #3386F7;
+        padding: 20px;
+        margin: 25px 0;
+        border-radius: 4px;
+    }
+    .steps-box h4 {
+        margin: 0 0 10px 0;
+        color: #3386F7;
+        font-size: 16px;
+    }
+    .steps-box ul {
+        margin: 10px 0 0 0;
+        padding-left: 20px;
+    }
+    .steps-box li {
+        margin: 8px 0;
+        color: #555;
+    }
+
+    .verification-box {
+        background: #fff3e0;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 4px;
+        border-left: 4px solid #E06829;
+    }
+@endsection
+
+@section('content')
+    {{-- Welcome Banner --}}
+    <div class="welcome-banner">
+        <div class="hero-icon">🎉</div>
+        <h2>Welcome to MLC Classroom!</h2>
+        <p>Your account has been created successfully</p>
     </div>
-</body>
-</html>
+
+    {{-- Role Badge --}}
+    <div style="text-align: center;">
+        <span class="role-badge">{{ ucfirst($role ?? $data['role'] ?? 'User') }} Account</span>
+    </div>
+
+    {{-- Welcome Message --}}
+    <div class="welcome-message">
+        <p>Hello <strong>{{ $user_name ?? $data['user_name'] ?? 'there' }}</strong>,</p>
+        <p>Your MLC Classroom account has been created by <strong>{{ $created_by ?? $data['created_by'] ?? 'an administrator' }}</strong>.
+        You can now access the platform using the details below.</p>
+    </div>
+
+    {{-- Password Setup Section --}}
+    @if(isset($setup_url) || isset($data['setup_url']))
+        @php $setupLink = $setup_url ?? $data['setup_url']; @endphp
+
+        <div class="credentials-box">
+            <h3>🔑 Set Your Password</h3>
+
+            <div class="credential-row">
+                <div class="credential-label">Email Address</div>
+                <div class="credential-value">{{ $user_email ?? $data['user_email'] ?? '' }}</div>
+            </div>
+
+            @if((isset($requires_verification) && $requires_verification) || (isset($data['requires_verification']) && $data['requires_verification']))
+                <div class="verification-box">
+                    <p style="margin: 0; color: #856404; font-size: 14px;">
+                        <strong>Step 1:</strong> Verify your email using the separate verification email.<br>
+                        <strong>Step 2:</strong> Click the button below to set your password.
+                    </p>
+                </div>
+            @else
+                <p style="margin: 15px 0 5px 0; color: #555; font-size: 15px;">
+                    Click the button below to set your password and start using your account:
+                </p>
+            @endif
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="{{ $setupLink }}" class="button" style="background: #28a745; padding: 16px 50px;">
+                Set My Password
+            </a>
+        </div>
+
+        <div class="alert-box warning" style="display: flex; align-items: start; gap: 12px;">
+            <span style="font-size: 24px; flex-shrink: 0;">⏰</span>
+            <p style="margin: 0; color: #856404; font-size: 14px;">
+                <strong>Important:</strong> This link expires in 60 minutes for security.
+                If it expires, use the "Forgot Password" option on the login page.
+            </p>
+        </div>
+    @else
+        {{-- Fallback: User already has access --}}
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="{{ $login_url ?? $data['login_url'] ?? route('login') }}" class="button">
+                Log In to Your Account
+            </a>
+        </div>
+    @endif
+
+    {{-- Email Verification Notice --}}
+    @if((isset($requires_verification) && $requires_verification) || (isset($data['requires_verification']) && $data['requires_verification']))
+        <div class="steps-box">
+            <h4>📧 Email Verification Required</h4>
+            <p style="margin: 5px 0 0 0; color: #555;">
+                Before you can log in, you need to verify your email address.
+                Please check your inbox for a verification email and click the verification link.
+            </p>
+        </div>
+    @endif
+
+    {{-- Next Steps --}}
+    <div class="steps-box">
+        <h4>📋 Next Steps</h4>
+        <ul>
+            @if((isset($requires_verification) && $requires_verification) || (isset($data['requires_verification']) && $data['requires_verification']))
+                <li>Check your email for the verification link</li>
+                <li>Click the link to verify your email address</li>
+            @endif
+            <li>Set your password using the button above</li>
+            <li>Login to your account</li>
+            <li>Complete your profile information</li>
+            <li>Explore the platform features</li>
+        </ul>
+    </div>
+@endsection

@@ -1,23 +1,24 @@
-@extends('emails.layout')
+@extends('emails.layouts.base')
 
 @section('content')
-<h2 style="color: #dc3545;">Homework Overdue Alert</h2>
+    <div class="message-title homework_overdue" style="border-color: #dc3545;">Homework Overdue Alert</div>
 
-<p>Dear Parent/Guardian,</p>
+    <div class="message-body">
+        <p>Dear Parent/Guardian,</p>
+        <p>The following homework for <strong>{{ $student->full_name }}</strong> is now <strong style="color: #dc3545;">overdue</strong> and has not been submitted.</p>
+    </div>
 
-<p>The following homework for <strong>{{ $student->full_name }}</strong> is now <strong style="color: #dc3545;">overdue</strong> and has not been submitted.</p>
+    <div class="alert-box danger" style="border-left: 4px solid #dc3545; background-color: #fff3cd; padding: 20px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Class:</strong> {{ $homework->class->name }}</p>
+        <p style="margin: 5px 0;"><strong>Homework:</strong> {{ $homework->title }}</p>
+        <p style="margin: 5px 0;"><strong>Was Due:</strong> {{ $due_date }}</p>
+    </div>
 
-<div style="background-color: #fff3cd; border-left: 4px solid #dc3545; padding: 20px; margin: 20px 0;">
-    <p style="margin: 5px 0;"><strong>Class:</strong> {{ $homework->class->name }}</p>
-    <p style="margin: 5px 0;"><strong>Homework:</strong> {{ $homework->title }}</p>
-    <p style="margin: 5px 0;"><strong>Was Due:</strong> {{ $due_date }}</p>
-</div>
+    <p style="color: #555;">Please submit the homework as soon as possible to avoid further delays in the child's learning progress.</p>
 
-<p>Please submit the homework as soon as possible to avoid further delays in the child's learning progress.</p>
+    <div style="text-align: center;">
+        <a href="{{ route('parent.homework.show', $homework->id) }}" class="button" style="background: #dc3545;">Submit Homework Now</a>
+    </div>
 
-<a href="{{ route('parent.homework.show', $homework->id) }}" style="display: inline-block; padding: 12px 30px; background-color: #dc3545; color: #ffffff; text-decoration: none; border-radius: 5px; margin-top: 20px;">
-    Submit Homework Now
-</a>
-
-<p style="margin-top: 30px;">If there are any issues preventing submission, please contact the teacher immediately.</p>
+    <p style="margin-top: 30px; color: #555;">If there are any issues preventing submission, please contact the teacher immediately.</p>
 @endsection

@@ -1,24 +1,24 @@
-@extends('emails.layout')
+@extends('emails.layouts.base')
 
 @section('content')
-<h2 style="color: #3386f7;">New Class Assignment</h2>
+    <div class="message-title" style="border-color: #3386F7;">New Class Assignment</div>
 
-<p>Dear {{ $teacher->name }},</p>
+    <div class="message-body">
+        <p>Dear {{ $teacher->name }},</p>
+        <p>You have been assigned to teach a new class by {{ $assigned_by }}.</p>
+    </div>
 
-<p>You have been assigned to teach a new class by {{ $assigned_by }}.</p>
+    <div class="class-card">
+        <div class="title">📚 {{ $class->name }}</div>
+        <div class="subtitle">{{ $student_count }} Students Enrolled</div>
+        @if($class->schedule)
+            <div class="subtitle" style="margin-top: 5px;">Schedule: {{ $class->schedule }}</div>
+        @endif
+    </div>
 
-<div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-    <p style="margin: 5px 0;"><strong>Class Name:</strong> {{ $class->name }}</p>
-    <p style="margin: 5px 0;"><strong>Students Enrolled:</strong> {{ $student_count }}</p>
-    
-    @if($class->schedule)
-    <p style="margin: 5px 0;"><strong>Schedule:</strong> {{ $class->schedule }}</p>
-    @endif
-</div>
+    <p style="color: #555;">You can now access the class, view student information, and manage class activities.</p>
 
-<p>You can now access the class, view student information, and manage class activities.</p>
-
-<a href="{{ route('teacher.classes.show', $class->id) }}" style="display: inline-block; padding: 12px 30px; background-color: #3386f7; color: #ffffff; text-decoration: none; border-radius: 5px; margin-top: 20px;">
-    View Class Details
-</a>
+    <div style="text-align: center;">
+        <a href="{{ route('teacher.classes.show', $class->id) }}" class="button">View Class Details</a>
+    </div>
 @endsection

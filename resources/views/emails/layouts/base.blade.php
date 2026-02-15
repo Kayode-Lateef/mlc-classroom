@@ -182,6 +182,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
+            <p style="color:red;">DEBUG: BASE LAYOUT IS RENDERING</p>
             @if(config('app.logo'))
                 <img src="{{ asset('storage/' . config('app.logo')) }}" alt="{{ config('app.name', 'MLC Classroom') }}" class="logo-img">
             @endif
